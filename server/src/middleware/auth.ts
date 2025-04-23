@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { adminAuth } from "../config/firebase";
-import { PrismaClient, Role } from "../generated/prisma";
+import { PrismaClient } from "../generated/prisma";
 
 
 const prisma = new PrismaClient();
@@ -12,6 +12,7 @@ export interface AuthRequest extends Request {
     publicId: string;
     email?: string;
     displayName?: string;
+    storeId?: number;
   };
 }
 
@@ -32,25 +33,49 @@ export const authenticate = async (
   try {
     const decodedToken = await adminAuth.verifyIdToken(token);
 
-    req.user = {
-      uid: decodedToken.uid,
-      publicId: decodedToken.uid,
-      email: decodedToken.email,
-      displayName: decodedToken.name,
-    };
+    // ユーザー情報を取得
+    const user = await prisma.user.findUnique({
+      where: { publicId: decodedToken.uid },
+      include: {
+        store: true,
+      },
+    });
 
-    // ユーザーが存在しない場合は作成
-    if (decodedToken.email) {
-      await prisma.user.upsert({
-        where: { publicId: decodedToken.uid },
-        create: {
+    if (!user) {
+      // ユーザーが存在しない場合は作成
+      const newUser = await prisma.user.create({
+        data: {
           publicId: decodedToken.uid,
-          email: decodedToken.email,
-          displayName: decodedToken.name,
-          role: Role.OWNER,
+          email: decodedToken.email || '',
+          displayName: decodedToken.name || '',
+          role: "OWNER",
+          store: {
+            create: {
+              name: "新規店舗",
+              description: "",
+            },
+          },
         },
-        update: {}, // 既存ユーザーは更新しない
+        include: {
+          store: true,
+        },
       });
+
+      req.user = {
+        uid: decodedToken.uid,
+        publicId: decodedToken.uid,
+        email: decodedToken.email || undefined,
+        displayName: decodedToken.name || undefined,
+        storeId: newUser.store?.id,
+      };
+    } else {
+      req.user = {
+        uid: decodedToken.uid,
+        publicId: user.publicId,
+        email: user.email,
+        displayName: user.displayName || undefined,
+        storeId: user.store?.id,
+      };
     }
 
     next();

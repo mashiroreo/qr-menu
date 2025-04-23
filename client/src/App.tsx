@@ -25,6 +25,24 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   return isAuthenticated ? <Navigation>{children}</Navigation> : <Navigate to="/login" />;
 };
 
+const AuthRedirect = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setIsAuthenticated(!!user);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  if (isAuthenticated === null) {
+    return <div>Loading...</div>;
+  }
+
+  return isAuthenticated ? <Navigate to="/store" replace /> : <Navigate to="/login" replace />;
+};
+
 function App() {
   return (
     <Router>
@@ -54,7 +72,7 @@ function App() {
             </PrivateRoute>
           }
         />
-        <Route path="/" element={<Navigate to="/store" replace />} />
+        <Route path="/" element={<AuthRedirect />} />
       </Routes>
     </Router>
   );
