@@ -55,7 +55,7 @@ export const StoreManagement = () => {
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold text-center mb-8">店舗管理</h1>
       <div className="space-y-8">
-        <StoreForm />
+        <StoreForm store={store} onUpdate={handleStoreUpdate} />
         <StoreLogo store={store} onUpdate={handleStoreUpdate} />
       </div>
     </div>

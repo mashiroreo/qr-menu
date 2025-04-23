@@ -1,78 +1,134 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Container, Paper, Tabs, Tab, Typography } from '@mui/material';
-import CategoryManager from '../components/menu/CategoryManager';
-import MenuItemManager from '../components/menu/MenuItemManager';
-import { getCategories } from '../api/menu';
-import { MenuCategory } from '../types/menu';
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`menu-management-tabpanel-${index}`}
-      aria-labelledby={`menu-management-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          {children}
-        </Box>
-      )}
-    </div>
-  );
-}
+import { MenuCategory, MenuItem } from '../types/menu';
+import MenuCategoryList from '../components/MenuCategoryList';
+import MenuCategoryForm from '../components/MenuCategoryForm';
+import MenuItemList from '../components/MenuItemList';
+import MenuItemForm from '../components/MenuItemForm';
+import { auth } from '../libs/firebase';
+import { getStoreInfo } from '../api/store';
 
 const MenuManagement: React.FC = () => {
-  const [tabValue, setTabValue] = useState(0);
-  const [categories, setCategories] = useState<MenuCategory[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<MenuCategory | null>(null);
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [showCategoryForm, setShowCategoryForm] = useState(false);
+  const [showItemForm, setShowItemForm] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [itemRefreshTrigger, setItemRefreshTrigger] = useState(0);
+  const [storeId, setStoreId] = useState<number | null>(null);
 
   useEffect(() => {
-    fetchCategories();
+    const fetchStoreId = async () => {
+      try {
+        const store = await getStoreInfo();
+        setStoreId(store.id);
+      } catch (error) {
+        console.error('店舗情報の取得に失敗しました:', error);
+      }
+    };
+    fetchStoreId();
   }, []);
 
-  const fetchCategories = async () => {
-    try {
-      const data = await getCategories();
-      setCategories(data);
-    } catch (error) {
-      console.error('カテゴリーの取得に失敗しました:', error);
-    }
+  const handleEditCategory = (category: MenuCategory) => {
+    setSelectedCategory(category);
+    setShowCategoryForm(true);
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
+  const handleItemSelect = (item: MenuItem) => {
+    setSelectedItem(item);
+    setShowItemForm(true);
   };
+
+  const handleCategorySuccess = () => {
+    setShowCategoryForm(false);
+    setSelectedCategory(null);
+    setRefreshTrigger(prev => prev + 1);
+  };
+
+  const handleItemSuccess = () => {
+    setShowItemForm(false);
+    setSelectedItem(null);
+    setItemRefreshTrigger(prev => prev + 1);
+  };
+
+  const handleAddCategory = () => {
+    setSelectedCategory(null);
+    setShowCategoryForm(true);
+  };
+
+  if (!storeId) {
+    return <div>Loading...</div>;
+  }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Paper sx={{ width: '100%', mb: 2 }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs
-            value={tabValue}
-            onChange={handleTabChange}
-            aria-label="メニュー管理タブ"
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold">メニュー管理</h2>
+          <button
+            onClick={handleAddCategory}
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
           >
-            <Tab label="カテゴリー管理" />
-            <Tab label="メニューアイテム管理" />
-          </Tabs>
-        </Box>
-        <TabPanel value={tabValue} index={0}>
-          <CategoryManager />
-        </TabPanel>
-        <TabPanel value={tabValue} index={1}>
-          <MenuItemManager categories={categories} />
-        </TabPanel>
-      </Paper>
-    </Container>
+            カテゴリー追加
+          </button>
+        </div>
+        
+        {showCategoryForm && (
+          <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
+            <MenuCategoryForm
+              category={selectedCategory}
+              onSuccess={handleCategorySuccess}
+              onCancel={() => {
+                setShowCategoryForm(false);
+                setSelectedCategory(null);
+              }}
+            />
+          </div>
+        )}
+
+        <MenuCategoryList
+          onEdit={handleEditCategory}
+          refreshTrigger={refreshTrigger}
+        />
+      </div>
+
+      {selectedCategory && (
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-bold">{selectedCategory.name}のメニュー</h3>
+            <button
+              onClick={() => setShowItemForm(true)}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+            >
+              メニュー追加
+            </button>
+          </div>
+
+          {showItemForm && storeId && (
+            <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
+              <MenuItemForm
+                storeId={storeId}
+                categoryId={selectedCategory.id}
+                item={selectedItem}
+                onSubmit={handleItemSuccess}
+                onCancel={() => {
+                  setShowItemForm(false);
+                  setSelectedItem(null);
+                }}
+              />
+            </div>
+          )}
+
+          {storeId && (
+            <MenuItemList
+              storeId={storeId}
+              categoryId={selectedCategory.id}
+              onEdit={handleItemSelect}
+              refreshTrigger={itemRefreshTrigger}
+            />
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 

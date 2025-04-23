@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Store, StoreFormData } from '../../types/store';
-import { getStoreInfo, updateStoreInfo } from '../../api/store';
+import { getStoreInfo, updateStore } from '../../api/store';
 
 export const StoreForm = () => {
   const [store, setStore] = useState<Store | null>(null);
@@ -40,7 +40,7 @@ export const StoreForm = () => {
     };
 
     try {
-      const updatedStore = await updateStoreInfo(data);
+      const updatedStore = await updateStore(data);
       setStore(updatedStore);
       setSuccessMessage('店舗情報を更新しました');
     } catch (err) {
@@ -139,7 +139,8 @@ export const StoreForm = () => {
         <div className="pt-4">
           <button
             type="submit"
-            className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            disabled={loading}
           >
             保存
           </button>

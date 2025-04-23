@@ -1,0 +1,1049 @@
+飲⾷店向けQRメニューサービス 
+実装ガイド
+
+このドキュメントは「飲⾷店向けQRメニューサービス」のMVP開発における実装ガ
+イドです。仕様書と合わせて参照し、実装の詳細を明確にします。
+
+1. 技術スタックと環境構成
+
+バックエンド
+
+⾔語/フレームワーク: TypeScript + Express
+
+データベース: SQLite (開発環境)、PostgreSQL (本番環境)
+
+ORM: Prisma
+
+認証: Firebase Authentication (Google/Apple認証)
+
+ストレージ: Firebase Storage
+
+ホスティング: Render.com
+
+フロントエンド
+
+フレームワーク: React + TypeScript + Vite
+
+スタイリング: Tailwind CSS
+
+ホスティング: Vercel または Netlify
+
+2. 開発規約とガイドライン
+
+2.1 コーディング規約
+
+型安全性
+
+✅ 必須: 明⽰的な型定義を使⽤
+
+❌ 禁⽌:  any  および  unknown  の使⽤
+
+❌ 禁⽌: 不必要な型定義の継承
+
+✅ 必須: 型定義による明確なデータ構造（クラスまたはinterface）
+
+飲⾷店向けQRメニューサービス 実装ガイド1// ❌ 避けるべき例
+const handleUser = (user: any) ⇒ {
+  return user.name;
+};
+
+// ✅ 推奨される例
+// interfaceによる定義（基本的なデータ構造定義に最適）
+interface User {
+  id: string;
+
+  name: string;
+  email: string;
+}
+
+// または型エイリアスによる定義（ユニオン型等、より複雑な型定義に適している）
+
+type User = {
+  id: string;
+
+  name: string;
+  email: string;
+};
+
+const handleUser = (user: User): string ⇒ {
+  return user.name;
+};
+
+DTOパターンの実装
+
+✅ 必須: リクエスト‧レスポンスごとに専⽤のDTO型を定義
+
+✅ 必須: ⼊⼒と出⼒の型を明確に分離
+
+✅ 推奨: 変換‧マッピング処理の明⽰的な実装
+
+// リクエストDTO
+interface CreateStoreRequestDto {
+
+  name: string;
+
+  description?: string;
+
+  businessHours: string;
+  closingDays: string;  address: string;
+  phone?: string;
+  subdomain: string;
+
+}
+
+// レスポンスDTO
+interface StoreResponseDto {
+  id: string;
+  name: string;
+  description?: string;
+  businessHours: string;
+  closingDays: string;
+
+  address: string;
+  phone?: string;
+  logoUrl?: string;
+  subdomain: string;
+  qrCodeUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// 内部モデル - データベースエンティティに対応
+interface StoreEntity {
+  id: string;
+  name: string;
+  description: string | null;
+  businessHours: string;
+  closingDays: string;
+  address: string;
+
+  phone: string | null;
+
+  logoUrl: string | null;
+
+  subdomain: string;
+
+  qrCodeUrl: string | null;
+
+  userPublicId: string;
+
+  createdAt: Date;
+
+  updatedAt: Date;
+
+}
+// マッピング関数の例
+function mapEntityToResponseDto(entity: StoreEntity): StoreResponseDto {
+
+  return {
+    id: entity.id,
+
+    name: entity.name,
+    description: entity.description || undefined,
+
+    businessHours: entity.businessHours,
+
+    closingDays: entity.closingDays,
+    address: entity.address,
+
+    phone: entity.phone || undefined,
+    logoUrl: entity.logoUrl || undefined,
+
+    subdomain: entity.subdomain,
+    qrCodeUrl: entity.qrCodeUrl || undefined,
+
+    createdAt: entity.createdAt.toISOString(),
+    updatedAt: entity.updatedAt.toISOString()
+
+  };
+
+}
+
+状態の表現
+
+✅ 必須: 状態は⽂字列ではなく数値で保持
+
+✅ 必須: 状態値は必ず列挙型(enum)で定義
+
+// ❌ 避けるべき例
+const userStatus = "active";
+
+// ✅ 推奨される例
+enum UserStatus {
+
+  INACTIVE = 0,
+
+  ACTIVE = 1,
+  SUSPENDED = 2
+
+}
+
+const userStatus = UserStatus.ACTIVE;
+
+エラーハンドリング
+
+✅ 必須: try-catchによる明⽰的なエラーハンドリング
+✅ 必須: エラーオブジェクトの型付け
+
+✅ 必須: 意味のあるエラーメッセージ
+
+// ❌ 避けるべき例
+const fetchData = async () ⇒ {
+  const data = await api.get('/endpoint');
+
+  return data;
+};
+
+// ✅ 推奨される例
+interface ApiError {
+
+  status: number;
+  message: string;
+
+}
+
+const fetchData = async () ⇒ {
+  try {
+
+    const data = await api.get('/endpoint');
+
+    return data;
+  } catch (error) {
+
+    const apiError = error as ApiError;
+    logger.error(`API Error: ${apiError.status} - ${apiError.message}`);
+
+    throw new Error(`Failed to fetch data: ${apiError.message}`);
+  }
+
+};
+
+⾮同期処理
+
+✅ 必須: Promise よりも async/await を優先
+
+✅ 必須: ⾮同期関数の戻り値型を明⽰
+
+// ❌ 避けるべき例
+function fetchUsers() {
+
+  return fetch('/api/users')
+    .then(res ⇒ res.json())
+
+    .then(data ⇒ data)
+    .catch(err ⇒ console.error(err));
+}
+
+// ✅ 推奨される例
+async function fetchUsers(): Promise<User[]> {
+  try {
+
+    const response = await fetch('/api/users');
+    const data = await response.json();
+
+    return data as User[];
+  } catch (error) {
+
+    logger.error('Failed to fetch users:', error);
+    throw error;
+
+  }
+
+}
+
+2.2 アーキテクチャ設計
+
+レイヤード‧アーキテクチャ
+
+バックエンドは以下のレイヤーに分割します：
+
+1.  Routes: リクエストのルーティングと基本的なパラメータチェック
+
+2.  Controllers: リクエスト処理とレスポンス⽣成
+
+3.  Services: ビジネスロジックの実装
+
+4.  Repositories/Models: データアクセス層
+
+5.  Validators: ⼊⼒バリデーション (zodを使⽤)
+
+6.  Middleware: 認証、ロギング、エラーハンドリングなど
+
+src/
+├── routes/         # ルーティング定義
+├── controllers/    # コントローラー（リクエスト処理）
+├── services/       # ビジネスロジック
+├── models/         # データモデルとデータアクセス
+├── validators/     # ⼊⼒検証（zod）
+├── middleware/     # ミドルウェア（認証、エラー処理等）
+├── types/          # 型定義├── utils/          # ユーティリティ関数
+└── config/         # 設定ファイル
+
+データフロー
+
+クライアント → Route → Middleware → Controller → → Validator → Service → Repository → DB
+          ↑                                                               ↓
+          └───────────────────────────────────────────────────────────────┘
+
+フロントエンドのコンポーネント構造
+
+1.  Pages: 画⾯全体のコンポーネント
+
+2.  Components: 再利⽤可能なUI要素
+
+3.  Hooks: ロジックの再利⽤
+
+4.  Service: API連携
+
+5.  Context: グローバル状態管理
+
+3. データモデルと型定義
+
+3.1 列挙型の定義例
+
+// types/enums.ts
+
+// ⽂字列ではなく数値で状態を管理
+export enum UserRole {
+  OWNER = 0,
+
+  ADMIN = 1
+}
+
+export enum SoldOutStatus {
+
+  AVAILABLE = 0,
+  SOLD_OUT = 1
+}
+3.2 データモデルの型定義例
+TypeScriptでは、型エイリアスやインターフェースを使⽤してデータモデルを表現
+できます。より厳格な型チェックのために、以下のプラクティスを採⽤します：
+
+// types/models.ts
+
+// 読み取り専⽤プロパティでイミュータビリティを強制
+export type Store = Readonly<{
+  id: string;
+  name: string;
+  description: string | null;  // undefinedではなくnullを使⽤
+  businessHours: string;
+  closingDays: string;
+  address: string;
+
+  phone: string | null;
+  logoUrl: string | null;
+  subdomain: string;
+  qrCodeUrl: string | null;
+
+  userPublicId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}>;
+
+export type Category = Readonly<{
+  id: string;
+
+  name: string;
+  order: number;
+  storeId: string;
+  createdAt: Date;
+
+  updatedAt: Date;
+}>;
+
+export type MenuItem = Readonly<{
+  id: string;
+  name: string;
+  price: number;
+
+  description: string | null;
+  imageUrl: string | null;  categoryId: string;
+  storeId: string;
+  isSoldOut: SoldOutStatus;  // ⽂字列ではなく列挙型
+  order: number;
+  createdAt: Date;
+  updatedAt: Date;
+
+}>;
+
+export type Auth = Readonly<{
+
+  firebaseUid: string;
+  publicId: string;
+  createdAt: Date;
+  updatedAt: Date;
+
+}>;
+
+export type User = Readonly<{
+
+  publicId: string;
+  email: string;
+  displayName: string | null;
+  role: UserRole;  // ⽂字列ではなく列挙型
+  createdAt: Date;
+  updatedAt: Date;
+}>;
+
+3.3 Prismaスキーマとの型の整合性
+Prismaの型定義と⼿動で定義した型の間で整合性を保つために、Prismaが⽣成した
+型をベースに使⽤することも検討できます：
+
+// Prismaが⽣成した型を使⽤する場合
+import { Prisma } from '@prisma/client';
+
+// Prismaのモデル型から独⾃の型を作成
+export type Store = Readonly<Prisma.StoreGetPayload<{
+  include: { categories: true, menuItems: true }
+
+}>>;
+
+// または必要に応じて型をカスタマイズ
+export type StoreBasic = Readonly<Omit<Prisma.StoreGetPayload<{}>, 'ca
+tegories' | 'menuItems'>>;
+
+4. レイヤー間のデータ変換とDTOパターン
+
+4.1 DTOパターンによる厳格な型管理
+TypeScriptでは、レイヤー間で型安全にデータを受け渡すためにDTOパターンを活
+⽤します。これにより、APIエンドポイントからデータベース操作まで⼀貫した型の
+恩恵を受けられます。
+
+クライアント ←→ RequestDTO ←→ Controller ←→ ServiceDTO ←→ Service ←→ RepositoryDTO ←→ Repository ←→ DB
+                    ↑                 ↑                   ↑                     ↑
+                  検証             変換                 変換                   変換
+
+4.2 レイヤー別のDTO実装例
+
+// 1. API層: リクエスト/レスポンスDTO
+export class CreateStoreRequestDto {
+
+  @IsString()
+  @MinLength(1)
+  @MaxLength(100)
+  name!: string;
+
+  @IsString()
+  @MaxLength(1000)
+
+  @IsOptional()
+  description?: string;
+
+  @IsString()
+
+  @MinLength(1)
+  @MaxLength(200)
+  businessHours!: string;
+
+  @IsString()
+  @MinLength(1)
+  @MaxLength(100)  closingDays!: string;
+
+  @IsString()
+  @MinLength(1)
+  @MaxLength(200)
+
+  address!: string;
+
+  @IsString()
+  @MaxLength(20)
+
+  @IsOptional()
+  phone?: string;
+
+  @IsString()
+  @MinLength(3)
+  @MaxLength(30)
+  @Matches(/^[a-z0-9-]+$/)
+
+  subdomain!: string;
+}
+
+export class StoreResponseDto {
+
+  id!: string;
+  name!: string;
+  description?: string;
+
+  businessHours!: string;
+  closingDays!: string;
+  address!: string;
+  phone?: string;
+
+  logoUrl?: string;
+  subdomain!: string;
+  qrCodeUrl?: string;
+
+  createdAt!: string;
+  updatedAt!: string;
+
+  // 変換メソッド
+  static fromEntity(entity: StoreEntity): StoreResponseDto {
+    const dto = new StoreResponseDto();
+    dto.id = entity.id;
+    dto.name = entity.name;
+    dto.description = entity.description || undefined;
+    dto.businessHours = entity.businessHours;
+    dto.closingDays = entity.closingDays;
+
+    dto.address = entity.address;
+    dto.phone = entity.phone || undefined;
+    dto.logoUrl = entity.logoUrl || undefined;
+    dto.subdomain = entity.subdomain;
+
+    dto.qrCodeUrl = entity.qrCodeUrl || undefined;
+    dto.createdAt = entity.createdAt.toISOString();
+    dto.updatedAt = entity.updatedAt.toISOString();
+
+    return dto;
+  }
+}
+
+// 2. サービス層: ServiceDTO
+export interface CreateStoreServiceDto {
+  name: string;
+  description: string | null;
+
+  businessHours: string;
+  closingDays: string;
+  address: string;
+
+  phone: string | null;
+  subdomain: string;
+  userPublicId: string;  // 認証コンテキストから取得
+}
+
+// 3. リポジトリ層: RepositoryDTO (Prismaの場合)
+// Prisma⾃体が型を提供するため、通常は別途DTOを定義しません
+// Prismaが⽣成した型をリポジトリ層で使⽤します
+
+// 4. エンティティ: 内部データモデル
+export interface StoreEntity {
+  id: string;
+  name: string;
+
+  description: string | null;
+  businessHours: string;
+  closingDays: string;
+  address: string;  phone: string | null;
+  logoUrl: string | null;
+  subdomain: string;
+  qrCodeUrl: string | null;
+  userPublicId: string;
+  createdAt: Date;
+  updatedAt: Date;
+
+}
+
+4.3 コントローラーでのDTO活⽤例
+
+// controllers/store.controller.ts
+import { Request, Response } from 'express';
+import { plainToClass } from 'class-transformer';
+import { validate } from 'class-validator';
+import { StoreService } from '../services/store.service';
+import { CreateStoreRequestDto, StoreResponseDto } from '../dtos/store.dto';
+
+export class StoreController {
+  constructor(private storeService: StoreService) {}
+
+  // 店舗作成エンドポイント
+  async createStore(req: Request, res: Response): Promise<void> {
+
+    try {
+      // リクエストボディをDTOに変換
+      const createStoreDto = plainToClass(CreateStoreRequestDto, req.bod
+y);
+
+      // バリデーション実⾏
+      const errors = await validate(createStoreDto);
+
+      if (errors.length > 0) {
+        res.status(400).json({ errors });
+        return;
+      }
+
+      // サービス層に渡すDTOに変換
+      const serviceDto: CreateStoreServiceDto = {
+        ...createStoreDto,
+
+        description: createStoreDto.description || null,
+        phone: createStoreDto.phone || null,
+        userPublicId: req.user!.publicId  // 認証済みユーザー情報から取得
+      };
+
+      // サービス呼び出し
+      const storeEntity = await this.storeService.createStore(serviceDto);
+
+      // エンティティをレスポンスDTOに変換
+      const responseDto = StoreResponseDto.fromEntity(storeEntity);
+
+      // レスポンス返却
+      res.status(201).json(responseDto);
+    } catch (error) {
+      // エラーハンドリング
+      res.status(500).json({ error: 'Failed to create store' });
+    }
+  }
+}
+
+4.4 サービス層の実装例
+
+// services/store.service.ts
+import { Injectable } from '@nestjs/common';  // または適切なDIライブラリ
+import { StoreRepository } from '../repositories/store.repository';
+
+import { CreateStoreServiceDto } from '../dtos/store.dto';
+import { StoreEntity } from '../entities/store.entity';
+
+@Injectable()
+export class StoreService {
+  constructor(private storeRepository: StoreRepository) {}
+
+  async createStore(dto: CreateStoreServiceDto): Promise<StoreEntity> {
+    // ビジネスロジックの処理
+
+    // リポジトリ呼び出し
+    const store = await this.storeRepository.create({
+      id: crypto.randomUUID,
+      ...dto,
+      logoUrl: null,
+
+      qrCodeUrl: null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    return store;
+  }
+
+}
+
+5. 認証‧認可の実装
+
+4.1 認証フロー
+1.  フロントエンドで Firebase SDK を使⽤して Google/Apple 認証
+
+2.  認証成功後、Firebase ID トークンを取得
+
+3.  API リクエスト時に Authorization ヘッダーでトークンを送信
+
+4.  バックエンドで Firebase Admin SDK によるトークン検証
+
+5.  firebaseUid から publicId への変換（Auth テーブル検索）
+
+6.  リクエストオブジェクトにユーザー情報を付与
+
+4.2 認証ミドルウェア例
+
+// middleware/auth.ts
+
+import { Request, Response, NextFunction } from 'express';
+import { auth } from '../config/firebase';
+import { AuthModel, UserModel } from '../models';
+import { UserRole } from '../types/enums';
+
+// リクエスト型拡張
+declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        publicId: string;
+        role?: UserRole;
+      }
+
+    }
+  }
+}
+
+// 認証ミドルウェア
+export const authenticate = async (req: Request, res: Response, next: Next
+Function) ⇒ {
+  try {
+    // トークン取得と検証
+    const idToken = req.headers.authorization?.split('Bearer ')[1];
+    if (!idToken) return res.status(401).json({ error: 'No token provided' });
+
+    // Firebase検証
+    const decodedToken = await auth.verifyIdToken(idToken);
+    const firebaseUid = decodedToken.uid;
+
+    // Auth テーブルから publicId 取得
+    const authUser = await AuthModel.findOne({ firebaseUid });
+
+    if (!authUser) {
+      // 初回ログイン時はユーザー作成
+      // ...
+
+    } else {
+      // 既存ユーザー取得
+      // ...
+    }
+
+    next();
+  } catch (error) {
+
+    return res.status(401).json({ error: 'Authentication failed' });
+  }
+};
+
+// ロールベースの権限チェック
+export const requireOwner = (req: Request, res: Response, next: NextFunct
+ion) ⇒ {
+  if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
+  next();
+};
+
+export const requireAdmin = (req: Request, res: Response, next: NextFuncti
+on) ⇒ {
+  if (!req.user || req.user.role !== UserRole.ADMIN) {
+    return res.status(403).json({ error: 'Admin privileges required' });
+  }
+  next();
+};
+
+5. バリデーション実装
+
+5.1 zodによるバリデーション
+
+// validators/store.validator.ts
+
+import { z } from 'zod';
+
+export const createStoreSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().max(1000).optional(),
+  businessHours: z.string().min(1).max(200),
+
+  closingDays: z.string().min(1).max(100),
+  address: z.string().min(1).max(200),
+  phone: z.string().max(20).optional(),
+  subdomain: z.string().min(3).max(30).regex(/^[a-z0-9-]+$/),
+});
+
+export type CreateStoreDTO  z.infer<typeof createStoreSchema>;
+
+5.2 バリデーションミドルウェア
+// middleware/validation.ts
+
+import { Request, Response, NextFunction } from 'express';
+import { ZodSchema } from 'zod';
+
+export const validate = <T>(schema: ZodSchema<T>) ⇒ {
+  return (req: Request, res: Response, next: NextFunction) ⇒ {
+
+    const result = schema.safeParse(req.body);
+
+    if (!result.success) {
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: result.error.errors
+      });
+
+    }
+
+    // バリデーション済みデータをセット
+    req.body = result.data;
+    next();
+  };
+};
+
+6. エラーハンドリング
+
+6.1 標準エラーフォーマット
+
+interface ApiError {
+
+  status: number;
+  message: string;
+  details?: unknown;
+}
+
+6.2 グローバルエラーハンドラー
+
+// middleware/errorHandler.ts
+import { Request, Response, NextFunction } from 'express';
+
+export class AppError extends Error {
+  status: number;
+  details?: unknown;
+
+  constructor(message: string, status = 500, details?: unknown) {
+    super(message);
+    this.status = status;
+
+    this.details = details;
+    this.name = 'AppError';
+  }
+}
+
+export const errorHandler = (
+  err: Error | AppError,
+  req: Request,
+
+  res: Response,
+  next: NextFunction
+) ⇒ {
+  console.error(`${req.method} ${req.path} - Error:`, err);
+
+  const status = err instanceof AppError ? err.status : 500;
+  const response = {
+
+    error: err.message || 'Internal Server Error',
+    details: err instanceof AppError ? err.details : undefined
+  };
+
+  res.status(status).json(response);
+};
+
+7. 環境変数とシークレット管理
+
+7.1 環境変数設定ファイル (.env.example)
+
+# サーバー設定
+PORT=3000
+NODE_ENV=development
+# データベース接続
+DATABASE_URL=file:./dev.db
+# 本番環境⽤
+# DATABASE_URL=postgresql://user:password@localhost:5432/qrmenu
+
+# Firebase
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxx@project.iam.gservicea
+ccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nXXXX\n-----END PRIVATE KEY-----\n"
+FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+
+# アプリケーション設定
+BASE_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:5173
+
+7.2 環境変数の読み込み
+
+// config/env.ts
+
+import dotenv from 'dotenv';
+import path from 'path';
+
+// 環境変数の読み込み
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+
+// 必須環境変数のチェック
+const requiredEnvVars = [
+  'FIREBASE_PROJECT_ID',
+  'FIREBASE_CLIENT_EMAIL',
+  'FIREBASE_PRIVATE_KEY',
+  'DATABASE_URL'
+];
+
+for (const envVar of requiredEnvVars) {
+  if (!process.env[envVar]) {
+    throw new Error(`Missing required environment variable: ${envVar}`);
+  }
+}
+
+export default {
+
+  port: process.env.PORT || '3000',
+  nodeEnv: process.env.NODE_ENV || 'development',
+  isDevelopment: process.env.NODE_ENV !== 'production',
+  database: {
+    url: process.env.NODE_ENV === 'production'
+      ? process.env.DATABASE_URL as string  // 本番環境はPostgreSQL
+      : process.env.DATABASE_URL || 'file:./dev.db',  // 開発環境はSQLite
+  },
+
+  firebase: {
+    projectId: process.env.FIREBASE_PROJECT_ID as string,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL as string,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n') as 
+string,
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET as string,
+  },
+
+  app: {
+    baseUrl: process.env.BASE_URL || 'http://localhost:3000',
+    frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
+  }
+};
+
+8. デプロイ設定 (Render.com)
+
+8.1 render.yaml 設定例
+
+services:
+  - type: web
+    name: qrmenu-api
+
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: qrmenu-db
+
+          property: connectionString
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_CLIENT_EMAIL
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false
+
+      - key: FIREBASE_STORAGE_BUCKET
+        sync: false
+
+databases:
+  - name: qrmenu-db
+    databaseName: qrmenu
+    user: qrmenu
+
+9. ロギング設定
+ロギングは最低限で実装し、重要なイベントのみを記録します：
+
+API呼び出しの成功/失敗
+
+認証関連イベント（ログイン成功/失敗、権限エラー）
+
+重要なビジネスロジックの実⾏（店舗登録、⼤きな更新等）
+
+エラーやバグの発⽣
+
+// utils/logger.ts
+
+import winston from 'winston';
+import config from '../config/env';
+
+const logger = winston.createLogger({  level: config.isDevelopment ? 'debug' : 'info',
+
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.Console({
+      format: winston.format.combine(
+        winston.format.colorize(),
+
+        winston.format.simple()
+      )
+    })
+  ]
+});
+
+// 本番環境ではファイルにも出⼒
+if (!config.isDevelopment) {
+  logger.add(new winston.transports.File({ filename: 'error.log', level: 'error' 
+}));
+}
+
+export default logger;
+
+10. Prisma の設定
+
+10.1 SQLite と PostgreSQL の両対応
+Prisma を使って開発環境(SQLite)と本番環境(PostgreSQL)の両⽅に対応するには、
+以下のように  schema.prisma  を設定します：
+
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"  url      = env("DATABASE_URL")
+  // SQLiteを使⽤する開発環境のための設定
+  // 環境変数の値が "file:./dev.db" のような形式の場合に⾃動検出
+  relationMode = "prisma"
+}
+
+// モデル定義
+model Store {
+  id            String      @id @default(uuid())
+  name          String      @db.VarChar(100)
+
+  description   String?     @db.VarChar(1000)
+  businessHours String      @db.VarChar(200)
+  closingDays   String      @db.VarChar(100)
+  address       String      @db.VarChar(200)
+  phone         String?     @db.VarChar(20)
+  logoUrl       String?
+  subdomain     String      @unique
+
+  qrCodeUrl     String?
+  userPublicId  String
+  createdAt     DateTime    @default(now())
+
+  updatedAt     DateTime    @updatedAt
+
+  // リレーション
+  categories    Category[]
+  menuItems     MenuItem[]
+
+  @@index([userPublicId])
+
+}
+
+// 他のモデルも同様に定義
+
+10.2 環境に応じたマイグレーション
+開発環境と本番環境で異なるデータベースを使⽤するため、マイグレーション管理に注意が必要です：
+
+# 開発環境でのマイグレーション
+npx prisma migrate dev --name init
+# 本番環境⽤のSQLの⽣成
+npx prisma migrate deploy
+
+# スキーマ変更の反映（両環境共通）
+npx prisma generate
+
+11. 型定義の共有
+フロントエンドとバックエンド間でモデルとDTOの型定義を共有するために、共通
+の型定義ファイルを作成します。
+
+// types/index.ts
+
+// モデル定義
+export interface Store { /* ... */ }
+
+export interface Category { /* ... */ }
+export interface MenuItem { /* ... */ }
+
+// DTOの定義（APIリクエスト/レスポンス⽤）
+export interface CreateStoreDTO { /* ... */ }
+
+export interface UpdateStoreDTO { /* ... */ }
+export interface StoreResponseDTO { /* ... */ }
+
+// 列挙型
+export enum UserRole { /* ... */ }
+
+export enum SoldOutStatus { /* ... */ }
+
+フロントエンドとバックエンドでこの型定義ファイルを共有するか、同じ構造を維
+持します。
+
+まとめ
+
+このガイドは、飲⾷店向けQRメニューサービスのMVP開発における主要な実装⽅針
+を⽰しています。仕様書と合わせて参照し、⼀貫性のある⾼品質な実装を⽬指して
+
+ください。特に以下の点を重視します：
+
+1.  型安全性: anyやunknownを避け、明⽰的な型定義を使⽤
+
+2.  クリーンアーキテクチャ: 責務の分離を意識した構造設計
+3.  バリデーション: zodによる厳格な⼊⼒検証
+
+4.  エラーハンドリング: 統⼀されたエラー形式と適切な例外処理
+
+5.  認証セキュリティ: Firebase Authenticationの適切な実装
+
+このガイドラインに従うことで、保守性が⾼く、安全で拡張性のあるアプリケーションを構築できます。

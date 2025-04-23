@@ -12,10 +12,13 @@ export const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate("/dashboard");
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const token = await userCredential.user.getIdToken();
+      localStorage.setItem('token', token);
+      navigate("/store");
     } catch (error) {
       setError("ログインに失敗しました。メールアドレスとパスワードを確認してください。");
+      console.error(error);
     }
   };
 

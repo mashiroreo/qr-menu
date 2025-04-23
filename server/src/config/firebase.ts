@@ -1,5 +1,5 @@
 import { initializeApp, cert } from "firebase-admin/app";
-import { getAuth } from "firebase-admin/auth";
+import admin from "firebase-admin";
 
 const firebasePrivateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
 
@@ -15,4 +15,17 @@ initializeApp({
   }),
 });
 
-export const adminAuth = getAuth();
+const isTestEnvironment = process.env.NODE_ENV === "test";
+
+export const adminAuth = isTestEnvironment
+  ? {
+      verifyIdToken: async (token: string) => {
+        // テスト用のモックデータ
+        return {
+          uid: "test-user-id",
+          email: "test@example.com",
+          name: "Test User",
+        };
+      },
+    }
+  : admin.auth();

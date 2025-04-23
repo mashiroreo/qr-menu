@@ -1,20 +1,20 @@
 export interface MenuCategory {
-  id: string;
+  id: number;
   name: string;
   description?: string;
-  storeId: string;
+  storeId: number;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface MenuItem {
-  id: string;
+  id: number;
   name: string;
   description?: string;
   price: number;
   imageUrl?: string;
-  categoryId: string;
-  storeId: string;
+  categoryId: number;
+  storeId: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -28,7 +28,8 @@ export interface MenuItemFormData {
   name: string;
   description?: string;
   price: number;
-  categoryId: string;
+  categoryId: number;
+  storeId: number;
 }
 
 export interface MenuItemImageData {

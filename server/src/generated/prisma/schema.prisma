@@ -14,17 +14,56 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  OWNER
-  ADMIN
-}
-
 model User {
   id          String   @id @default(uuid())
   publicId    String   @unique
   email       String   @unique
   displayName String?
-  role        Role     @default(OWNER)
+  role        String   @default("OWNER")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  store       Store?
+}
+
+model Store {
+  id            Int      @id @default(autoincrement())
+  name          String
+  description   String?
+  address       String?
+  phone         String?
+  logoUrl       String?
+  businessHours String?
+  owner         User     @relation(fields: [ownerId], references: [id])
+  ownerId       String   @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  categories    MenuCategory[]
+  items         MenuItem[]
+}
+
+model MenuCategory {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  order       Int       @default(0)
+  store       Store     @relation(fields: [storeId], references: [id])
+  storeId     Int
+  items       MenuItem[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model MenuItem {
+  id          Int           @id @default(autoincrement())
+  name        String
+  description String?
+  price       Int
+  imageUrl    String?
+  order       Int           @default(0)
+  category    MenuCategory  @relation(fields: [categoryId], references: [id])
+  categoryId  Int
+  store       Store         @relation(fields: [storeId], references: [id])
+  storeId     Int
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 }
