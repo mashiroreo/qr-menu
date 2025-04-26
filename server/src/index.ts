@@ -15,7 +15,10 @@ const port = 3000;
 
 // ✅ CORSの詳細設定
 app.use(cors({
-  origin: "http://localhost:5173", // フロントの開発サーバーURL
+  origin: [
+    "http://localhost:5173",
+    "http://192.168.1.50:5173"
+  ], // フロントの開発サーバーURLとスマホ用IP
   credentials: true,
 }));
 

@@ -16,7 +16,7 @@ export const generateQRCode = async (req: Request, res: Response) => {
     if (!storeId) {
       return res.status(400).json({ error: "storeId is required" });
     }
-    const qrUrl = `http://localhost:5173/menu/${storeId}`;
+    const qrUrl = `http://192.168.1.50:5173/menu/${storeId}`;
     const fileName = `store_${storeId}_${Date.now()}.png`;
     const filePath = path.join(qrDir, fileName);
     await QRCode.toFile(filePath, qrUrl, { width: 400 });
