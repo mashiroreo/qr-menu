@@ -42,8 +42,8 @@ const MenuDisplay: React.FC = () => {
           <img src={store.logoUrl.startsWith('/uploads/') ? `http://192.168.1.50:3000${store.logoUrl}` : store.logoUrl} alt="店舗ロゴ" style={{ maxWidth: 120, maxHeight: 120, borderRadius: 8 }} />
         </div>
       )}
-      <h2>{store.name}</h2>
-      {store.description && <p>{store.description}</p>}
+      <h2 style={{ marginBottom: 8 }}><strong>店舗名:</strong> {store.name}</h2>
+      {store.description && <p style={{ marginBottom: 16 }}><strong>店舗説明:</strong> {store.description}</p>}
       {store.address && <p><strong>住所:</strong> {store.address}</p>}
       {store.phone && <p><strong>電話番号:</strong> {store.phone}</p>}
       {store.businessHours && <p><strong>営業時間:</strong> {store.businessHours}</p>}
