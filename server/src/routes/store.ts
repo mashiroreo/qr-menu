@@ -18,6 +18,9 @@ router.get('/public/:storeId', async (req, res) => {
         name: true,
         description: true,
         logoUrl: true,
+        address: true,
+        phone: true,
+        businessHours: true,
       },
     });
     if (!store) {

@@ -335,7 +335,7 @@ router.put("/items/:id/image", async (req: AuthRequest, res) => {
       return res.status(404).json({ error: "メニューアイテムが見つかりません" });
     }
 
-    const imageUrl = req.file.path;
+    const imageUrl = '/uploads/' + req.file.filename;
     const item = await prisma.menuItem.update({
       where: {
         id: parseInt(id),

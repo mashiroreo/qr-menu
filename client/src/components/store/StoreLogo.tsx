@@ -21,11 +21,9 @@ export const StoreLogo = ({ store, onUpdate }: StoreLogoProps) => {
     setUploading(true);
 
     try {
-      // ここでは仮のURLを生成していますが、実際のプロダクションでは
-      // 適切な画像アップロードサービス（Firebase Storage等）を使用してください
-      const logoUrl = URL.createObjectURL(file);
-      
-      const updatedStore = await updateStoreLogo({ logoUrl });
+      const formData = new FormData();
+      formData.append('logo', file);
+      const updatedStore = await updateStoreLogo(formData);
       onUpdate(updatedStore);
       setSuccessMessage('ロゴを更新しました');
     } catch (err) {
@@ -56,7 +54,7 @@ export const StoreLogo = ({ store, onUpdate }: StoreLogoProps) => {
         <div className="w-32 h-32 border rounded-lg overflow-hidden">
           {store?.logoUrl ? (
             <img
-              src={store.logoUrl}
+              src={store.logoUrl.startsWith('/uploads/') ? `http://192.168.1.50:3000${store.logoUrl}` : store.logoUrl}
               alt="店舗ロゴ"
               className="w-full h-full object-cover"
             />
