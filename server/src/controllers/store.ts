@@ -92,15 +92,11 @@ export const updateStoreLogo = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const { logoUrl } = req.body;
-
-    if (!logoUrl) {
-      return res.status(400).json({ error: "Logo URL is required" });
+    // 画像ファイルがアップロードされているか確認
+    if (!req.file) {
+      return res.status(400).json({ error: "画像ファイルがアップロードされていません" });
     }
-
-    if (!isValidUrl(logoUrl)) {
-      return res.status(400).json({ error: "Invalid logo URL format" });
-    }
+    const logoUrl = `/uploads/${req.file.filename}`;
 
     const store = await prisma.store.findFirst({
       where: {
