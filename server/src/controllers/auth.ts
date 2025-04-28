@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { adminAuth } from "../config/firebase";
-import { PrismaClient } from "../generated/prisma";
+import { PrismaClient } from "@prisma/client";
 import { AuthRequest } from "../middleware/auth";
 
 const prisma = new PrismaClient();

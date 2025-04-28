@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import { StoreManagement } from './pages/StoreManagement';
 import MenuManagement from './pages/MenuManagement';
 import Navigation from './components/layout/Navigation';
+import QRCodeGenerator from './components/QRCodeGenerator';
+import MenuDisplay from './pages/MenuDisplay';
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -71,6 +73,18 @@ function App() {
               <MenuManagement />
             </PrivateRoute>
           }
+        />
+        <Route
+          path="/qr"
+          element={
+            <PrivateRoute>
+              <QRCodeGenerator />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/menu/:storeId"
+          element={<MenuDisplay />}
         />
         <Route path="/" element={<AuthRedirect />} />
       </Routes>

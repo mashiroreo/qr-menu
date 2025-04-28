@@ -56,7 +56,7 @@ export const UserProfile = () => {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
+    <div className="p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-4">プロフィール</h2>
       <div className="space-y-4">
         <div>

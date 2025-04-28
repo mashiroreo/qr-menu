@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { getAuth } from 'firebase/auth';
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+// スマホからもアクセスできるよう、PCのIPアドレスをbaseURLに設定
+const baseURL = 'http://192.168.1.50:3000';
 
 const api = axios.create({
   baseURL,

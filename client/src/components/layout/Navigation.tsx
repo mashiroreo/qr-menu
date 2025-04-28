@@ -22,6 +22,7 @@ import {
   Person as PersonIcon,
   Logout as LogoutIcon,
 } from '@mui/icons-material';
+import QrCodeIcon from '@mui/icons-material/QrCode';
 import { auth } from '../../libs/firebase';
 
 const drawerWidth = 240;
@@ -53,6 +54,7 @@ const Navigation: React.FC<NavigationProps> = ({ children }) => {
   const menuItems = [
     { text: '店舗管理', icon: <StoreIcon />, path: '/store' },
     { text: 'メニュー管理', icon: <RestaurantIcon />, path: '/menu' },
+    { text: 'QRコード生成', icon: <QrCodeIcon />, path: '/qr' },
     { text: 'プロフィール', icon: <PersonIcon />, path: '/dashboard' },
   ];
 

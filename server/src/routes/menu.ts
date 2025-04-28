@@ -1,5 +1,5 @@
 import express from "express";
-import { PrismaClient } from "../generated/prisma";
+import { PrismaClient } from "@prisma/client";
 import { authenticate, AuthRequest } from "../middleware/auth";
 import { uploadImage } from "../utils/upload";
 import { Router } from 'express';
@@ -8,6 +8,78 @@ import { validateRequest } from '../middleware/validateRequest';
 
 const router = Router();
 const prisma = new PrismaClient();
+
+// 公開API: 認証不要でメニュー情報を取得
+router.get('/public', async (req, res) => {
+  const { storeId } = req.query;
+  if (!storeId) {
+    return res.status(400).json({ error: 'storeIdが必要です' });
+  }
+  try {
+    const items = await prisma.menuItem.findMany({
+      where: { storeId: Number(storeId) },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        imageUrl: true,
+        order: true,
+      },
+      orderBy: {
+        order: 'asc',
+      },
+    });
+    res.json(items);
+  } catch (error) {
+    res.status(500).json({ error: 'メニュー情報の取得に失敗しました' });
+  }
+});
+
+// 公開API: 認証不要でカテゴリ一覧を取得
+router.get('/public/categories', async (req, res) => {
+  const { storeId } = req.query;
+  if (!storeId) {
+    return res.status(400).json({ error: 'storeIdが必要です' });
+  }
+  try {
+    const categories = await prisma.menuCategory.findMany({
+      where: { storeId: Number(storeId) },
+      orderBy: { order: 'asc' },
+    });
+    res.json(categories);
+  } catch (error) {
+    res.status(500).json({ error: 'カテゴリ情報の取得に失敗しました' });
+  }
+});
+
+// 公開API: 認証不要でメニューアイテム一覧を取得
+router.get('/public/items', async (req, res) => {
+  const { categoryId } = req.query;
+  if (!categoryId) {
+    return res.status(400).json({ error: 'categoryIdが必要です' });
+  }
+  try {
+    const items = await prisma.menuItem.findMany({
+      where: { categoryId: Number(categoryId) },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        imageUrl: true,
+        order: true,
+      },
+      orderBy: { order: 'asc' },
+    });
+    res.json(items);
+  } catch (error) {
+    res.status(500).json({ error: 'メニュー情報の取得に失敗しました' });
+  }
+});
+
+// 認証が必要なルート
+router.use(authenticate);
 
 // バリデーションスキーマ
 const categorySchema = z.object({
@@ -30,7 +102,7 @@ const itemSchema = z.object({
 }).passthrough();
 
 // メニューカテゴリー一覧取得
-router.get("/categories", authenticate, async (req: AuthRequest, res) => {
+router.get("/categories", async (req: AuthRequest, res) => {
   try {
     const categories = await prisma.menuCategory.findMany({
       where: {
@@ -48,7 +120,7 @@ router.get("/categories", authenticate, async (req: AuthRequest, res) => {
 });
 
 // メニューカテゴリー作成
-router.post("/categories", authenticate, async (req: AuthRequest, res) => {
+router.post("/categories", async (req: AuthRequest, res) => {
   try {
     const { name, description, order } = req.body;
     const category = await prisma.menuCategory.create({
@@ -67,7 +139,7 @@ router.post("/categories", authenticate, async (req: AuthRequest, res) => {
 });
 
 // メニューカテゴリー更新
-router.put("/categories/:id", authenticate, async (req: AuthRequest, res) => {
+router.put("/categories/:id", async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
     const { name, description, order } = req.body;
@@ -102,7 +174,7 @@ router.put("/categories/:id", authenticate, async (req: AuthRequest, res) => {
 });
 
 // メニューカテゴリー削除
-router.delete("/categories/:id", authenticate, async (req: AuthRequest, res) => {
+router.delete("/categories/:id", async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
     
@@ -131,7 +203,7 @@ router.delete("/categories/:id", authenticate, async (req: AuthRequest, res) => 
 });
 
 // メニューアイテム一覧取得
-router.get("/items", authenticate, async (req: AuthRequest, res) => {
+router.get("/items", async (req: AuthRequest, res) => {
   try {
     const { categoryId } = req.query;
     const items = await prisma.menuItem.findMany({
@@ -166,7 +238,7 @@ router.get("/items", authenticate, async (req: AuthRequest, res) => {
 });
 
 // メニューアイテム作成
-router.post("/items", authenticate, async (req: AuthRequest, res) => {
+router.post("/items", async (req: AuthRequest, res) => {
   try {
     console.log("Received data:", req.body);
 
@@ -220,7 +292,7 @@ router.post("/items", authenticate, async (req: AuthRequest, res) => {
 });
 
 // メニューアイテム更新
-router.put("/items/:id", authenticate, async (req: AuthRequest, res) => {
+router.put("/items/:id", async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
     const { name, description, price, categoryId, order } = req.body;
@@ -257,7 +329,7 @@ router.put("/items/:id", authenticate, async (req: AuthRequest, res) => {
 });
 
 // メニューアイテム削除
-router.delete("/items/:id", authenticate, async (req: AuthRequest, res) => {
+router.delete("/items/:id", async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
 
@@ -286,7 +358,7 @@ router.delete("/items/:id", authenticate, async (req: AuthRequest, res) => {
 });
 
 // メニューアイテム画像更新
-router.put("/items/:id/image", authenticate, uploadImage.single("image"), async (req: AuthRequest, res) => {
+router.put("/items/:id/image", async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
     if (!req.file) {
@@ -305,7 +377,7 @@ router.put("/items/:id/image", authenticate, uploadImage.single("image"), async 
       return res.status(404).json({ error: "メニューアイテムが見つかりません" });
     }
 
-    const imageUrl = req.file.path;
+    const imageUrl = '/uploads/' + req.file.filename;
     const item = await prisma.menuItem.update({
       where: {
         id: parseInt(id),

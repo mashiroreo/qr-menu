@@ -5,10 +5,18 @@ import {
   MenuItemFormData,
 } from '../types/menu';
 
-export const getCategories = async (): Promise<MenuCategory[]> => {
+export const getCategoriesForAdmin = async (): Promise<MenuCategory[]> => {
   const response = await api.get('/api/menu/categories');
   return response.data;
 };
+
+export const getMenuItemsForAdmin = async (categoryId: number): Promise<MenuItem[]> => {
+  const response = await api.get(`/api/menu/items?categoryId=${categoryId}`);
+  return response.data;
+};
+
+export const getCategories = getCategoriesForAdmin;
+export const getMenuItems = getMenuItemsForAdmin;
 
 export const createCategory = async (data: {
   name: string;
@@ -31,11 +39,6 @@ export const deleteCategory = async (id: number): Promise<void> => {
 };
 
 // メニューアイテム関連のAPI
-export const getMenuItems = async (categoryId: number): Promise<MenuItem[]> => {
-  const response = await api.get(`/api/menu/items?categoryId=${categoryId}`);
-  return response.data;
-};
-
 export const createMenuItem = async (data: MenuItemFormData): Promise<MenuItem> => {
   const response = await api.post('/api/menu/items', data);
   return response.data;
