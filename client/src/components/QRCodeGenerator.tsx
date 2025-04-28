@@ -37,7 +37,7 @@ const QRCodeGenerator: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: '2rem auto', textAlign: 'center' }}>
+    <div style={{ padding: '2rem' }}>
       <h2>QRコード生成</h2>
       {storeId ? (
         <>
