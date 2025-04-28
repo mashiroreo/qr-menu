@@ -69,7 +69,7 @@ const QRCodeGenerator: React.FC = () => {
       {qrUrl && (
         <div style={{ marginTop: 24 }}>
           <img src={`http://192.168.1.50:3000${qrUrl}`} alt="QRコード" style={{ width: 200, height: 200 }} />
-          <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '1rem' }}>
             <button
               style={{
                 width: 180,
