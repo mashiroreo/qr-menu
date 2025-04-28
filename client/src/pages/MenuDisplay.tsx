@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Store } from '../types/store';
 import { MenuItem, MenuCategory } from '../types/menu';
 import axios from '../api/axios';
-import { getCategories, getMenuItems } from '../api/menu';
+import { getCategoriesPublic, getMenuItemsPublic } from '../api/menuPublic';
 
 const MenuDisplay: React.FC = () => {
   const { storeId } = useParams<{ storeId: string }>();
@@ -23,7 +23,7 @@ const MenuDisplay: React.FC = () => {
         const storeRes = await axios.get(`/api/stores/public/${storeId}`);
         setStore(storeRes.data);
         // カテゴリ取得
-        const cats = await getCategories();
+        const cats = await getCategoriesPublic(storeId);
         setCategories(cats);
         if (cats.length > 0) {
           setSelectedCategory(cats[0]);
@@ -43,7 +43,7 @@ const MenuDisplay: React.FC = () => {
       setLoading(true);
       setError('');
       try {
-        const items = await getMenuItems(selectedCategory.id);
+        const items = await getMenuItemsPublic(selectedCategory.id);
         setMenu(items);
       } catch (err) {
         setError('メニュー情報の取得に失敗しました');

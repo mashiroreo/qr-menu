@@ -36,6 +36,48 @@ router.get('/public', async (req, res) => {
   }
 });
 
+// 公開API: 認証不要でカテゴリ一覧を取得
+router.get('/public/categories', async (req, res) => {
+  const { storeId } = req.query;
+  if (!storeId) {
+    return res.status(400).json({ error: 'storeIdが必要です' });
+  }
+  try {
+    const categories = await prisma.menuCategory.findMany({
+      where: { storeId: Number(storeId) },
+      orderBy: { order: 'asc' },
+    });
+    res.json(categories);
+  } catch (error) {
+    res.status(500).json({ error: 'カテゴリ情報の取得に失敗しました' });
+  }
+});
+
+// 公開API: 認証不要でメニューアイテム一覧を取得
+router.get('/public/items', async (req, res) => {
+  const { categoryId } = req.query;
+  if (!categoryId) {
+    return res.status(400).json({ error: 'categoryIdが必要です' });
+  }
+  try {
+    const items = await prisma.menuItem.findMany({
+      where: { categoryId: Number(categoryId) },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        imageUrl: true,
+        order: true,
+      },
+      orderBy: { order: 'asc' },
+    });
+    res.json(items);
+  } catch (error) {
+    res.status(500).json({ error: 'メニュー情報の取得に失敗しました' });
+  }
+});
+
 // 認証が必要なルート
 router.use(authenticate);
 

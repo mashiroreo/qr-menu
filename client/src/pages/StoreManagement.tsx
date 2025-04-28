@@ -56,16 +56,12 @@ export const StoreManagement = () => {
   // html { scroll-behavior: smooth; } をindex.cssに追加推奨
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container py-8">
       <h1 className="text-3xl font-bold text-center mb-8">店舗管理</h1>
       <div className="space-y-8">
         <section id="store-info">
           <StoreForm store={store} onUpdate={handleStoreUpdate} />
           <StoreLogo store={store} onUpdate={handleStoreUpdate} />
-        </section>
-        <section id="menu-list">
-          <h2 className="text-2xl font-bold mb-6">メニュー</h2>
-          <MenuItemList />
         </section>
       </div>
     </div>
