@@ -36,35 +36,41 @@ const MenuDisplay: React.FC = () => {
   if (!store) return <div>店舗情報が見つかりません</div>;
 
   return (
-    <div style={{ maxWidth: 600, margin: '2rem auto', padding: 24, background: '#fff', borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-      {store.logoUrl && (
-        <div style={{ textAlign: 'center', marginBottom: 16 }}>
-          <img src={store.logoUrl.startsWith('/uploads/') ? `http://192.168.1.50:3000${store.logoUrl}` : store.logoUrl} alt="店舗ロゴ" style={{ maxWidth: 120, maxHeight: 120, borderRadius: 8 }} />
-        </div>
-      )}
-      <h2 style={{ marginBottom: 8 }}><strong>店舗名:</strong> {store.name}</h2>
-      {store.description && <p style={{ marginBottom: 16 }}><strong>店舗説明:</strong> {store.description}</p>}
-      {store.address && <p><strong>住所:</strong> {store.address}</p>}
-      {store.phone && <p><strong>電話番号:</strong> {store.phone}</p>}
-      {store.businessHours && <p><strong>営業時間:</strong> {store.businessHours}</p>}
-      <h3>メニュー</h3>
-      {menu.length === 0 ? (
-        <div>メニューが登録されていません</div>
-      ) : (
-        <ul style={{ padding: 0, listStyle: 'none' }}>
-          {menu.map(item => (
-            <li key={item.id} style={{ marginBottom: 24, borderBottom: '1px solid #eee', paddingBottom: 16 }}>
-              {item.imageUrl && (
-                <img src={item.imageUrl.startsWith('/uploads/') || item.imageUrl.startsWith('uploads/') ? `http://192.168.1.50:3000${item.imageUrl.startsWith('/') ? item.imageUrl : '/' + item.imageUrl}` : item.imageUrl} alt={item.name} style={{ maxWidth: 100, maxHeight: 100, borderRadius: 8, marginRight: 12, float: 'left' }} />
-              )}
-              <div style={{ overflow: 'hidden' }}>
-                <strong>{item.name}</strong> - {item.price}円<br />
-                <span>{item.description}</span>
+    <div style={{ width: '100%', minHeight: '100vh', background: '#fff' }}>
+      {/* 店舗情報セクション */}
+      <section style={{ width: '100%', padding: '32px 16px 16px 16px', borderBottom: '2px solid #f0f0f0' }}>
+        {store.logoUrl && (
+          <div style={{ textAlign: 'center', marginBottom: 20 }}>
+            <img src={store.logoUrl.startsWith('/uploads/') || store.logoUrl.startsWith('uploads/') ? `http://192.168.1.50:3000${store.logoUrl.startsWith('/') ? store.logoUrl : '/' + store.logoUrl}` : store.logoUrl} alt="店舗ロゴ" style={{ maxWidth: 120, maxHeight: 120, borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', width: '100%', height: 'auto' }} />
+          </div>
+        )}
+        <h2 style={{ marginBottom: 8, fontSize: 24, fontWeight: 700 }}><span style={{ color: '#1976d2' }}>店舗名:</span> {store.name}</h2>
+        {store.description && <p style={{ marginBottom: 12, fontSize: 16 }}><strong>店舗説明:</strong> {store.description}</p>}
+        <div style={{ fontSize: 15, color: '#333', marginBottom: 4 }}><strong>住所:</strong> {store.address || '-'}</div>
+        <div style={{ fontSize: 15, color: '#333', marginBottom: 4 }}><strong>電話番号:</strong> {store.phone || '-'}</div>
+        <div style={{ fontSize: 15, color: '#333', marginBottom: 4 }}><strong>営業時間:</strong> {store.businessHours || '-'}</div>
+      </section>
+      {/* メニューセクション */}
+      <section style={{ width: '100%', padding: '32px 16px 0 16px' }}>
+        <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 20, borderBottom: '2px solid #1976d2', paddingBottom: 6, color: '#1976d2' }}>メニュー</h3>
+        {menu.length === 0 ? (
+          <div style={{ color: '#888', fontSize: 16 }}>メニューが登録されていません</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {menu.map(item => (
+              <div key={item.id} style={{ display: 'flex', alignItems: 'center', background: '#f7fafd', borderRadius: 12, boxShadow: '0 1px 4px rgba(25,118,210,0.04)', padding: 16, gap: 20, flexWrap: 'wrap' }}>
+                {item.imageUrl && (
+                  <img src={item.imageUrl.startsWith('/uploads/') || item.imageUrl.startsWith('uploads/') ? `http://192.168.1.50:3000${item.imageUrl.startsWith('/') ? item.imageUrl : '/' + item.imageUrl}` : item.imageUrl} alt={item.name} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8, background: '#eee', flexShrink: 0, maxWidth: '100%' }} />
+                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 4, wordBreak: 'break-word' }}>{item.name} <span style={{ fontWeight: 400, color: '#555', fontSize: 16 }}>- {item.price}円</span></div>
+                  <div style={{ color: '#444', fontSize: 15, wordBreak: 'break-word' }}>{item.description}</div>
+                </div>
               </div>
-            </li>
-          ))}
-        </ul>
-      )}
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 };
