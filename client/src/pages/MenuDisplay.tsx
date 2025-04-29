@@ -91,7 +91,7 @@ const MenuDisplay: React.FC = () => {
         <section className="menu-store-info">
           {store.logoUrl && (
             <div className="menu-store-logo">
-              <img src={store.logoUrl.startsWith('/uploads/') || store.logoUrl.startsWith('uploads/') ? `http://192.168.1.50:3000${store.logoUrl.startsWith('/') ? store.logoUrl : '/' + store.logoUrl}` : store.logoUrl} alt="店舗ロゴ" />
+              <img src={store.logoUrl} alt="店舗ロゴ" />
             </div>
           )}
           <h2><span>店舗名:</span> {store.name}</h2>
@@ -118,9 +118,7 @@ const MenuDisplay: React.FC = () => {
                     <div key={item.id} className="menu-item-card">
                       {item.imageUrl && (
                         <img 
-                          src={item.imageUrl.startsWith('/uploads/') || item.imageUrl.startsWith('uploads/') 
-                            ? `http://192.168.1.50:3000${item.imageUrl.startsWith('/') ? item.imageUrl : '/' + item.imageUrl}` 
-                            : item.imageUrl} 
+                          src={item.imageUrl}
                           alt={item.name} 
                           className="menu-item-img" 
                         />

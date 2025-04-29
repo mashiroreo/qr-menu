@@ -85,9 +85,7 @@ const MenuItemList: React.FC<MenuItemListProps> = ({
           {item.imageUrl && (
             <div className="aspect-w-16 aspect-h-9 mb-4">
               <img
-                src={item.imageUrl.startsWith('/uploads/') || item.imageUrl.startsWith('uploads/') 
-                  ? `http://192.168.1.50:3000${item.imageUrl.startsWith('/') ? item.imageUrl : '/' + item.imageUrl}`
-                  : item.imageUrl}
+                src={item.imageUrl}
                 alt={item.name}
                 className="w-full h-48 object-cover rounded-md"
               />
