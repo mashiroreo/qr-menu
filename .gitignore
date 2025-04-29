@@ -1,0 +1,3 @@
+# QRコード画像
+server/public/qr/*.png
+server/uploads/ 

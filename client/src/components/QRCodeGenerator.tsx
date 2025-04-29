@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { generateQRCode } from '../api/qr';
 import { getStoreInfo } from '../api/store';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const APP_URL = import.meta.env.VITE_APP_URL || 'http://localhost:5173';
+
 const QRCodeGenerator: React.FC = () => {
   const [storeId, setStoreId] = useState<string | null>(null);
   const [qrUrl, setQrUrl] = useState<string | null>(null);
@@ -68,7 +71,7 @@ const QRCodeGenerator: React.FC = () => {
       {error && <div style={{ color: 'red', marginTop: 8 }}>{error}</div>}
       {qrUrl && (
         <div style={{ marginTop: 24 }}>
-          <img src={`http://192.168.1.50:3000${qrUrl}`} alt="QRコード" style={{ width: 200, height: 200 }} />
+          <img src={`${API_URL}${qrUrl}`} alt="QRコード" style={{ width: 200, height: 200 }} />
           <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '1rem' }}>
             <button
               style={{
@@ -87,7 +90,7 @@ const QRCodeGenerator: React.FC = () => {
               }}
               onMouseOver={e => (e.currentTarget.style.background = '#1565c0')}
               onMouseOut={e => (e.currentTarget.style.background = '#1976d2')}
-              onClick={() => window.open(`http://192.168.1.50:3000${qrUrl}`, '_blank', 'noopener,noreferrer')}
+              onClick={() => window.open(`${API_URL}${qrUrl}`, '_blank', 'noopener,noreferrer')}
             >
               大きく表示
             </button>
@@ -108,17 +111,22 @@ const QRCodeGenerator: React.FC = () => {
               onMouseOver={e => (e.currentTarget.style.background = '#388e3c')}
               onMouseOut={e => (e.currentTarget.style.background = '#43a047')}
               onClick={async () => {
-                const filename = qrUrl.split('/').pop();
-                const response = await fetch(`http://192.168.1.50:3000/qr/${filename}`);
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(url);
+                try {
+                  const response = await fetch(`${API_URL}${qrUrl}`);
+                  if (!response.ok) throw new Error('QRコードの取得に失敗しました');
+                  const blob = await response.blob();
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = qrUrl.split('/').pop() || 'qr-code.png';
+                  document.body.appendChild(a);
+                  a.click();
+                  a.remove();
+                  window.URL.revokeObjectURL(url);
+                } catch (err) {
+                  console.error('ダウンロードエラー:', err);
+                  setError('QRコードのダウンロードに失敗しました');
+                }
               }}
             >
               ダウンロード
@@ -139,7 +147,7 @@ const QRCodeGenerator: React.FC = () => {
               }}
               onMouseOver={e => (e.currentTarget.style.background = '#ff8f00')}
               onMouseOut={e => (e.currentTarget.style.background = '#ffa000')}
-              onClick={() => window.open(`http://192.168.1.50:5173/menu/${storeId}`, '_blank', 'noopener,noreferrer')}
+              onClick={() => window.open(`${APP_URL}/menu/${storeId}`, '_blank', 'noopener,noreferrer')}
             >
               プレビュー
             </button>

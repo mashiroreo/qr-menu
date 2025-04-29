@@ -8,6 +8,7 @@ import {
   IconButton,
   List,
   ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   Toolbar,
@@ -67,8 +68,7 @@ const Navigation: React.FC<NavigationProps> = ({ children }) => {
       </Toolbar>
       <List>
         {menuItems.map((item) => (
-          <ListItem
-            button
+          <ListItemButton
             key={item.text}
             onClick={() => {
               navigate(item.path);
@@ -78,14 +78,14 @@ const Navigation: React.FC<NavigationProps> = ({ children }) => {
           >
             <ListItemIcon>{item.icon}</ListItemIcon>
             <ListItemText primary={item.text} />
-          </ListItem>
+          </ListItemButton>
         ))}
-        <ListItem button onClick={handleLogout}>
+        <ListItemButton onClick={handleLogout}>
           <ListItemIcon>
             <LogoutIcon />
           </ListItemIcon>
           <ListItemText primary="ログアウト" />
-        </ListItem>
+        </ListItemButton>
       </List>
     </div>
   );
