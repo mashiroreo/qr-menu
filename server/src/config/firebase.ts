@@ -14,6 +14,7 @@ initializeApp({
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
     privateKey: firebasePrivateKey,
   }),
+  storageBucket: "qrmenu-34cc1.firebasestorage.app"
 });
 
 const isTestEnvironment = process.env.NODE_ENV === "test";
