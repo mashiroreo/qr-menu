@@ -23,6 +23,11 @@
   text-align: center;
   margin-bottom: 32px;
   letter-spacing: 2px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.menu-store-title:hover {
+  opacity: 0.8;
 }
 .menu-category-list {
   list-style: none;

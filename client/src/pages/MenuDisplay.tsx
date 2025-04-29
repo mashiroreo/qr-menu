@@ -16,6 +16,8 @@ const MenuDisplay: React.FC = () => {
   const [error, setError] = useState('');
   // カテゴリごとのrefを管理
   const categoryRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
+  // 店舗情報セクションのref
+  const storeInfoRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,6 +63,13 @@ const MenuDisplay: React.FC = () => {
     }, 50);
   };
 
+  // 店舗名クリック時のハンドラ
+  const handleStoreNameClick = () => {
+    if (storeInfoRef.current) {
+      storeInfoRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   if (loading) return <div>読み込み中...</div>;
   if (error) return <div style={{ color: 'red' }}>{error}</div>;
   if (!store) return <div>店舗情報が見つかりません</div>;
@@ -69,14 +78,24 @@ const MenuDisplay: React.FC = () => {
     <div className="menu-root-responsive">
       {/* サイドバー（PC） or タブ（モバイル） */}
       <nav className="menu-sidebar-responsive">
-        <div className="menu-store-title">{store.name}</div>
+        <div 
+          className="menu-store-title"
+          onClick={handleStoreNameClick}
+          role="button"
+          tabIndex={0}
+          onKeyPress={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              handleStoreNameClick();
+            }
+          }}
+        >
+          {store.name}
+        </div>
         <ul className="menu-category-list">
           {categories.map(cat => (
             <li key={cat.id}>
               <button
-                className={
-                  'menu-category-btn' + (selectedCategory?.id === cat.id ? ' selected' : '')
-                }
+                className={'menu-category-btn' + (selectedCategory?.id === cat.id ? ' selected' : '')}
                 onClick={() => handleCategoryClick(cat)}
               >
                 {cat.name}
@@ -88,7 +107,7 @@ const MenuDisplay: React.FC = () => {
       {/* メインコンテンツ */}
       <main className="menu-main-responsive">
         {/* 店舗情報 */}
-        <section className="menu-store-info">
+        <section className="menu-store-info" ref={storeInfoRef}>
           {store.logoUrl && (
             <div className="menu-store-logo">
               <img src={store.logoUrl} alt="店舗ロゴ" />
