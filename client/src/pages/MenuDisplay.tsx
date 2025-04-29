@@ -117,11 +117,19 @@ const MenuDisplay: React.FC = () => {
                   {menu[cat.id].map(item => (
                     <div key={item.id} className="menu-item-card">
                       {item.imageUrl && (
-                        <img src={item.imageUrl.startsWith('/uploads/') || item.imageUrl.startsWith('uploads/') ? `http://192.168.1.50:3000${item.imageUrl.startsWith('/') ? item.imageUrl : '/' + item.imageUrl}` : item.imageUrl} alt={item.name} className="menu-item-img" />
+                        <img 
+                          src={item.imageUrl.startsWith('/uploads/') || item.imageUrl.startsWith('uploads/') 
+                            ? `http://192.168.1.50:3000${item.imageUrl.startsWith('/') ? item.imageUrl : '/' + item.imageUrl}` 
+                            : item.imageUrl} 
+                          alt={item.name} 
+                          className="menu-item-img" 
+                        />
                       )}
-                      <div className="menu-item-name">{item.name}</div>
-                      <div className="menu-item-price">{item.price}円</div>
-                      <div className="menu-item-desc">{item.description}</div>
+                      <div className="menu-item-content">
+                        <div className="menu-item-name">{item.name}</div>
+                        <div className="menu-item-price">{item.price}円</div>
+                        {item.description && <div className="menu-item-desc">{item.description}</div>}
+                      </div>
                     </div>
                   ))}
                 </div>
