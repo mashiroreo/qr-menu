@@ -4,6 +4,7 @@ import { Store } from '../types/store';
 import { MenuItem, MenuCategory } from '../types/menu';
 import axios from '../api/axios';
 import { getCategoriesPublic, getMenuItemsPublic } from '../api/menuPublic';
+import ImageModal from '../components/ImageModal';
 import './MenuDisplay.css';
 
 const MenuDisplay: React.FC = () => {
@@ -14,6 +15,7 @@ const MenuDisplay: React.FC = () => {
   const [menu, setMenu] = useState<{ [categoryId: number]: MenuItem[] }>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedImage, setSelectedImage] = useState<{ url: string; alt: string } | null>(null);
   // カテゴリごとのrefを管理
   const categoryRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
   // 店舗情報セクションのref
@@ -76,6 +78,13 @@ const MenuDisplay: React.FC = () => {
 
   return (
     <div className="menu-root-responsive">
+      {selectedImage && (
+        <ImageModal
+          imageUrl={selectedImage.url}
+          alt={selectedImage.alt}
+          onClose={() => setSelectedImage(null)}
+        />
+      )}
       {/* サイドバー（PC） or タブ（モバイル） */}
       <nav className="menu-sidebar-responsive">
         <div 
@@ -136,11 +145,26 @@ const MenuDisplay: React.FC = () => {
                   {menu[cat.id].map(item => (
                     <div key={item.id} className="menu-item-card">
                       {item.imageUrl && (
-                        <img 
-                          src={item.imageUrl}
-                          alt={item.name} 
-                          className="menu-item-img" 
-                        />
+                        <div 
+                          className="menu-item-img-wrapper"
+                          onClick={() => setSelectedImage({ url: item.imageUrl!, alt: item.name })}
+                          role="button"
+                          tabIndex={0}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              setSelectedImage({ url: item.imageUrl!, alt: item.name });
+                            }
+                          }}
+                        >
+                          <img 
+                            src={item.imageUrl}
+                            alt={item.name} 
+                            className="menu-item-img" 
+                          />
+                          <div className="menu-item-img-overlay">
+                            <span className="menu-item-img-zoom">拡大</span>
+                          </div>
+                        </div>
                       )}
                       <div className="menu-item-content">
                         <div className="menu-item-name">{item.name}</div>
