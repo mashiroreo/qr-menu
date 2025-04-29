@@ -5,6 +5,7 @@ import { MenuItem, MenuCategory } from '../types/menu';
 import axios from '../api/axios';
 import { getCategoriesPublic, getMenuItemsPublic } from '../api/menuPublic';
 import ImageModal from '../components/ImageModal';
+import DescriptionModal from '../components/DescriptionModal';
 import './MenuDisplay.css';
 
 const MenuDisplay: React.FC = () => {
@@ -16,6 +17,7 @@ const MenuDisplay: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedImage, setSelectedImage] = useState<{ url: string; alt: string } | null>(null);
+  const [selectedDescription, setSelectedDescription] = useState<{ text: string; title: string } | null>(null);
   // カテゴリごとのrefを管理
   const categoryRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
   // 店舗情報セクションのref
@@ -83,6 +85,13 @@ const MenuDisplay: React.FC = () => {
           imageUrl={selectedImage.url}
           alt={selectedImage.alt}
           onClose={() => setSelectedImage(null)}
+        />
+      )}
+      {selectedDescription && (
+        <DescriptionModal
+          description={selectedDescription.text}
+          title={selectedDescription.title}
+          onClose={() => setSelectedDescription(null)}
         />
       )}
       {/* サイドバー（PC） or タブ（モバイル） */}
@@ -169,7 +178,21 @@ const MenuDisplay: React.FC = () => {
                       <div className="menu-item-content">
                         <div className="menu-item-name">{item.name}</div>
                         <div className="menu-item-price">{item.price}円</div>
-                        {item.description && <div className="menu-item-desc">{item.description}</div>}
+                        {item.description && (
+                          <div 
+                            className="menu-item-desc"
+                            onClick={() => setSelectedDescription({ text: item.description!, title: item.name })}
+                            role="button"
+                            tabIndex={0}
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                setSelectedDescription({ text: item.description!, title: item.name });
+                              }
+                            }}
+                          >
+                            {item.description}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
