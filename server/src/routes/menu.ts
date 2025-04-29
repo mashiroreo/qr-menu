@@ -1,7 +1,8 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { authenticate, AuthRequest } from "../middleware/auth";
-import { uploadImage } from "../utils/upload";
+import { uploadMiddleware } from "../utils/upload";
+import { uploadImage, StorageFolders } from "../utils/storage";
 import { Router } from 'express';
 import { z } from 'zod';
 import { validateRequest } from '../middleware/validateRequest';
@@ -358,39 +359,51 @@ router.delete("/items/:id", async (req: AuthRequest, res) => {
 });
 
 // メニューアイテム画像更新
-router.put("/items/:id/image", async (req: AuthRequest, res) => {
-  try {
-    const { id } = req.params;
-    if (!req.file) {
-      return res.status(400).json({ error: "画像がアップロードされていません" });
+router.put(
+  "/items/:id/image",
+  uploadMiddleware.single("image"),
+  async (req: AuthRequest, res) => {
+    try {
+      const { id } = req.params;
+      if (!req.file) {
+        return res.status(400).json({ error: "画像がアップロードされていません" });
+      }
+
+      // まず該当のアイテムが存在するか確認
+      const existingItem = await prisma.menuItem.findFirst({
+        where: {
+          id: parseInt(id),
+          storeId: req.user?.storeId,
+        },
+      });
+
+      if (!existingItem) {
+        return res.status(404).json({ error: "メニューアイテムが見つかりません" });
+      }
+
+      // Cloud Storageに画像をアップロード
+      const imageUrl = await uploadImage(
+        req.file,
+        StorageFolders.MENU_IMAGES,
+        `menu_${id}`
+      );
+
+      // データベースを更新
+      const item = await prisma.menuItem.update({
+        where: {
+          id: parseInt(id),
+        },
+        data: {
+          imageUrl,
+        },
+      });
+
+      res.json(item);
+    } catch (error) {
+      console.error("Error updating item image:", error);
+      res.status(500).json({ error: "メニューアイテム画像の更新に失敗しました" });
     }
-
-    // まず該当のアイテムが存在するか確認
-    const existingItem = await prisma.menuItem.findFirst({
-      where: {
-        id: parseInt(id),
-        storeId: req.user?.storeId,
-      },
-    });
-
-    if (!existingItem) {
-      return res.status(404).json({ error: "メニューアイテムが見つかりません" });
-    }
-
-    const imageUrl = '/uploads/' + req.file.filename;
-    const item = await prisma.menuItem.update({
-      where: {
-        id: parseInt(id),
-      },
-      data: {
-        imageUrl,
-      },
-    });
-    res.json(item);
-  } catch (error) {
-    console.error("Error updating item image:", error);
-    res.status(500).json({ error: "メニューアイテム画像の更新に失敗しました" });
   }
-});
+);
 
 export default router; 
