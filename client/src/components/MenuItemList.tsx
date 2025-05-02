@@ -15,6 +15,7 @@ import {
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
+  rectSortingStrategy,
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -41,11 +42,14 @@ const SortableMenuItem: React.FC<SortableMenuItemProps> = ({ item, onEdit, onDel
     transform,
     transition,
     isDragging
-  } = useSortable({ id: item.id });
+  } = useSortable({
+    id: item.id,
+    animateLayoutChanges: () => false
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: isDragging ? undefined : transition,
     cursor: 'grab',
     position: 'relative' as const,
     zIndex: isDragging ? 1 : 0,
@@ -59,7 +63,7 @@ const SortableMenuItem: React.FC<SortableMenuItemProps> = ({ item, onEdit, onDel
       {...attributes}
       {...listeners}
       className={`border rounded-lg p-4 transition-all duration-100 ease-out bg-white
-        ${isDragging ? 'shadow-md scale-[1.02]' : 'hover:shadow-sm'}`}
+        ${isDragging ? 'shadow-md scale-[1.02] translate-x-0 translate-y-0' : 'hover:shadow-sm'}`}
     >
       {item.imageUrl && (
         <div className="aspect-w-16 aspect-h-9 mb-4">
@@ -150,12 +154,6 @@ const MenuItemList: React.FC<MenuItemListProps> = ({
   const handleDragEnd = async (event: DragEndEvent) => {
     if (!event.active || !event.over) return;
 
-    console.log('DragEnd event:', {
-      active: event.active,
-      over: event.over,
-      items: items
-    });
-
     const oldIndex = items.findIndex((item) => item.id === event.active.id);
     const newIndex = items.findIndex((item) => item.id === event.over?.id);
 
@@ -164,7 +162,11 @@ const MenuItemList: React.FC<MenuItemListProps> = ({
       return;
     }
 
+    // 先にUIを更新
     const reorderedItems = arrayMove(items, oldIndex, newIndex);
+    setItems(reorderedItems);
+
+    // APIリクエストを非同期で実行
     const reorderData = {
       items: reorderedItems.map((item, index) => ({
         id: Number(item.id),
@@ -172,29 +174,11 @@ const MenuItemList: React.FC<MenuItemListProps> = ({
       }))
     };
 
-    // 詳細なデバッグ情報
-    console.log('Drag operation details:', {
-      originalItems: items.map(item => ({ id: item.id, name: item.name, order: item.order })),
-      reorderedItems: reorderedItems.map(item => ({ id: item.id, name: item.name, order: item.order })),
-      oldIndex,
-      newIndex,
-      active: {
-        id: event.active.id,
-        data: event.active.data
-      },
-      over: {
-        id: event.over.id,
-        data: event.over.data
-      }
-    });
-
-    console.log('Sending reorder request:', reorderData);
-
     try {
-      const result = await reorderMenuItems(reorderData);
-      console.log('Reorder success:', result);
-      setItems(reorderedItems);
+      await reorderMenuItems(reorderData);
     } catch (error: any) {
+      // エラー時は元の順序に戻す
+      setItems(items);
       console.error('並び替えエラー:', {
         error,
         status: error.response?.status,
@@ -246,7 +230,7 @@ const MenuItemList: React.FC<MenuItemListProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <SortableContext
           items={items.map(item => item.id)}
-          strategy={verticalListSortingStrategy}
+          strategy={rectSortingStrategy}
         >
           {items.map((item) => (
             <SortableMenuItem
