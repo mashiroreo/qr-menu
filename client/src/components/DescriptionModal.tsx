@@ -17,7 +17,7 @@ const DescriptionModal: React.FC<DescriptionModalProps> = ({ description, title,
             ✕
           </button>
         </div>
-        <div className="description-modal-body">
+        <div className="description-modal-body" style={{ whiteSpace: 'pre-line' }}>
           {description}
         </div>
       </div>
