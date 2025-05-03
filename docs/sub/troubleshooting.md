@@ -61,4 +61,40 @@
   - [React Router Documentation](https://reactrouter.com/)
   - [MUI Installation Guide](https://mui.com/material-ui/getting-started/installation/)
 
+## 画像アップロード関連
+
+### Cloud Storage移行時の画像パス参照エラー
+- 発生タスク: Cloud Storage移行
+- 発生環境: 
+  - OS: macOS 24.4.0
+  - Node.js: v18.x
+- 問題の詳細:
+  - 画像URLの参照が`/uploads`パスを使用していた古い実装が残っていた
+  - フロントエンドで画像が表示されない問題が発生
+- 原因:
+  - 画像パスの参照方法が統一されていなかった
+  - Cloud StorageのURLとローカルパスが混在
+- 解決方法:
+  - すべての画像参照をCloud Storage URLに統一
+  - 不要な`/uploads`ディレクトリの参照を削除
+- 予防策:
+  - 画像URLの取得を統一されたユーティリティ関数経由に変更
+  - 環境変数での設定管理の徹底
+- 参考リンク:
+  - [Cloud Storage ドキュメント](https://cloud.google.com/storage/docs)
+
+## パフォーマンス関連
+
+### 画像読み込み時のパフォーマンス低下
+- 発生タスク: メニュー表示機能
+- 問題の詳細:
+  - 多数の画像を同時に読み込む際にパフォーマンスが低下
+  - モバイル端末での表示が特に遅い
+- 解決方法:
+  - 画像の遅延読み込み（Lazy Loading）の実装
+  - 画像サイズの最適化
+- 予防策:
+  - パフォーマンスモニタリングの導入
+  - 定期的なパフォーマンステストの実施
+
 --- 

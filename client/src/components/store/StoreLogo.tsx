@@ -52,16 +52,12 @@ export const StoreLogo = ({ store, onUpdate }: StoreLogoProps) => {
 
       <div className="flex items-center space-x-4">
         <div className="w-32 h-32 border rounded-lg overflow-hidden">
-          {store?.logoUrl ? (
+          {store?.logoUrl && (
             <img
-              src={store.logoUrl.startsWith('/uploads/') ? `http://192.168.1.50:3000${store.logoUrl}` : store.logoUrl}
+              src={store.logoUrl}
               alt="店舗ロゴ"
-              className="w-full h-full object-cover"
+              className="w-32 h-32 object-cover rounded-full"
             />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-100">
-              <span className="text-gray-400">No Logo</span>
-            </div>
           )}
         </div>
 

@@ -8,7 +8,7 @@ import authRoutes from './routes/auth';
 import fs from 'fs';
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = Number(process.env.PORT) || 3000;
 
 // CORSの設定
 app.use(cors({
@@ -37,6 +37,8 @@ if (!fs.existsSync(qrDir)) {
   fs.mkdirSync(qrDir, { recursive: true });
 }
 
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Server is running at http://0.0.0.0:${port}`);
 });
+
+export { app };

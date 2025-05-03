@@ -2,7 +2,7 @@ import express from "express";
 import { getStoreInfo, updateStoreInfo, updateStoreLogo } from "../controllers/store";
 import { authenticate } from "../middleware/auth";
 import { PrismaClient } from "@prisma/client";
-import { uploadImage } from "../utils/upload";
+import { uploadMiddleware } from "../utils/upload";
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -42,6 +42,6 @@ router.get("/owner", getStoreInfo);
 router.put("/owner", updateStoreInfo);
 
 // 店舗ロゴの更新
-router.put("/owner/logo", uploadImage.single("logo"), updateStoreLogo);
+router.put("/owner/logo", uploadMiddleware.single("logo"), updateStoreLogo);
 
 export default router; 

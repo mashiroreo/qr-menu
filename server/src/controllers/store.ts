@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { AuthRequest } from "../middleware/auth";
+import { uploadImage, StorageFolders } from "../utils/storage";
 
 const prisma = new PrismaClient();
 
@@ -96,7 +97,6 @@ export const updateStoreLogo = async (req: AuthRequest, res: Response) => {
     if (!req.file) {
       return res.status(400).json({ error: "画像ファイルがアップロードされていません" });
     }
-    const logoUrl = `/uploads/${req.file.filename}`;
 
     const store = await prisma.store.findFirst({
       where: {
@@ -109,6 +109,13 @@ export const updateStoreLogo = async (req: AuthRequest, res: Response) => {
     if (!store) {
       return res.status(404).json({ error: "Store not found" });
     }
+
+    // Cloud Storageに画像をアップロード
+    const logoUrl = await uploadImage(
+      req.file,
+      StorageFolders.STORE_LOGOS,
+      `store_${store.id}`
+    );
 
     const updatedStore = await prisma.store.update({
       where: {
