@@ -552,4 +552,42 @@ router.put(
   }
 );
 
+// メニューアイテム画像削除
+router.delete("/items/:id/image", async (req: AuthRequest, res) => {
+  try {
+    const itemId = parseInt(req.params.id);
+    if (isNaN(itemId)) {
+      return res.status(400).json({ error: "無効なIDです" });
+    }
+
+    // まず該当のアイテムが存在するか確認
+    const existingItem = await prisma.menuItem.findFirst({
+      where: {
+        id: itemId,
+        storeId: req.user?.storeId,
+      },
+    });
+
+    if (!existingItem) {
+      return res.status(404).json({ error: "メニューアイテムが見つかりません" });
+    }
+
+    // ストレージから画像も削除したい場合はここで実装（例: deleteImage(existingItem.imageUrl)）
+    // ここでは仮にコメントアウト
+    // if (existingItem.imageUrl) {
+    //   await deleteImage(existingItem.imageUrl);
+    // }
+
+    // DB上のimageUrlをnullに
+    await prisma.menuItem.update({
+      where: { id: itemId },
+      data: { imageUrl: null },
+    });
+    res.status(204).send();
+  } catch (error) {
+    console.error("Error deleting item image:", error);
+    res.status(500).json({ error: "メニューアイテム画像の削除に失敗しました" });
+  }
+});
+
 export default router; 

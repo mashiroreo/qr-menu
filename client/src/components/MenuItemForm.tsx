@@ -4,6 +4,7 @@ import {
   createMenuItem,
   updateMenuItem,
   updateMenuItemImage,
+  deleteMenuItemImage,
 } from '../api/menu';
 
 interface MenuItemFormProps {
@@ -30,11 +31,13 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [imageDeleted, setImageDeleted] = useState(false);
 
   useEffect(() => {
     // 既存の画像URLがある場合、プレビューを設定
     if (item?.imageUrl) {
       setImagePreview(item.imageUrl);
+      setImageDeleted(false);
     }
   }, [item]);
 
@@ -92,7 +95,11 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({
       if (item) {
         // 更新の場合
         await updateMenuItem(item.id, submitData);
-        if (selectedImage) {
+        if (imageDeleted) {
+          if (item.imageUrl) {
+            await deleteMenuItemImage(item.id);
+          }
+        } else if (selectedImage) {
           const imageData = new FormData();
           imageData.append('image', selectedImage);
           await updateMenuItemImage(item.id, imageData);
@@ -184,7 +191,8 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({
                   type="button"
                   onClick={() => {
                     setSelectedImage(null);
-                    setImagePreview(item?.imageUrl || null);
+                    setImagePreview(null);
+                    setImageDeleted(true);
                   }}
                   className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
                 >
