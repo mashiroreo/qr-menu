@@ -1,7 +1,8 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { authenticate, AuthRequest } from "../middleware/auth";
-import { uploadImage } from "../utils/upload";
+import { uploadMiddleware } from "../utils/upload";
+import { uploadImage, StorageFolders } from "../utils/storage";
 import { Router } from 'express';
 import { z } from 'zod';
 import { validateRequest } from '../middleware/validateRequest';
@@ -116,6 +117,73 @@ router.get("/categories", async (req: AuthRequest, res) => {
   } catch (error) {
     console.error("Error fetching categories:", error);
     res.status(500).json({ error: "カテゴリーの取得に失敗しました" });
+  }
+});
+
+// メニューカテゴリーの並び替え
+router.put('/categories/reorder', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const { items } = req.body;
+    console.log('Received reorder request:', { 
+      body: req.body,
+      items,
+      storeId: req.user?.storeId 
+    });
+    
+    if (!Array.isArray(items)) {
+      console.log('Invalid items array:', items);
+      return res.status(400).json({ error: '無効なデータ形式です' });
+    }
+
+    // 各アイテムのバリデーション
+    const validatedItems = items.map(item => {
+      const id = Number(item.id);
+      const order = Number(item.order);
+      console.log('Validating item:', { id, order, original: item });
+      if (isNaN(id) || id <= 0) {
+        throw new Error(`無効なID: ${item.id}`);
+      }
+      if (isNaN(order) || order < 0) {
+        throw new Error(`無効な順序: ${item.order}`);
+      }
+      return { id, order };
+    });
+
+    // 各カテゴリーの存在確認と権限チェック
+    const existingCategories = await prisma.menuCategory.findMany({
+      where: {
+        id: { in: validatedItems.map(item => item.id) },
+        storeId: req.user?.storeId
+      }
+    });
+    console.log('Found existing categories:', existingCategories);
+
+    if (existingCategories.length !== validatedItems.length) {
+      const foundIds = existingCategories.map(cat => cat.id);
+      const requestedIds = validatedItems.map(item => item.id);
+      const invalidIds = requestedIds.filter(id => !foundIds.includes(id));
+      console.log('Invalid IDs found:', { invalidIds, foundIds, requestedIds });
+      return res.status(400).json({ 
+        error: '無効なカテゴリーIDが含まれています',
+        details: `見つからないID: ${invalidIds.join(', ')}`
+      });
+    }
+
+    // トランザクションで一括更新
+    const updatedCategories = await prisma.$transaction(
+      validatedItems.map(item =>
+        prisma.menuCategory.update({
+          where: { id: item.id },
+          data: { order: item.order }
+        })
+      )
+    );
+    console.log('Successfully updated categories:', updatedCategories);
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error reordering categories:', error);
+    res.status(500).json({ error: error instanceof Error ? error.message : 'カテゴリーの並び替えに失敗しました' });
   }
 });
 
@@ -237,6 +305,78 @@ router.get("/items", async (req: AuthRequest, res) => {
   }
 });
 
+// メニューアイテムの並び順を更新
+router.put('/items/reorder', async (req: AuthRequest, res) => {
+  try {
+    const { items } = req.body;
+    console.log('Received reorder request:', { 
+      body: req.body,
+      items,
+      storeId: req.user?.storeId 
+    });
+    
+    if (!items || !Array.isArray(items)) {
+      console.log('Invalid items array:', items);
+      return res.status(400).json({ error: 'リクエストデータが不正です' });
+    }
+
+    if (!req.user?.storeId) {
+      console.log('No storeId in request');
+      return res.status(403).json({ error: '権限がありません' });
+    }
+
+    // 各アイテムのバリデーション
+    const validatedItems = items.map(item => {
+      const id = Number(item.id);
+      const order = Number(item.order);
+      console.log('Validating item:', { id, order, original: item });
+      if (isNaN(id) || id <= 0) {
+        throw new Error(`無効なID: ${item.id}`);
+      }
+      if (isNaN(order) || order < 0) {
+        throw new Error(`無効な順序: ${item.order}`);
+      }
+      return { id, order };
+    });
+
+    // 既存のアイテムを取得して権限チェック
+    const existingItems = await prisma.menuItem.findMany({
+      where: {
+        id: { in: validatedItems.map(item => item.id) },
+        storeId: req.user.storeId
+      }
+    });
+    console.log('Found existing items:', existingItems);
+
+    if (existingItems.length !== validatedItems.length) {
+      const foundIds = existingItems.map(item => item.id);
+      const requestedIds = validatedItems.map(item => item.id);
+      const invalidIds = requestedIds.filter(id => !foundIds.includes(id));
+      console.log('Invalid IDs found:', { invalidIds, foundIds, requestedIds });
+      return res.status(400).json({ 
+        error: '無効なIDです',
+        details: `見つからないID: ${invalidIds.join(', ')}`
+      });
+    }
+
+    // トランザクションで一括更新
+    const updatedItems = await prisma.$transaction(
+      validatedItems.map(item =>
+        prisma.menuItem.update({
+          where: { id: item.id },
+          data: { order: item.order }
+        })
+      )
+    );
+    console.log('Successfully updated items:', updatedItems);
+
+    res.json(updatedItems);
+  } catch (error) {
+    console.error('Error updating menu item order:', error);
+    res.status(500).json({ error: error instanceof Error ? error.message : '並び順の更新に失敗しました' });
+  }
+});
+
 // メニューアイテム作成
 router.post("/items", async (req: AuthRequest, res) => {
   try {
@@ -294,13 +434,17 @@ router.post("/items", async (req: AuthRequest, res) => {
 // メニューアイテム更新
 router.put("/items/:id", async (req: AuthRequest, res) => {
   try {
-    const { id } = req.params;
+    const itemId = parseInt(req.params.id);
+    if (isNaN(itemId)) {
+      return res.status(400).json({ error: "無効なIDです" });
+    }
+
     const { name, description, price, categoryId, order } = req.body;
 
     // まず該当のアイテムが存在するか確認
     const existingItem = await prisma.menuItem.findFirst({
       where: {
-        id: parseInt(id),
+        id: itemId,
         storeId: req.user?.storeId,
       },
     });
@@ -311,7 +455,7 @@ router.put("/items/:id", async (req: AuthRequest, res) => {
 
     const item = await prisma.menuItem.update({
       where: {
-        id: parseInt(id),
+        id: itemId,
       },
       data: {
         name,
@@ -331,12 +475,15 @@ router.put("/items/:id", async (req: AuthRequest, res) => {
 // メニューアイテム削除
 router.delete("/items/:id", async (req: AuthRequest, res) => {
   try {
-    const { id } = req.params;
+    const itemId = parseInt(req.params.id);
+    if (isNaN(itemId)) {
+      return res.status(400).json({ error: "無効なIDです" });
+    }
 
     // まず該当のアイテムが存在するか確認
     const existingItem = await prisma.menuItem.findFirst({
       where: {
-        id: parseInt(id),
+        id: itemId,
         storeId: req.user?.storeId,
       },
     });
@@ -347,7 +494,7 @@ router.delete("/items/:id", async (req: AuthRequest, res) => {
 
     await prisma.menuItem.delete({
       where: {
-        id: parseInt(id),
+        id: itemId,
       },
     });
     res.status(204).send();
@@ -358,39 +505,51 @@ router.delete("/items/:id", async (req: AuthRequest, res) => {
 });
 
 // メニューアイテム画像更新
-router.put("/items/:id/image", async (req: AuthRequest, res) => {
-  try {
-    const { id } = req.params;
-    if (!req.file) {
-      return res.status(400).json({ error: "画像がアップロードされていません" });
+router.put(
+  "/items/:id/image",
+  uploadMiddleware.single("image"),
+  async (req: AuthRequest, res) => {
+    try {
+      const { id } = req.params;
+      if (!req.file) {
+        return res.status(400).json({ error: "画像がアップロードされていません" });
+      }
+
+      // まず該当のアイテムが存在するか確認
+      const existingItem = await prisma.menuItem.findFirst({
+        where: {
+          id: parseInt(id),
+          storeId: req.user?.storeId,
+        },
+      });
+
+      if (!existingItem) {
+        return res.status(404).json({ error: "メニューアイテムが見つかりません" });
+      }
+
+      // Cloud Storageに画像をアップロード
+      const imageUrl = await uploadImage(
+        req.file,
+        StorageFolders.MENU_IMAGES,
+        `menu_${id}`
+      );
+
+      // データベースを更新
+      const item = await prisma.menuItem.update({
+        where: {
+          id: parseInt(id),
+        },
+        data: {
+          imageUrl,
+        },
+      });
+
+      res.json(item);
+    } catch (error) {
+      console.error("Error updating item image:", error);
+      res.status(500).json({ error: "メニューアイテム画像の更新に失敗しました" });
     }
-
-    // まず該当のアイテムが存在するか確認
-    const existingItem = await prisma.menuItem.findFirst({
-      where: {
-        id: parseInt(id),
-        storeId: req.user?.storeId,
-      },
-    });
-
-    if (!existingItem) {
-      return res.status(404).json({ error: "メニューアイテムが見つかりません" });
-    }
-
-    const imageUrl = '/uploads/' + req.file.filename;
-    const item = await prisma.menuItem.update({
-      where: {
-        id: parseInt(id),
-      },
-      data: {
-        imageUrl,
-      },
-    });
-    res.json(item);
-  } catch (error) {
-    console.error("Error updating item image:", error);
-    res.status(500).json({ error: "メニューアイテム画像の更新に失敗しました" });
   }
-});
+);
 
 export default router; 

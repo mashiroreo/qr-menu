@@ -24,7 +24,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({
   const [formData, setFormData] = useState({
     name: item?.name || '',
     description: item?.description || '',
-    price: item?.price || 0,
+    price: item?.price || '',
   });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -44,7 +44,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'price' ? Number(value) : value,
+      [name]: name === 'price' ? (value === '' ? '' : Number(value)) : value,
     }));
   };
 

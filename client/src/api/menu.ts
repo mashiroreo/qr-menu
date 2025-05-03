@@ -66,4 +66,18 @@ export const updateMenuItemImage = async (
     },
   });
   return response.data;
+};
+
+export interface ReorderMenuItemsData {
+  items: { id: number; order: number }[];
+}
+
+export const reorderMenuItems = async (data: { items: { id: number; order: number; }[] }): Promise<MenuItem[]> => {
+  const response = await api.put('/api/menu/items/reorder', data);
+  return response.data;
+};
+
+export const reorderCategories = async (data: { items: { id: number; order: number }[] }) => {
+  const response = await api.put('/api/menu/categories/reorder', data);
+  return response.data;
 }; 

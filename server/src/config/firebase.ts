@@ -1,5 +1,6 @@
 import { initializeApp, cert } from "firebase-admin/app";
 import admin from "firebase-admin";
+import { getStorage } from "firebase-admin/storage";
 
 const firebasePrivateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
 
@@ -13,6 +14,7 @@ initializeApp({
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
     privateKey: firebasePrivateKey,
   }),
+  storageBucket: "qrmenu-34cc1.firebasestorage.app"
 });
 
 const isTestEnvironment = process.env.NODE_ENV === "test";
@@ -29,3 +31,5 @@ export const adminAuth = isTestEnvironment
       },
     }
   : admin.auth();
+
+export const storageBucket = admin.storage().bucket();

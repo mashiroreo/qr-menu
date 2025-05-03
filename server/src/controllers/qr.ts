@@ -4,7 +4,7 @@ import path from "path";
 import fs from "fs";
 
 // QRコード画像の保存先
-const qrDir = path.join(__dirname, "../../public/qr");
+const qrDir = path.join(__dirname, "../../uploads/qr");
 if (!fs.existsSync(qrDir)) {
   fs.mkdirSync(qrDir, { recursive: true });
 }
@@ -16,10 +16,21 @@ export const generateQRCode = async (req: Request, res: Response) => {
     if (!storeId) {
       return res.status(400).json({ error: "storeId is required" });
     }
-    const qrUrl = `http://192.168.1.50:5173/menu/${storeId}`;
+
+    const APP_URL = process.env.APP_URL || 'http://localhost:5173';
+    const qrUrl = `${APP_URL}/menu/${storeId}`;
     const fileName = `store_${storeId}_${Date.now()}.png`;
     const filePath = path.join(qrDir, fileName);
-    await QRCode.toFile(filePath, qrUrl, { width: 400 });
+
+    await QRCode.toFile(filePath, qrUrl, {
+      width: 400,
+      margin: 2,
+      color: {
+        dark: '#000000',
+        light: '#ffffff'
+      }
+    });
+
     const publicPath = `/qr/${fileName}`;
     res.json({ url: publicPath });
   } catch (error) {

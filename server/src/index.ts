@@ -1,42 +1,42 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 import express from 'express';
-import cors from "cors";
+import cors from 'cors';
 import path from 'path';
-import userRouter from './routes/user';
-import authRouter from './routes/auth';
-import storeRouter from './routes/store';
-import menuRouter from './routes/menu';
-import qrRouter from './routes/qr';
+import storeRoutes from './routes/store';
+import menuRoutes from './routes/menu';
+import qrRoutes from './routes/qr';
+import authRoutes from './routes/auth';
+import fs from 'fs';
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
-// ✅ CORSの詳細設定
+// CORSの設定
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "http://192.168.1.50:5173"
-  ], // フロントの開発サーバーURLとスマホ用IP
+  origin: ['http://localhost:5173', 'http://192.168.1.50:5173'],
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// JSONとURLエンコードされたボディの解析
 app.use(express.json());
-app.use('/api/users', userRouter);
-app.use('/api/auth', authRouter);
-app.use('/api/stores', storeRouter);
-app.use('/api/menu', menuRouter);
-app.use('/api/qr', qrRouter);
+app.use(express.urlencoded({ extended: true }));
 
-// 画像ファイルの静的配信設定
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-app.use('/qr', express.static(path.join(__dirname, '../public/qr')));
+// 静的ファイルの提供
+app.use('/qr', express.static(path.join(__dirname, '../uploads/qr')));
 
-if (require.main === module) {
-  app.listen(port, () => {
-    console.log(`Server is running at http://localhost:${port}`);
-  });
+// ルーティング
+app.use('/api/stores', storeRoutes);
+app.use('/api/menu', menuRoutes);
+app.use('/api/qr', qrRoutes);
+app.use('/api/auth', authRoutes);
+
+// uploads/qrディレクトリの作成
+const qrDir = path.join(__dirname, '../uploads/qr');
+if (!fs.existsSync(qrDir)) {
+  fs.mkdirSync(qrDir, { recursive: true });
 }
 
-export { app };
+app.listen(port, () => {
+  console.log(`Server is running at http://localhost:${port}`);
+});
