@@ -18,4 +18,8 @@ export const updateStoreLogo = async (data: FormData): Promise<Store> => {
     },
   });
   return response.data;
+};
+
+export const deleteStoreLogo = async (): Promise<void> => {
+  await api.delete('/api/stores/owner/logo');
 }; 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { auth } from "../../libs/firebase";
+import api from "../../api/axios";
 
 interface UserProfile {
   publicId: string;
@@ -15,13 +16,8 @@ export const UserProfile = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const token = await auth.currentUser?.getIdToken();
-        const response = await fetch("http://localhost:3000/api/auth/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const data = await response.json();
+        const response = await api.get("/api/auth/me");
+        const data = response.data;
         setUserProfile(data);
         setDisplayName(data.displayName);
       } catch (error) {
@@ -34,16 +30,8 @@ export const UserProfile = () => {
 
   const handleUpdate = async () => {
     try {
-      const token = await auth.currentUser?.getIdToken();
-      const response = await fetch("http://localhost:3000/api/auth/me", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ displayName }),
-      });
-      const data = await response.json();
+      const response = await api.put("/api/auth/me", { displayName });
+      const data = response.data;
       setUserProfile(data);
       setIsEditing(false);
     } catch (error) {

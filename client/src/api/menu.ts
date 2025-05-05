@@ -68,6 +68,10 @@ export const updateMenuItemImage = async (
   return response.data;
 };
 
+export const deleteMenuItemImage = async (id: number): Promise<void> => {
+  await api.delete(`/api/menu/items/${id}/image`);
+};
+
 export interface ReorderMenuItemsData {
   items: { id: number; order: number }[];
 }
