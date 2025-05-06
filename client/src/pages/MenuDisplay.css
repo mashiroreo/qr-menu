@@ -179,6 +179,20 @@
   background: rgba(0, 0, 0, 0.6);
   border-radius: 4px;
 }
+.menu-item-img-placeholder {
+  width: 100%;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #444;
+  color: #bbb;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  border-radius: 0;
+  user-select: none;
+}
 
 /* レスポンシブ対応 */
 @media (max-width: 900px) {
