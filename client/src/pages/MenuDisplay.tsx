@@ -153,28 +153,34 @@ const MenuDisplay: React.FC = () => {
                 <div className="menu-grid-responsive">
                   {menu[cat.id].map(item => (
                     <div key={item.id} className="menu-item-card">
-                      {item.imageUrl && (
-                        <div 
-                          className="menu-item-img-wrapper"
-                          onClick={() => setSelectedImage({ url: item.imageUrl!, alt: item.name })}
-                          role="button"
-                          tabIndex={0}
-                          onKeyPress={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              setSelectedImage({ url: item.imageUrl!, alt: item.name });
-                            }
-                          }}
-                        >
+                      <div 
+                        className="menu-item-img-wrapper"
+                        onClick={item.imageUrl ? () => setSelectedImage({ url: item.imageUrl!, alt: item.name }) : undefined}
+                        role={item.imageUrl ? "button" : undefined}
+                        tabIndex={item.imageUrl ? 0 : undefined}
+                        onKeyPress={item.imageUrl ? (e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            setSelectedImage({ url: item.imageUrl!, alt: item.name });
+                          }
+                        } : undefined}
+                      >
+                        {item.imageUrl ? (
                           <img 
                             src={item.imageUrl}
                             alt={item.name} 
                             className="menu-item-img" 
                           />
+                        ) : (
+                          <div className="menu-item-img menu-item-img-placeholder">
+                            No Image
+                          </div>
+                        )}
+                        {item.imageUrl && (
                           <div className="menu-item-img-overlay">
                             <span className="menu-item-img-zoom">拡大</span>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                       <div className="menu-item-content">
                         <div className="menu-item-name">{item.name}</div>
                         <div className="menu-item-price">{item.price}円</div>
