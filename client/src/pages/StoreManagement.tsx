@@ -52,9 +52,6 @@ export const StoreManagement = () => {
     );
   }
 
-  // スムーズスクロール用CSS
-  // html { scroll-behavior: smooth; } をindex.cssに追加推奨
-
   return (
     <div className="container py-8">
       <h1 className="text-3xl font-bold text-center mb-8">店舗管理</h1>
