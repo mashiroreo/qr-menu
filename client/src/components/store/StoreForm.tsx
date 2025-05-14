@@ -7,6 +7,7 @@ export const StoreForm = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
 
   useEffect(() => {
     loadStoreInfo();
@@ -29,6 +30,7 @@ export const StoreForm = () => {
     e.preventDefault();
     setError(null);
     setSuccessMessage(null);
+    setPhoneError(null);
 
     const formData = new FormData(e.currentTarget);
     const data: StoreFormData = {
@@ -38,6 +40,11 @@ export const StoreForm = () => {
       phone: formData.get('phone') as string,
       businessHours: formData.get('businessHours') as string,
     };
+
+    if (!/^\d+$/.test(data.phone)) {
+      setPhoneError('電話番号は数字のみで入力してください');
+      return;
+    }
 
     try {
       const updatedStore = await updateStore(data);
@@ -66,6 +73,12 @@ export const StoreForm = () => {
       {successMessage && (
         <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
           {successMessage}
+        </div>
+      )}
+
+      {phoneError && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {phoneError}
         </div>
       )}
 
