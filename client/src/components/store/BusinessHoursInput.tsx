@@ -14,6 +14,9 @@ import {
   Button,
 } from '@mui/material';
 import { BusinessHours, DayOfWeek, BusinessHourPeriod } from '../../types/store';
+import DeleteIcon from '@mui/icons-material/Delete';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 
 const DAYS_OF_WEEK: { value: DayOfWeek; label: string }[] = [
   { value: 'monday', label: '月曜日' },
@@ -79,6 +82,9 @@ export const BusinessHoursInput: React.FC<BusinessHoursInputProps> = ({ value, o
   const [businessHours, setBusinessHours] = React.useState<BusinessHours[]>(
     value.length > 0 ? normalizeBusinessHours(value) : defaultBusinessHours
   );
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // 時間帯追加
   const handleAddPeriod = (dayIdx: number) => {
@@ -204,11 +210,23 @@ export const BusinessHoursInput: React.FC<BusinessHoursInputProps> = ({ value, o
                   <>
                     {businessHours[dayIdx].periods.map((period, periodIdx) => {
                       if (!period.isOpen) return null;
-                      const hasError = !validateTimeRange(period.openTime, period.closeTime);
-                      const hasOverlap = checkTimeOverlap(businessHours[dayIdx].periods, periodIdx);
+                      const hasError = period.isOpen && !validateTimeRange(period.openTime, period.closeTime);
+                      const hasOverlap = period.isOpen && checkTimeOverlap(businessHours[dayIdx].periods, periodIdx);
                       return (
-                        <Box key={periodIdx} sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1, minHeight: 56, flexWrap: 'wrap' }}>
-                          <FormControl size="small" sx={{ minWidth: 120 }}>
+                        <Box
+                          key={periodIdx}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            mb: 1,
+                            minHeight: 48,
+                            flexWrap: 'nowrap',
+                            width: '100%',
+                            maxWidth: '100%',
+                          }}
+                        >
+                          <FormControl size="small" sx={{ minWidth: isMobile ? 60 : 120, flexShrink: 1 }}>
                             <Select
                               value={period.openTime || ''}
                               onChange={e => handlePeriodChange(dayIdx, periodIdx, 'openTime', e.target.value)}
@@ -220,7 +238,7 @@ export const BusinessHoursInput: React.FC<BusinessHoursInputProps> = ({ value, o
                             </Select>
                           </FormControl>
                           <Typography>〜</Typography>
-                          <FormControl size="small" sx={{ minWidth: 120 }}>
+                          <FormControl size="small" sx={{ minWidth: isMobile ? 60 : 120, flexShrink: 1 }}>
                             <Select
                               value={period.closeTime || ''}
                               onChange={e => handlePeriodChange(dayIdx, periodIdx, 'closeTime', e.target.value)}
@@ -236,10 +254,11 @@ export const BusinessHoursInput: React.FC<BusinessHoursInputProps> = ({ value, o
                               size="small"
                               color="error"
                               onClick={() => handleRemovePeriod(dayIdx, periodIdx)}
-                              sx={{ minWidth: 60, ml: 1, alignSelf: 'center', py: 1 }}
+                              sx={{ minWidth: isMobile ? 32 : 60, ml: 1, alignSelf: 'center', py: 1 }}
                               variant="outlined"
+                              aria-label="削除"
                             >
-                              削除
+                              {isMobile ? <DeleteIcon fontSize="small" /> : '削除'}
                             </Button>
                           )}
                           {(hasError || hasOverlap) && (
