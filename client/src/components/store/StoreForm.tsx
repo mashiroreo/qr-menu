@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Store, StoreFormData, BusinessHours } from '../../types/store';
+import { Store, StoreFormData, BusinessHours, SpecialBusinessDay, BusinessHourPeriod } from '../../types/store';
 import { getStoreInfo, updateStore } from '../../api/store';
 import { BusinessHoursInput } from './BusinessHoursInput';
 
@@ -11,6 +11,7 @@ export const StoreForm = () => {
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [businessHours, setBusinessHours] = useState<BusinessHours[]>([]);
   const [businessHoursError, setBusinessHoursError] = useState<string | null>(null);
+  const [specialBusinessDays, setSpecialBusinessDays] = useState<SpecialBusinessDay[]>(store?.specialBusinessDays || []);
 
   useEffect(() => {
     loadStoreInfo();
@@ -72,6 +73,49 @@ export const StoreForm = () => {
       setError('店舗情報の更新に失敗しました');
       console.error('Error updating store info:', err);
     }
+  };
+
+  const handleAddSpecialDay = () => {
+    setSpecialBusinessDays([
+      ...specialBusinessDays,
+      {
+        date: '',
+        periods: [{ isOpen: true, openTime: '09:00', closeTime: '18:00' }],
+      },
+    ]);
+  };
+
+  const handleRemoveSpecialDay = (idx: number) => {
+    setSpecialBusinessDays(specialBusinessDays.filter((_, i) => i !== idx));
+  };
+
+  const handleSpecialDayChange = (idx: number, field: keyof SpecialBusinessDay, value: any) => {
+    const newDays = [...specialBusinessDays];
+    newDays[idx] = { ...newDays[idx], [field]: value };
+    setSpecialBusinessDays(newDays);
+  };
+
+  const handleSpecialPeriodChange = (dayIdx: number, periodIdx: number, field: keyof BusinessHourPeriod, value: any) => {
+    const newDays = [...specialBusinessDays];
+    newDays[dayIdx].periods = newDays[dayIdx].periods.map((p, i) =>
+      i === periodIdx ? { ...p, [field]: value } : p
+    );
+    setSpecialBusinessDays(newDays);
+  };
+
+  const handleAddSpecialPeriod = (dayIdx: number) => {
+    const newDays = [...specialBusinessDays];
+    newDays[dayIdx].periods = [
+      ...newDays[dayIdx].periods,
+      { isOpen: true, openTime: '09:00', closeTime: '18:00' },
+    ];
+    setSpecialBusinessDays(newDays);
+  };
+
+  const handleRemoveSpecialPeriod = (dayIdx: number, periodIdx: number) => {
+    const newDays = [...specialBusinessDays];
+    newDays[dayIdx].periods = newDays[dayIdx].periods.filter((_, i) => i !== periodIdx);
+    setSpecialBusinessDays(newDays);
   };
 
   if (loading) {
@@ -161,6 +205,58 @@ export const StoreForm = () => {
         </div>
 
         <BusinessHoursInput value={businessHours} onChange={setBusinessHours} />
+
+        <div className="mt-8">
+          <h3 className="text-lg font-bold mb-2">特別営業日</h3>
+          {specialBusinessDays.map((day, idx) => (
+            <div key={idx} className="mb-4 p-2 border rounded">
+              <div className="flex items-center gap-2 mb-2">
+                <input
+                  type="date"
+                  value={day.date}
+                  onChange={e => handleSpecialDayChange(idx, 'date', e.target.value)}
+                  className="border rounded px-2 py-1"
+                  required
+                />
+                <button type="button" onClick={() => handleRemoveSpecialDay(idx)} className="text-red-500 ml-2">削除</button>
+              </div>
+              {day.periods.map((period, pIdx) => (
+                <div key={pIdx} className="flex items-center gap-2 mb-1">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={period.isOpen}
+                      onChange={e => handleSpecialPeriodChange(idx, pIdx, 'isOpen', e.target.checked)}
+                    /> 営業
+                  </label>
+                  <input
+                    type="time"
+                    value={period.openTime}
+                    onChange={e => handleSpecialPeriodChange(idx, pIdx, 'openTime', e.target.value)}
+                    className="border rounded px-1"
+                    required={period.isOpen}
+                    disabled={!period.isOpen}
+                  />
+                  <span>〜</span>
+                  <input
+                    type="time"
+                    value={period.closeTime}
+                    onChange={e => handleSpecialPeriodChange(idx, pIdx, 'closeTime', e.target.value)}
+                    className="border rounded px-1"
+                    required={period.isOpen}
+                    disabled={!period.isOpen}
+                  />
+                  {day.periods.length > 1 && (
+                    <button type="button" onClick={() => handleRemoveSpecialPeriod(idx, pIdx)} className="text-red-400 ml-1">枠削除</button>
+                  )}
+                </div>
+              ))}
+              <button type="button" onClick={() => handleAddSpecialPeriod(idx)} className="text-blue-500 mt-1">＋時間帯追加</button>
+              {day.periods.length === 0 && <span className="text-gray-500 ml-2">休業</span>}
+            </div>
+          ))}
+          <button type="button" onClick={handleAddSpecialDay} className="text-blue-600 font-bold">＋特別営業日追加</button>
+        </div>
 
         <div className="pt-4">
           <button

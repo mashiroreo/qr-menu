@@ -11,6 +11,12 @@ export type BusinessHours = {
   periods: BusinessHourPeriod[];
 };
 
+export type SpecialBusinessDay = {
+  date: string; // 'YYYY-MM-DD'
+  periods: BusinessHourPeriod[]; // 営業時間（複数可）
+  note?: string; // 任意メモ
+};
+
 export type Store = {
   id: string;
   name: string;
@@ -22,6 +28,7 @@ export type Store = {
   address: string;
   phone: string;
   isHolidayClosed?: boolean; // 祝日は休業するか（デフォルト: 営業）
+  specialBusinessDays?: SpecialBusinessDay[];
 };
 
 export type StoreFormData = Omit<Store, 'id' | 'createdAt' | 'updatedAt'>; 
