@@ -106,13 +106,17 @@ export const StoreForm = () => {
     setPhoneError(null);
 
     const formData = new FormData(e.currentTarget);
+    // 保存時のみ日付順でソート
+    const sortedSpecialBusinessDays = [...specialBusinessDays].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
     const data: StoreFormData = {
       name: formData.get('name') as string,
       description: formData.get('description') as string,
       address: formData.get('address') as string,
       phone: formData.get('phone') as string,
       businessHours: businessHours,
-      specialBusinessDays: specialBusinessDays,
+      specialBusinessDays: sortedSpecialBusinessDays,
       logoUrl: store?.logoUrl || null,
       isHolidayClosed: isHolidayClosed,
     };
@@ -189,11 +193,6 @@ export const StoreForm = () => {
     setSpecialBusinessDays(newDays);
   };
 
-  // 日付順でソート
-  const sortedSpecialBusinessDays = [...specialBusinessDays].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
-
   // --- 追加: 時間帯重複チェック関数 ---
   const checkPeriodOverlap = (periods: BusinessHourPeriod[], currentIdx: number): boolean => {
     const current = periods[currentIdx];
@@ -222,6 +221,10 @@ export const StoreForm = () => {
       }
     });
   };
+
+  // --- 追加: 日付重複チェック関数 ---
+  const isDuplicateDate = (date: string, idx: number) =>
+    specialBusinessDays.filter((d, i) => d.date === date && i !== idx).length > 0;
 
   if (loading) {
     return <div className="text-center">読み込み中...</div>;
@@ -321,7 +324,7 @@ export const StoreForm = () => {
 
         <Box sx={{ mt: 4 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>臨時休業日・特別営業日</Typography>
-          {sortedSpecialBusinessDays.map((day, idx) => {
+          {specialBusinessDays.map((day, idx) => {
             // その日のperiodsがすべてisOpen: falseなら臨時休業
             const isOpenDay = day.periods.some(p => p.isOpen);
             return (
@@ -331,8 +334,14 @@ export const StoreForm = () => {
                     type="date"
                     value={day.date}
                     onChange={e => handleSpecialDayChange(idx, 'date', e.target.value)}
-                    error={!validateSpecialBusinessDay(day.date)}
-                    helperText={!validateSpecialBusinessDay(day.date) ? '今日以降の日付を指定してください' : ''}
+                    error={!validateSpecialBusinessDay(day.date) || isDuplicateDate(day.date, idx)}
+                    helperText={
+                      !validateSpecialBusinessDay(day.date)
+                        ? '今日以降の日付を指定してください'
+                        : isDuplicateDate(day.date, idx)
+                          ? 'この日付はすでに登録済みです'
+                          : ''
+                    }
                     required
                     size="small"
                     sx={{ width: isMobile ? 150 : 190 }}
@@ -477,7 +486,12 @@ export const StoreForm = () => {
             type="submit"
             variant="contained"
             color="primary"
-            disabled={loading || !!businessHoursError || !!specialBusinessDaysError}
+            disabled={
+              loading ||
+              !!businessHoursError ||
+              !!specialBusinessDaysError ||
+              specialBusinessDays.some((d, i) => isDuplicateDate(d.date, i))
+            }
           >
             保存
           </Button>
