@@ -89,11 +89,23 @@ export const BusinessHoursInput: React.FC<BusinessHoursInputProps> = ({ value, o
   // 時間帯追加
   const handleAddPeriod = (dayIdx: number) => {
     const newHours = [...businessHours];
+    const periods = newHours[dayIdx].periods;
+    let newOpen = '09:00';
+    let newClose = '18:00';
+    if (periods.length > 0) {
+      const last = periods[periods.length - 1];
+      newOpen = last.closeTime;
+      // デフォルト終了時刻は+1時間（24:00超えは00:00に）
+      const [h, m] = last.closeTime.split(':').map(Number);
+      let endH = h + 1;
+      if (endH >= 24) endH = 0;
+      newClose = `${endH.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+    }
     newHours[dayIdx] = {
       ...newHours[dayIdx],
       periods: [
-        ...newHours[dayIdx].periods,
-        { isOpen: true, openTime: '09:00', closeTime: '18:00' },
+        ...periods,
+        { isOpen: true, openTime: newOpen, closeTime: newClose },
       ],
     };
     setBusinessHours(newHours);
@@ -102,6 +114,7 @@ export const BusinessHoursInput: React.FC<BusinessHoursInputProps> = ({ value, o
 
   // 時間帯削除
   const handleRemovePeriod = (dayIdx: number, periodIdx: number) => {
+    if (!window.confirm('本当にこの時間帯を削除しますか？')) return;
     const newHours = [...businessHours];
     newHours[dayIdx] = {
       ...newHours[dayIdx],
@@ -217,50 +230,53 @@ export const BusinessHoursInput: React.FC<BusinessHoursInputProps> = ({ value, o
                           key={periodIdx}
                           sx={{
                             display: 'flex',
-                            alignItems: 'center',
                             gap: 1,
                             mb: 1,
                             minHeight: 48,
                             flexWrap: 'nowrap',
                             width: '100%',
                             maxWidth: '100%',
+                            flexDirection: 'column',
+                            alignItems: 'flex-start',
                           }}
                         >
-                          <FormControl size="small" sx={{ minWidth: isMobile ? 60 : 120, flexShrink: 1 }}>
-                            <Select
-                              value={period.openTime || ''}
-                              onChange={e => handlePeriodChange(dayIdx, periodIdx, 'openTime', e.target.value)}
-                              error={hasError || hasOverlap}
-                            >
-                              {TIME_OPTIONS.map((time) => (
-                                <MenuItem key={time} value={time}>{time}</MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
-                          <Typography>〜</Typography>
-                          <FormControl size="small" sx={{ minWidth: isMobile ? 60 : 120, flexShrink: 1 }}>
-                            <Select
-                              value={period.closeTime || ''}
-                              onChange={e => handlePeriodChange(dayIdx, periodIdx, 'closeTime', e.target.value)}
-                              error={hasError || hasOverlap}
-                            >
-                              {TIME_OPTIONS.map((time) => (
-                                <MenuItem key={time} value={time}>{time}</MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
-                          {businessHours[dayIdx].periods.length > 1 && (
-                            <Button
-                              size="small"
-                              color="error"
-                              onClick={() => handleRemovePeriod(dayIdx, periodIdx)}
-                              sx={{ minWidth: isMobile ? 32 : 60, ml: 1, alignSelf: 'center', py: 1 }}
-                              variant="outlined"
-                              aria-label="削除"
-                            >
-                              {isMobile ? <DeleteIcon fontSize="small" /> : '削除'}
-                            </Button>
-                          )}
+                          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                            <FormControl size="small" sx={{ minWidth: isMobile ? 60 : 120, flexShrink: 1 }}>
+                              <Select
+                                value={period.openTime || ''}
+                                onChange={e => handlePeriodChange(dayIdx, periodIdx, 'openTime', e.target.value)}
+                                error={hasError || hasOverlap}
+                              >
+                                {TIME_OPTIONS.map((time) => (
+                                  <MenuItem key={time} value={time}>{time}</MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                            <Typography>〜</Typography>
+                            <FormControl size="small" sx={{ minWidth: isMobile ? 60 : 120, flexShrink: 1 }}>
+                              <Select
+                                value={period.closeTime || ''}
+                                onChange={e => handlePeriodChange(dayIdx, periodIdx, 'closeTime', e.target.value)}
+                                error={hasError || hasOverlap}
+                              >
+                                {TIME_OPTIONS.map((time) => (
+                                  <MenuItem key={time} value={time}>{time}</MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                            {businessHours[dayIdx].periods.length > 1 && (
+                              <Button
+                                size="small"
+                                color="error"
+                                onClick={() => handleRemovePeriod(dayIdx, periodIdx)}
+                                sx={{ minWidth: isMobile ? 32 : 60, ml: 1, alignSelf: 'center', py: 1 }}
+                                variant="outlined"
+                                aria-label="削除"
+                              >
+                                {isMobile ? <DeleteIcon fontSize="small" /> : '削除'}
+                              </Button>
+                            )}
+                          </Box>
                           {(hasError || hasOverlap) && (
                             <Alert severity="error" sx={{ mt: 1, width: '100%' }}>
                               {hasError
