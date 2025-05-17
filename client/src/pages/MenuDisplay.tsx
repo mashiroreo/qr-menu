@@ -153,12 +153,22 @@ const MenuDisplay: React.FC = () => {
                   })()}
                   ：
                   {Array.isArray(hours.periods) && hours.periods.length > 0 ? (
-                    hours.periods.map((period, pIdx) => (
-                      <span key={pIdx}>
-                        {period.isOpen ? `${period.openTime}〜${period.closeTime}` : '休業'}
-                        {pIdx < hours.periods.length - 1 && <span> ／ </span>}
-                      </span>
-                    ))
+                    hours.periods.map((period, pIdx) => {
+                      const [openHour, openMinute] = period.openTime.split(':').map(Number);
+                      const [closeHour, closeMinute] = period.closeTime.split(':').map(Number);
+                      const openMinutes = openHour * 60 + openMinute;
+                      const closeMinutes = closeHour * 60 + closeMinute;
+                      const isOvernight = openMinutes > closeMinutes;
+                      // 0埋めなしの時刻文字列を生成
+                      const closeHourStr = isOvernight ? String(Number(period.closeTime.split(':')[0])) : period.closeTime.split(':')[0].padStart(2, '0');
+                      const closeMinuteStr = period.closeTime.split(':')[1];
+                      return (
+                        <span key={pIdx}>
+                          {period.isOpen ? `${period.openTime}〜${isOvernight ? '翌' : ''}${closeHourStr}:${closeMinuteStr}` : '休業'}
+                          {pIdx < hours.periods.length - 1 && <span> ／ </span>}
+                        </span>
+                      );
+                    })
                   ) : '休業'}
                 </li>
               ))}
