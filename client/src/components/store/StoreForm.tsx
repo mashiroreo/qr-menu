@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Store, StoreFormData } from '../../types/store';
+import { Store, StoreFormData, BusinessHours } from '../../types/store';
 import { getStoreInfo, updateStore } from '../../api/store';
+import { BusinessHoursInput } from './BusinessHoursInput';
 
 export const StoreForm = () => {
   const [store, setStore] = useState<Store | null>(null);
@@ -8,15 +9,32 @@ export const StoreForm = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [businessHours, setBusinessHours] = useState<BusinessHours[]>([]);
+  const [businessHoursError, setBusinessHoursError] = useState<string | null>(null);
 
   useEffect(() => {
     loadStoreInfo();
   }, []);
 
+  useEffect(() => {
+    const hasError = businessHours.some(
+      (hours) =>
+        hours.isOpen && (!hours.openTime || !hours.closeTime)
+    );
+    if (hasError) {
+      setBusinessHoursError('営業時間を設定する場合は、開始時刻・終了時刻の両方を入力してください。');
+    } else {
+      setBusinessHoursError(null);
+    }
+  }, [businessHours]);
+
   const loadStoreInfo = async () => {
     try {
       const data = await getStoreInfo();
       setStore(data);
+      if (data.businessHours) {
+        setBusinessHours(data.businessHours);
+      }
       setError(null);
     } catch (err) {
       setError('店舗情報の取得に失敗しました');
@@ -38,7 +56,7 @@ export const StoreForm = () => {
       description: formData.get('description') as string,
       address: formData.get('address') as string,
       phone: formData.get('phone') as string,
-      businessHours: formData.get('businessHours') as string,
+      businessHours: businessHours,
     };
 
     if (!/^\d+$/.test(data.phone)) {
@@ -79,6 +97,12 @@ export const StoreForm = () => {
       {phoneError && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           {phoneError}
+        </div>
+      )}
+
+      {businessHoursError && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {businessHoursError}
         </div>
       )}
 
@@ -136,24 +160,13 @@ export const StoreForm = () => {
           />
         </div>
 
-        <div>
-          <label htmlFor="businessHours" className="block text-sm font-medium text-gray-700">
-            営業時間
-          </label>
-          <input
-            type="text"
-            id="businessHours"
-            name="businessHours"
-            defaultValue={store?.businessHours}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          />
-        </div>
+        <BusinessHoursInput value={businessHours} onChange={setBusinessHours} />
 
         <div className="pt-4">
           <button
             type="submit"
             className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-            disabled={loading}
+            disabled={loading || !!businessHoursError}
           >
             保存
           </button>
