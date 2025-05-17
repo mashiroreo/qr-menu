@@ -135,6 +135,40 @@ const MenuDisplay: React.FC = () => {
           {store.description && <p><strong>店舗説明:</strong> {store.description}</p>}
           <div><strong>住所:</strong> {store.address || '-'}</div>
           <div><strong>電話番号:</strong> {store.phone || '-'}</div>
+          {/* 特別営業日表示 */}
+          {Array.isArray(store.specialBusinessDays) && store.specialBusinessDays.length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontWeight: 'bold', color: '#e53935', marginBottom: 4 }}>
+                {store.specialBusinessDays.some(day => day.date === new Date().toISOString().slice(0, 10))
+                  ? '【本日は特別営業日です】'
+                  : '【特別営業日】'}
+              </div>
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none', color: '#e53935' }}>
+                {store.specialBusinessDays.map((day, idx) => (
+                  <li key={day.date + '-' + idx}>
+                    {day.date.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$2/$3')}：
+                    {Array.isArray(day.periods) && day.periods.length > 0 ? (
+                      day.periods.map((period, pIdx) => {
+                        const [openHour, openMinute] = period.openTime.split(':').map(Number);
+                        const [closeHour, closeMinute] = period.closeTime.split(':').map(Number);
+                        const openMinutes = openHour * 60 + openMinute;
+                        const closeMinutes = closeHour * 60 + closeMinute;
+                        const isOvernight = openMinutes > closeMinutes;
+                        const closeHourStr = isOvernight ? String(Number(period.closeTime.split(':')[0])) : period.closeTime.split(':')[0].padStart(2, '0');
+                        const closeMinuteStr = period.closeTime.split(':')[1];
+                        return (
+                          <span key={pIdx}>
+                            {period.isOpen ? `${period.openTime}〜${isOvernight ? '翌' : ''}${closeHourStr}:${closeMinuteStr}` : '休業'}
+                            {pIdx < day.periods.length - 1 && <span> ／ </span>}
+                          </span>
+                        );
+                      })
+                    ) : '休業'}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <div><strong>営業時間{store.isHolidayClosed ? '（祝日は休業）' : '（祝日も営業）'}:</strong> {Array.isArray(store.businessHours) && store.businessHours.length > 0 ? (
             <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
               {store.businessHours.map((hours, idx) => (

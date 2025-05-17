@@ -27,6 +27,18 @@ export const getStoreInfo = async (req: AuthRequest, res: Response) => {
         owner: {
           publicId: userId
         }
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        address: true,
+        phone: true,
+        logoUrl: true,
+        businessHours: true,
+        specialBusinessDays: true,
+        createdAt: true,
+        updatedAt: true
       }
     });
 
@@ -48,7 +60,7 @@ export const updateStoreInfo = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const { name, description, address, phone, businessHours } = req.body;
+    const { name, description, address, phone, businessHours, specialBusinessDays } = req.body;
 
     if (!name || name.trim() === "") {
       return res.status(400).json({ error: "Store name is required" });
@@ -75,7 +87,8 @@ export const updateStoreInfo = async (req: AuthRequest, res: Response) => {
         description,
         address,
         phone,
-        businessHours
+        businessHours,
+        specialBusinessDays
       }
     });
 

@@ -11,16 +11,25 @@ export const StoreForm = () => {
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [businessHours, setBusinessHours] = useState<BusinessHours[]>([]);
   const [businessHoursError, setBusinessHoursError] = useState<string | null>(null);
-  const [specialBusinessDays, setSpecialBusinessDays] = useState<SpecialBusinessDay[]>(store?.specialBusinessDays || []);
+  const [specialBusinessDays, setSpecialBusinessDays] = useState<SpecialBusinessDay[]>([]);
 
   useEffect(() => {
     loadStoreInfo();
   }, []);
 
   useEffect(() => {
+    if (store && Array.isArray(store.specialBusinessDays)) {
+      setSpecialBusinessDays(store.specialBusinessDays);
+    }
+  }, [store]);
+
+  useEffect(() => {
     const hasError = businessHours.some(
       (hours) =>
-        hours.isOpen && (!hours.openTime || !hours.closeTime)
+        Array.isArray(hours.periods) && hours.periods.some(
+          (period) =>
+            period.isOpen && (!period.openTime || !period.closeTime)
+        )
     );
     if (hasError) {
       setBusinessHoursError('営業時間を設定する場合は、開始時刻・終了時刻の両方を入力してください。');
@@ -58,6 +67,8 @@ export const StoreForm = () => {
       address: formData.get('address') as string,
       phone: formData.get('phone') as string,
       businessHours: businessHours,
+      specialBusinessDays: specialBusinessDays,
+      logoUrl: store?.logoUrl || null,
     };
 
     if (!/^\d+$/.test(data.phone)) {

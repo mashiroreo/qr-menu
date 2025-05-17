@@ -31,7 +31,8 @@ model Store {
   address       String?
   phone         String?
   logoUrl       String?
-  businessHours String?
+  businessHours Json?
+  specialBusinessDays Json?
   owner         User     @relation(fields: [ownerId], references: [id])
   ownerId       String   @unique
   createdAt     DateTime @default(now())
