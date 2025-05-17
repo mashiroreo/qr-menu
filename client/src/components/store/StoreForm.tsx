@@ -13,6 +13,7 @@ import {
   RadioGroup,
   FormControlLabel,
   FormControl,
+  FormLabel,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -28,6 +29,7 @@ export const StoreForm = () => {
   const [businessHoursError, setBusinessHoursError] = useState<string | null>(null);
   const [specialBusinessDays, setSpecialBusinessDays] = useState<SpecialBusinessDay[]>([]);
   const [specialBusinessDaysError, setSpecialBusinessDaysError] = useState<string | null>(null);
+  const [isHolidayClosed, setIsHolidayClosed] = useState<boolean>(store?.isHolidayClosed ?? false);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -75,6 +77,12 @@ export const StoreForm = () => {
     }
   }, [specialBusinessDays]);
 
+  useEffect(() => {
+    if (store && typeof store.isHolidayClosed === 'boolean') {
+      setIsHolidayClosed(store.isHolidayClosed);
+    }
+  }, [store]);
+
   const loadStoreInfo = async () => {
     try {
       const data = await getStoreInfo();
@@ -106,6 +114,7 @@ export const StoreForm = () => {
       businessHours: businessHours,
       specialBusinessDays: specialBusinessDays,
       logoUrl: store?.logoUrl || null,
+      isHolidayClosed: isHolidayClosed,
     };
 
     if (!/^\d+$/.test(data.phone)) {
@@ -134,6 +143,7 @@ export const StoreForm = () => {
   };
 
   const handleRemoveSpecialDay = (idx: number) => {
+    if (!window.confirm('本当にこの特別営業日を削除しますか？')) return;
     setSpecialBusinessDays(specialBusinessDays.filter((_, i) => i !== idx));
   };
 
@@ -153,14 +163,27 @@ export const StoreForm = () => {
 
   const handleAddSpecialPeriod = (dayIdx: number) => {
     const newDays = [...specialBusinessDays];
+    const periods = newDays[dayIdx].periods;
+    let newOpen = '09:00';
+    let newClose = '18:00';
+    if (periods.length > 0) {
+      const last = periods[periods.length - 1];
+      newOpen = last.closeTime;
+      // デフォルト終了時刻は+1時間（24:00超えは00:00に）
+      const [h, m] = last.closeTime.split(':').map(Number);
+      let endH = h + 1;
+      if (endH >= 24) endH = 0;
+      newClose = `${endH.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+    }
     newDays[dayIdx].periods = [
-      ...newDays[dayIdx].periods,
-      { isOpen: true, openTime: '09:00', closeTime: '18:00' },
+      ...periods,
+      { isOpen: true, openTime: newOpen, closeTime: newClose },
     ];
     setSpecialBusinessDays(newDays);
   };
 
   const handleRemoveSpecialPeriod = (dayIdx: number, periodIdx: number) => {
+    if (!window.confirm('本当にこの時間帯を削除しますか？')) return;
     const newDays = [...specialBusinessDays];
     newDays[dayIdx].periods = newDays[dayIdx].periods.filter((_, i) => i !== periodIdx);
     setSpecialBusinessDays(newDays);
@@ -170,6 +193,35 @@ export const StoreForm = () => {
   const sortedSpecialBusinessDays = [...specialBusinessDays].sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   );
+
+  // --- 追加: 時間帯重複チェック関数 ---
+  const checkPeriodOverlap = (periods: BusinessHourPeriod[], currentIdx: number): boolean => {
+    const current = periods[currentIdx];
+    if (!current.isOpen) return false;
+    const [cOpenH, cOpenM] = current.openTime.split(':').map(Number);
+    const [cCloseH, cCloseM] = current.closeTime.split(':').map(Number);
+    const cOpen = cOpenH * 60 + cOpenM;
+    const cClose = cCloseH * 60 + cCloseM;
+    return periods.some((p, idx) => {
+      if (idx === currentIdx || !p.isOpen) return false;
+      const [pOpenH, pOpenM] = p.openTime.split(':').map(Number);
+      const [pCloseH, pCloseM] = p.closeTime.split(':').map(Number);
+      const pOpen = pOpenH * 60 + pOpenM;
+      const pClose = pCloseH * 60 + pCloseM;
+      // 深夜営業対応
+      const isCurrentOvernight = cOpen > cClose;
+      const isPOtherOvernight = pOpen > pClose;
+      if (isCurrentOvernight && isPOtherOvernight) {
+        return true;
+      } else if (isCurrentOvernight) {
+        return (pOpen <= cClose || pOpen >= cOpen) || (pClose <= cClose || pClose >= cOpen);
+      } else if (isPOtherOvernight) {
+        return (cOpen <= pClose || cOpen >= pOpen) || (cClose <= pClose || cClose >= pOpen);
+      } else {
+        return (cOpen < pClose && cClose > pOpen);
+      }
+    });
+  };
 
   if (loading) {
     return <div className="text-center">読み込み中...</div>;
@@ -253,6 +305,18 @@ export const StoreForm = () => {
           />
         </div>
 
+        <FormControl component="fieldset" sx={{ mt: 2 }}>
+          <FormLabel component="legend">祝日の営業</FormLabel>
+          <RadioGroup
+            row
+            value={isHolidayClosed ? 'closed' : 'open'}
+            onChange={e => setIsHolidayClosed(e.target.value === 'closed')}
+          >
+            <FormControlLabel value="open" control={<Radio />} label="祝日も営業" />
+            <FormControlLabel value="closed" control={<Radio />} label="祝日は休業" />
+          </RadioGroup>
+        </FormControl>
+
         <BusinessHoursInput value={businessHours} onChange={setBusinessHours} />
 
         <Box sx={{ mt: 4 }}>
@@ -272,6 +336,11 @@ export const StoreForm = () => {
                     required
                     size="small"
                     sx={{ width: isMobile ? 150 : 190 }}
+                    inputProps={{
+                      'aria-label': '特別営業日の日付',
+                      'aria-invalid': !validateSpecialBusinessDay(day.date),
+                      'aria-describedby': !validateSpecialBusinessDay(day.date) ? `special-day-error-${idx}` : undefined
+                    }}
                   />
                   <FormControl component="fieldset" size="small" sx={{ ml: 0.5 }}>
                     <RadioGroup
@@ -292,9 +361,10 @@ export const StoreForm = () => {
                         setSpecialBusinessDays(newDays);
                       }}
                       sx={{ gap: 0.25 }}
+                      aria-label="営業・休業の選択"
                     >
-                      <FormControlLabel value="open" control={<Radio size="small" />} label={isMobile ? "営" : "営業"} sx={{ mr: 0.25 }} />
-                      <FormControlLabel value="closed" control={<Radio size="small" />} label={isMobile ? "休" : "休業"} sx={{ mr: 0.25 }} />
+                      <FormControlLabel value="open" control={<Radio size="small" aria-label="営業" />} label={isMobile ? "営" : "営業"} sx={{ mr: 0.25 }} />
+                      <FormControlLabel value="closed" control={<Radio size="small" aria-label="休業" />} label={isMobile ? "休" : "休業"} sx={{ mr: 0.25 }} />
                     </RadioGroup>
                   </FormControl>
                   {!isOpenDay && (
@@ -304,7 +374,7 @@ export const StoreForm = () => {
                       onClick={() => handleRemoveSpecialDay(idx)}
                       sx={{ minWidth: isMobile ? 28 : 60, ml: 0.5 }}
                       variant="outlined"
-                      aria-label="削除"
+                      aria-label="この特別営業日を削除"
                     >
                       {isMobile ? <DeleteIcon fontSize="small" /> : '削除'}
                     </Button>
@@ -314,38 +384,58 @@ export const StoreForm = () => {
                   <>
                     {day.periods.map((period, pIdx) => {
                       if (!period.isOpen) return null;
+                      // --- 追加: 重複チェック ---
+                      const hasOverlap = checkPeriodOverlap(day.periods, pIdx);
                       return (
-                        <Box key={pIdx} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, minHeight: 48, flexWrap: 'nowrap', width: '100%', maxWidth: '100%' }}>
-                          <FormControl size="small" sx={{ minWidth: isMobile ? 60 : 120, flexShrink: 1 }}>
-                            <TextField
-                              type="time"
-                              value={period.openTime}
-                              onChange={e => handleSpecialPeriodChange(idx, pIdx, 'openTime', e.target.value)}
-                              size="small"
-                              required={period.isOpen}
-                            />
-                          </FormControl>
-                          <Typography>〜</Typography>
-                          <FormControl size="small" sx={{ minWidth: isMobile ? 60 : 120, flexShrink: 1 }}>
-                            <TextField
-                              type="time"
-                              value={period.closeTime}
-                              onChange={e => handleSpecialPeriodChange(idx, pIdx, 'closeTime', e.target.value)}
-                              size="small"
-                              required={period.isOpen}
-                            />
-                          </FormControl>
-                          {day.periods.length > 1 && (
-                            <Button
-                              size="small"
-                              color="error"
-                              onClick={() => handleRemoveSpecialPeriod(idx, pIdx)}
-                              sx={{ minWidth: isMobile ? 32 : 60, ml: 1, alignSelf: 'center', py: 1 }}
-                              variant="outlined"
-                              aria-label="枠削除"
-                            >
-                              {isMobile ? <DeleteIcon fontSize="small" /> : '削除'}
-                            </Button>
+                        <Box key={pIdx} sx={{ display: 'flex', gap: 1, mb: 1, minHeight: 48, flexWrap: 'nowrap', width: '100%', maxWidth: '100%', flexDirection: 'column', alignItems: 'flex-start' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                            <FormControl size="small" sx={{ minWidth: isMobile ? 60 : 120, flexShrink: 1 }}>
+                              <TextField
+                                type="time"
+                                value={period.openTime}
+                                onChange={e => handleSpecialPeriodChange(idx, pIdx, 'openTime', e.target.value)}
+                                size="small"
+                                required={period.isOpen}
+                                inputProps={{
+                                  'aria-label': '開始時刻',
+                                  'aria-invalid': false
+                                }}
+                                error={hasOverlap}
+                              />
+                            </FormControl>
+                            <Typography>〜</Typography>
+                            <FormControl size="small" sx={{ minWidth: isMobile ? 60 : 120, flexShrink: 1 }}>
+                              <TextField
+                                type="time"
+                                value={period.closeTime}
+                                onChange={e => handleSpecialPeriodChange(idx, pIdx, 'closeTime', e.target.value)}
+                                size="small"
+                                required={period.isOpen}
+                                inputProps={{
+                                  'aria-label': '終了時刻',
+                                  'aria-invalid': false
+                                }}
+                                error={hasOverlap}
+                              />
+                            </FormControl>
+                            {day.periods.length > 1 && (
+                              <Button
+                                size="small"
+                                color="error"
+                                onClick={() => handleRemoveSpecialPeriod(idx, pIdx)}
+                                sx={{ minWidth: isMobile ? 28 : 60, ml: 1, alignSelf: 'center', py: 1 }}
+                                variant="outlined"
+                                aria-label="この時間帯を削除"
+                              >
+                                {isMobile ? <DeleteIcon fontSize="small" /> : '削除'}
+                              </Button>
+                            )}
+                          </Box>
+                          {/* --- 追加: 重複エラー文 --- */}
+                          {hasOverlap && (
+                            <Alert severity="error" sx={{ mt: 1, width: '100%' }}>
+                              時間帯が重複しています
+                            </Alert>
                           )}
                         </Box>
                       );
