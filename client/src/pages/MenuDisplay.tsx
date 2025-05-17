@@ -151,7 +151,15 @@ const MenuDisplay: React.FC = () => {
                       default: return hours.dayOfWeek;
                     }
                   })()}
-                  ：{hours.isOpen ? `${hours.openTime}〜${hours.closeTime}` : '休業'}
+                  ：
+                  {Array.isArray(hours.periods) && hours.periods.length > 0 ? (
+                    hours.periods.map((period, pIdx) => (
+                      <span key={pIdx}>
+                        {period.isOpen ? `${period.openTime}〜${period.closeTime}` : '休業'}
+                        {pIdx < hours.periods.length - 1 && <span> ／ </span>}
+                      </span>
+                    ))
+                  ) : '休業'}
                 </li>
               ))}
             </ul>
