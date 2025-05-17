@@ -12,7 +12,11 @@ import {
   Radio,
   RadioGroup,
   FormControlLabel,
+  FormControl,
 } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 
 export const StoreForm = () => {
   const [store, setStore] = useState<Store | null>(null);
@@ -24,6 +28,9 @@ export const StoreForm = () => {
   const [businessHoursError, setBusinessHoursError] = useState<string | null>(null);
   const [specialBusinessDays, setSpecialBusinessDays] = useState<SpecialBusinessDay[]>([]);
   const [specialBusinessDaysError, setSpecialBusinessDaysError] = useState<string | null>(null);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     loadStoreInfo();
@@ -250,73 +257,128 @@ export const StoreForm = () => {
 
         <Box sx={{ mt: 4 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>臨時休業日・特別営業日</Typography>
-          {sortedSpecialBusinessDays.map((day, idx) => (
-            <div key={idx} className="mb-4 p-2 border rounded">
-              <div className="flex items-center gap-2 mb-2">
-                <input
-                  type="date"
-                  value={day.date}
-                  onChange={e => handleSpecialDayChange(idx, 'date', e.target.value)}
-                  className="border rounded px-2 py-1"
-                  required
-                  style={{ borderColor: !validateSpecialBusinessDay(day.date) ? 'red' : undefined }}
-                />
-                <Button color="error" size="small" variant="outlined" onClick={() => handleRemoveSpecialDay(idx)} sx={{ ml: 1 }}>削除</Button>
-                {!validateSpecialBusinessDay(day.date) && (
-                  <span style={{ color: 'red', marginLeft: 8 }}>今日以降の日付を指定してください</span>
+          {sortedSpecialBusinessDays.map((day, idx) => {
+            // その日のperiodsがすべてisOpen: falseなら臨時休業
+            const isOpenDay = day.periods.some(p => p.isOpen);
+            return (
+              <Box key={idx} sx={{ mb: 2, p: 2, border: '1px solid #ddd', borderRadius: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap', mb: 1 }}>
+                  <TextField
+                    type="date"
+                    value={day.date}
+                    onChange={e => handleSpecialDayChange(idx, 'date', e.target.value)}
+                    error={!validateSpecialBusinessDay(day.date)}
+                    helperText={!validateSpecialBusinessDay(day.date) ? '今日以降の日付を指定してください' : ''}
+                    required
+                    size="small"
+                    sx={{ width: isMobile ? 150 : 190 }}
+                  />
+                  <FormControl component="fieldset" size="small" sx={{ ml: 0.5 }}>
+                    <RadioGroup
+                      row
+                      value={isOpenDay ? 'open' : 'closed'}
+                      onChange={e => {
+                        const open = e.target.value === 'open';
+                        const newDays = [...specialBusinessDays];
+                        if (open) {
+                          if (!isOpenDay) {
+                            newDays[idx].periods = [{ isOpen: true, openTime: '09:00', closeTime: '18:00' }];
+                          } else {
+                            newDays[idx].periods = newDays[idx].periods.map(p => ({ ...p, isOpen: true }));
+                          }
+                        } else {
+                          newDays[idx].periods = newDays[idx].periods.map(p => ({ ...p, isOpen: false }));
+                        }
+                        setSpecialBusinessDays(newDays);
+                      }}
+                      sx={{ gap: 0.25 }}
+                    >
+                      <FormControlLabel value="open" control={<Radio size="small" />} label={isMobile ? "営" : "営業"} sx={{ mr: 0.25 }} />
+                      <FormControlLabel value="closed" control={<Radio size="small" />} label={isMobile ? "休" : "休業"} sx={{ mr: 0.25 }} />
+                    </RadioGroup>
+                  </FormControl>
+                  {!isOpenDay && (
+                    <Button
+                      size="small"
+                      color="error"
+                      onClick={() => handleRemoveSpecialDay(idx)}
+                      sx={{ minWidth: isMobile ? 28 : 60, ml: 0.5 }}
+                      variant="outlined"
+                      aria-label="削除"
+                    >
+                      {isMobile ? <DeleteIcon fontSize="small" /> : '削除'}
+                    </Button>
+                  )}
+                </Box>
+                {isOpenDay ? (
+                  <>
+                    {day.periods.map((period, pIdx) => {
+                      if (!period.isOpen) return null;
+                      return (
+                        <Box key={pIdx} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, minHeight: 48, flexWrap: 'nowrap', width: '100%', maxWidth: '100%' }}>
+                          <FormControl size="small" sx={{ minWidth: isMobile ? 60 : 120, flexShrink: 1 }}>
+                            <TextField
+                              type="time"
+                              value={period.openTime}
+                              onChange={e => handleSpecialPeriodChange(idx, pIdx, 'openTime', e.target.value)}
+                              size="small"
+                              required={period.isOpen}
+                            />
+                          </FormControl>
+                          <Typography>〜</Typography>
+                          <FormControl size="small" sx={{ minWidth: isMobile ? 60 : 120, flexShrink: 1 }}>
+                            <TextField
+                              type="time"
+                              value={period.closeTime}
+                              onChange={e => handleSpecialPeriodChange(idx, pIdx, 'closeTime', e.target.value)}
+                              size="small"
+                              required={period.isOpen}
+                            />
+                          </FormControl>
+                          {day.periods.length > 1 && (
+                            <Button
+                              size="small"
+                              color="error"
+                              onClick={() => handleRemoveSpecialPeriod(idx, pIdx)}
+                              sx={{ minWidth: isMobile ? 32 : 60, ml: 1, alignSelf: 'center', py: 1 }}
+                              variant="outlined"
+                              aria-label="枠削除"
+                            >
+                              {isMobile ? <DeleteIcon fontSize="small" /> : '削除'}
+                            </Button>
+                          )}
+                        </Box>
+                      );
+                    })}
+                    <Button
+                      size="small"
+                      onClick={() => handleAddSpecialPeriod(idx)}
+                      sx={{ mt: 1 }}
+                      startIcon={<span>＋</span>}
+                      variant="outlined"
+                      color="primary"
+                    >
+                      時間帯追加
+                    </Button>
+                  </>
+                ) : (
+                  <Typography sx={{ color: 'text.secondary', ml: 2 }}>休業</Typography>
                 )}
-              </div>
-              {day.periods.map((period, pIdx) => (
-                <div key={pIdx} className="flex items-center gap-2 mb-1">
-                  <div className="flex items-center gap-2">
-                    <label className="flex items-center gap-1">
-                      <input
-                        type="radio"
-                        checked={period.isOpen}
-                        onChange={() => handleSpecialPeriodChange(idx, pIdx, 'isOpen', true)}
-                        name={`special-day-${idx}-${pIdx}`}
-                      />
-                      営業
-                    </label>
-                    <label className="flex items-center gap-1">
-                      <input
-                        type="radio"
-                        checked={!period.isOpen}
-                        onChange={() => handleSpecialPeriodChange(idx, pIdx, 'isOpen', false)}
-                        name={`special-day-${idx}-${pIdx}`}
-                      />
-                      休業
-                    </label>
-                  </div>
-                  {period.isOpen ? (
-                    <>
-                      <input
-                        type="time"
-                        value={period.openTime}
-                        onChange={e => handleSpecialPeriodChange(idx, pIdx, 'openTime', e.target.value)}
-                        className="border rounded px-1"
-                        required={period.isOpen}
-                      />
-                      <span>〜</span>
-                      <input
-                        type="time"
-                        value={period.closeTime}
-                        onChange={e => handleSpecialPeriodChange(idx, pIdx, 'closeTime', e.target.value)}
-                        className="border rounded px-1"
-                        required={period.isOpen}
-                      />
-                    </>
-                  ) : (
-                    <span className="text-gray-500 ml-2">休業</span>
-                  )}
-                  {day.periods.length > 1 && (
-                    <Button color="error" size="small" variant="outlined" onClick={() => handleRemoveSpecialPeriod(idx, pIdx)} sx={{ ml: 1 }}>枠削除</Button>
-                  )}
-                </div>
-              ))}
-              <Button size="small" variant="outlined" color="primary" onClick={() => handleAddSpecialPeriod(idx)} sx={{ mt: 1 }} startIcon={<span>＋</span>}>時間帯追加</Button>
-            </div>
-          ))}
+                {isOpenDay && (
+                  <Button
+                    size="small"
+                    color="error"
+                    onClick={() => handleRemoveSpecialDay(idx)}
+                    sx={{ minWidth: isMobile ? 32 : 60, ml: 1, mt: 1 }}
+                    variant="outlined"
+                    aria-label="削除"
+                  >
+                    {isMobile ? <DeleteIcon fontSize="small" /> : '削除'}
+                  </Button>
+                )}
+              </Box>
+            );
+          })}
           <Button color="primary" variant="outlined" onClick={handleAddSpecialDay} startIcon={<span>＋</span>}>特別営業日追加</Button>
         </Box>
 
