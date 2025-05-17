@@ -4,7 +4,8 @@ import {
   Box,
   FormControl,
   FormControlLabel,
-  Checkbox,
+  Radio,
+  RadioGroup,
   Select,
   MenuItem,
   Typography,
@@ -123,7 +124,8 @@ export const BusinessHoursInput: React.FC<BusinessHoursInputProps> = ({ value, o
     const [closeHour, closeMinute] = closeTime.split(':').map(Number);
     const openMinutes = openHour * 60 + openMinute;
     const closeMinutes = closeHour * 60 + closeMinute;
-    return openMinutes < closeMinutes;
+    // 開始と終了が同じ場合のみNG
+    return openMinutes !== closeMinutes;
   };
 
   return (
@@ -140,38 +142,45 @@ export const BusinessHoursInput: React.FC<BusinessHoursInputProps> = ({ value, o
                 const hasError = period.isOpen && !validateTimeRange(period.openTime, period.closeTime);
                 return (
                   <Box key={periodIdx} sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={period.isOpen}
-                          onChange={e => handlePeriodChange(dayIdx, periodIdx, 'isOpen', e.target.checked)}
-                        />
-                      }
-                      label={periodIdx === 0 ? '' : `時間帯${periodIdx + 1}`}
-                    />
-                    <FormControl size="small" sx={{ minWidth: 120 }}>
-                      <Select
-                        value={period.openTime || ''}
-                        onChange={e => handlePeriodChange(dayIdx, periodIdx, 'openTime', e.target.value)}
-                        error={hasError}
+                    <FormControl component="fieldset">
+                      <RadioGroup
+                        row
+                        value={period.isOpen ? 'open' : 'closed'}
+                        onChange={e => handlePeriodChange(dayIdx, periodIdx, 'isOpen', e.target.value === 'open')}
                       >
-                        {TIME_OPTIONS.map((time) => (
-                          <MenuItem key={time} value={time}>{time}</MenuItem>
-                        ))}
-                      </Select>
+                        <FormControlLabel value="open" control={<Radio />} label="営業" />
+                        <FormControlLabel value="closed" control={<Radio />} label="休業" />
+                      </RadioGroup>
                     </FormControl>
-                    <Typography>〜</Typography>
-                    <FormControl size="small" sx={{ minWidth: 120 }}>
-                      <Select
-                        value={period.closeTime || ''}
-                        onChange={e => handlePeriodChange(dayIdx, periodIdx, 'closeTime', e.target.value)}
-                        error={hasError}
-                      >
-                        {TIME_OPTIONS.map((time) => (
-                          <MenuItem key={time} value={time}>{time}</MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
+                    {period.isOpen ? (
+                      <>
+                        <FormControl size="small" sx={{ minWidth: 120 }}>
+                          <Select
+                            value={period.openTime || ''}
+                            onChange={e => handlePeriodChange(dayIdx, periodIdx, 'openTime', e.target.value)}
+                            error={hasError}
+                          >
+                            {TIME_OPTIONS.map((time) => (
+                              <MenuItem key={time} value={time}>{time}</MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                        <Typography>〜</Typography>
+                        <FormControl size="small" sx={{ minWidth: 120 }}>
+                          <Select
+                            value={period.closeTime || ''}
+                            onChange={e => handlePeriodChange(dayIdx, periodIdx, 'closeTime', e.target.value)}
+                            error={hasError}
+                          >
+                            {TIME_OPTIONS.map((time) => (
+                              <MenuItem key={time} value={time}>{time}</MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </>
+                    ) : (
+                      <Typography sx={{ color: 'text.secondary', ml: 2 }}>休業</Typography>
+                    )}
                     {businessHours[dayIdx].periods.length > 1 && (
                       <button type="button" onClick={() => handleRemovePeriod(dayIdx, periodIdx)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}>
                         削除
@@ -179,7 +188,7 @@ export const BusinessHoursInput: React.FC<BusinessHoursInputProps> = ({ value, o
                     )}
                     {hasError && (
                       <Alert severity="error" sx={{ mt: 1 }}>
-                        開店時間は閉店時間より前である必要があります
+                        開始時刻と終了時刻は異なる必要があります
                       </Alert>
                     )}
                   </Box>

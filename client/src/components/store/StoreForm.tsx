@@ -223,7 +223,7 @@ export const StoreForm = () => {
         <BusinessHoursInput value={businessHours} onChange={setBusinessHours} />
 
         <div className="mt-8">
-          <h3 className="text-lg font-bold mb-2">特別営業日</h3>
+          <h3 className="text-lg font-bold mb-2">臨時休業日・特別営業日</h3>
           {sortedSpecialBusinessDays.map((day, idx) => (
             <div key={idx} className="mb-4 p-2 border rounded">
               <div className="flex items-center gap-2 mb-2">
@@ -238,37 +238,53 @@ export const StoreForm = () => {
               </div>
               {day.periods.map((period, pIdx) => (
                 <div key={pIdx} className="flex items-center gap-2 mb-1">
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={period.isOpen}
-                      onChange={e => handleSpecialPeriodChange(idx, pIdx, 'isOpen', e.target.checked)}
-                    /> 営業
-                  </label>
-                  <input
-                    type="time"
-                    value={period.openTime}
-                    onChange={e => handleSpecialPeriodChange(idx, pIdx, 'openTime', e.target.value)}
-                    className="border rounded px-1"
-                    required={period.isOpen}
-                    disabled={!period.isOpen}
-                  />
-                  <span>〜</span>
-                  <input
-                    type="time"
-                    value={period.closeTime}
-                    onChange={e => handleSpecialPeriodChange(idx, pIdx, 'closeTime', e.target.value)}
-                    className="border rounded px-1"
-                    required={period.isOpen}
-                    disabled={!period.isOpen}
-                  />
+                  <div className="flex items-center gap-2">
+                    <label className="flex items-center gap-1">
+                      <input
+                        type="radio"
+                        checked={period.isOpen}
+                        onChange={() => handleSpecialPeriodChange(idx, pIdx, 'isOpen', true)}
+                        name={`special-day-${idx}-${pIdx}`}
+                      />
+                      営業
+                    </label>
+                    <label className="flex items-center gap-1">
+                      <input
+                        type="radio"
+                        checked={!period.isOpen}
+                        onChange={() => handleSpecialPeriodChange(idx, pIdx, 'isOpen', false)}
+                        name={`special-day-${idx}-${pIdx}`}
+                      />
+                      休業
+                    </label>
+                  </div>
+                  {period.isOpen ? (
+                    <>
+                      <input
+                        type="time"
+                        value={period.openTime}
+                        onChange={e => handleSpecialPeriodChange(idx, pIdx, 'openTime', e.target.value)}
+                        className="border rounded px-1"
+                        required={period.isOpen}
+                      />
+                      <span>〜</span>
+                      <input
+                        type="time"
+                        value={period.closeTime}
+                        onChange={e => handleSpecialPeriodChange(idx, pIdx, 'closeTime', e.target.value)}
+                        className="border rounded px-1"
+                        required={period.isOpen}
+                      />
+                    </>
+                  ) : (
+                    <span className="text-gray-500 ml-2">休業</span>
+                  )}
                   {day.periods.length > 1 && (
                     <button type="button" onClick={() => handleRemoveSpecialPeriod(idx, pIdx)} className="text-red-400 ml-1">枠削除</button>
                   )}
                 </div>
               ))}
               <button type="button" onClick={() => handleAddSpecialPeriod(idx)} className="text-blue-500 mt-1">＋時間帯追加</button>
-              {day.periods.length === 0 && <span className="text-gray-500 ml-2">休業</span>}
             </div>
           ))}
           <button type="button" onClick={handleAddSpecialDay} className="text-blue-600 font-bold">＋特別営業日追加</button>
