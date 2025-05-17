@@ -21,6 +21,7 @@ export type Store = {
   updatedAt: string;
   address: string;
   phone: string;
+  isHolidayClosed?: boolean; // 祝日は休業するか（デフォルト: 営業）
 };
 
 export type StoreFormData = Omit<Store, 'id' | 'createdAt' | 'updatedAt'>; 
