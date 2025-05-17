@@ -11,6 +11,7 @@ import {
   Typography,
   Paper,
   Alert,
+  Button,
 } from '@mui/material';
 import { BusinessHours, DayOfWeek, BusinessHourPeriod } from '../../types/store';
 
@@ -128,6 +129,35 @@ export const BusinessHoursInput: React.FC<BusinessHoursInputProps> = ({ value, o
     return openMinutes !== closeMinutes;
   };
 
+  // 時間帯の重複チェック
+  const checkTimeOverlap = (periods: BusinessHourPeriod[], currentIdx: number): boolean => {
+    const current = periods[currentIdx];
+    if (!current.isOpen) return false;
+    const [cOpenH, cOpenM] = current.openTime.split(':').map(Number);
+    const [cCloseH, cCloseM] = current.closeTime.split(':').map(Number);
+    const cOpen = cOpenH * 60 + cOpenM;
+    const cClose = cCloseH * 60 + cCloseM;
+    return periods.some((p, idx) => {
+      if (idx === currentIdx || !p.isOpen) return false;
+      const [pOpenH, pOpenM] = p.openTime.split(':').map(Number);
+      const [pCloseH, pCloseM] = p.closeTime.split(':').map(Number);
+      const pOpen = pOpenH * 60 + pOpenM;
+      const pClose = pCloseH * 60 + pCloseM;
+      // 深夜営業対応
+      const isCurrentOvernight = cOpen > cClose;
+      const isPOtherOvernight = pOpen > pClose;
+      if (isCurrentOvernight && isPOtherOvernight) {
+        return true;
+      } else if (isCurrentOvernight) {
+        return (pOpen <= cClose || pOpen >= cOpen) || (pClose <= cClose || pClose >= cOpen);
+      } else if (isPOtherOvernight) {
+        return (cOpen <= pClose || cOpen >= pOpen) || (cClose <= pClose || cClose >= pOpen);
+      } else {
+        return (cOpen < pClose && cClose > pOpen);
+      }
+    });
+  };
+
   return (
     <Box sx={{ width: '100%' }}>
       <Typography variant="h6" gutterBottom>
@@ -135,70 +165,110 @@ export const BusinessHoursInput: React.FC<BusinessHoursInputProps> = ({ value, o
       </Typography>
       <Paper sx={{ p: 2 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {DAYS_OF_WEEK.map((day, dayIdx) => (
-            <Box key={day.value} sx={{ mb: 2, borderBottom: '1px solid #eee', pb: 1 }}>
-              <Typography variant="subtitle1" sx={{ mb: 1 }}>{day.label}</Typography>
-              {businessHours[dayIdx].periods.map((period, periodIdx) => {
-                const hasError = period.isOpen && !validateTimeRange(period.openTime, period.closeTime);
-                return (
-                  <Box key={periodIdx} sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                    <FormControl component="fieldset">
-                      <RadioGroup
-                        row
-                        value={period.isOpen ? 'open' : 'closed'}
-                        onChange={e => handlePeriodChange(dayIdx, periodIdx, 'isOpen', e.target.value === 'open')}
-                      >
-                        <FormControlLabel value="open" control={<Radio />} label="営業" />
-                        <FormControlLabel value="closed" control={<Radio />} label="休業" />
-                      </RadioGroup>
-                    </FormControl>
-                    {period.isOpen ? (
-                      <>
-                        <FormControl size="small" sx={{ minWidth: 120 }}>
-                          <Select
-                            value={period.openTime || ''}
-                            onChange={e => handlePeriodChange(dayIdx, periodIdx, 'openTime', e.target.value)}
-                            error={hasError}
-                          >
-                            {TIME_OPTIONS.map((time) => (
-                              <MenuItem key={time} value={time}>{time}</MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                        <Typography>〜</Typography>
-                        <FormControl size="small" sx={{ minWidth: 120 }}>
-                          <Select
-                            value={period.closeTime || ''}
-                            onChange={e => handlePeriodChange(dayIdx, periodIdx, 'closeTime', e.target.value)}
-                            error={hasError}
-                          >
-                            {TIME_OPTIONS.map((time) => (
-                              <MenuItem key={time} value={time}>{time}</MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      </>
-                    ) : (
-                      <Typography sx={{ color: 'text.secondary', ml: 2 }}>休業</Typography>
-                    )}
-                    {businessHours[dayIdx].periods.length > 1 && (
-                      <button type="button" onClick={() => handleRemovePeriod(dayIdx, periodIdx)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}>
-                        削除
-                      </button>
-                    )}
-                    {hasError && (
-                      <Alert severity="error" sx={{ mt: 1 }}>
-                        開始時刻と終了時刻は異なる必要があります
-                      </Alert>
-                    )}
-                  </Box>
-                );
-              })}
-              <button type="button" onClick={() => handleAddPeriod(dayIdx)} style={{ marginTop: 4 }}>
-                ＋時間帯追加
-              </button>
-            </Box>
-          ))}
+          {DAYS_OF_WEEK.map((day, dayIdx) => {
+            // その曜日のperiodsがすべてisOpen: falseなら休業扱い
+            const isOpenDay = businessHours[dayIdx].periods.some(p => p.isOpen);
+            return (
+              <Box key={day.value} sx={{ mb: 2, borderBottom: '1px solid #eee', pb: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, gap: 2 }}>
+                  <Typography variant="subtitle1">{day.label}</Typography>
+                  <FormControl component="fieldset" size="small">
+                    <RadioGroup
+                      row
+                      value={isOpenDay ? 'open' : 'closed'}
+                      onChange={e => {
+                        const open = e.target.value === 'open';
+                        const newHours = [...businessHours];
+                        if (open) {
+                          // 既存periodsが全てisOpen: falseなら1枠追加
+                          if (!isOpenDay) {
+                            newHours[dayIdx].periods = [{ isOpen: true, openTime: '09:00', closeTime: '18:00' }];
+                          } else {
+                            // 既存periodsのisOpenを全てtrueに
+                            newHours[dayIdx].periods = newHours[dayIdx].periods.map(p => ({ ...p, isOpen: true }));
+                          }
+                        } else {
+                          // 全てisOpen: falseに
+                          newHours[dayIdx].periods = newHours[dayIdx].periods.map(p => ({ ...p, isOpen: false }));
+                        }
+                        setBusinessHours(newHours);
+                        onChange(newHours);
+                      }}
+                    >
+                      <FormControlLabel value="open" control={<Radio />} label="営業" />
+                      <FormControlLabel value="closed" control={<Radio />} label="休業" />
+                    </RadioGroup>
+                  </FormControl>
+                </Box>
+                {isOpenDay ? (
+                  <>
+                    {businessHours[dayIdx].periods.map((period, periodIdx) => {
+                      if (!period.isOpen) return null;
+                      const hasError = !validateTimeRange(period.openTime, period.closeTime);
+                      const hasOverlap = checkTimeOverlap(businessHours[dayIdx].periods, periodIdx);
+                      return (
+                        <Box key={periodIdx} sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1, minHeight: 56, flexWrap: 'wrap' }}>
+                          <FormControl size="small" sx={{ minWidth: 120 }}>
+                            <Select
+                              value={period.openTime || ''}
+                              onChange={e => handlePeriodChange(dayIdx, periodIdx, 'openTime', e.target.value)}
+                              error={hasError || hasOverlap}
+                            >
+                              {TIME_OPTIONS.map((time) => (
+                                <MenuItem key={time} value={time}>{time}</MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                          <Typography>〜</Typography>
+                          <FormControl size="small" sx={{ minWidth: 120 }}>
+                            <Select
+                              value={period.closeTime || ''}
+                              onChange={e => handlePeriodChange(dayIdx, periodIdx, 'closeTime', e.target.value)}
+                              error={hasError || hasOverlap}
+                            >
+                              {TIME_OPTIONS.map((time) => (
+                                <MenuItem key={time} value={time}>{time}</MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                          {businessHours[dayIdx].periods.length > 1 && (
+                            <Button
+                              size="small"
+                              color="error"
+                              onClick={() => handleRemovePeriod(dayIdx, periodIdx)}
+                              sx={{ minWidth: 60, ml: 1, alignSelf: 'center', py: 1 }}
+                              variant="outlined"
+                            >
+                              削除
+                            </Button>
+                          )}
+                          {(hasError || hasOverlap) && (
+                            <Alert severity="error" sx={{ mt: 1, width: '100%' }}>
+                              {hasError
+                                ? '開始時刻と終了時刻は異なる必要があります'
+                                : '時間帯が重複しています'}
+                            </Alert>
+                          )}
+                        </Box>
+                      );
+                    })}
+                    <Button
+                      size="small"
+                      onClick={() => handleAddPeriod(dayIdx)}
+                      sx={{ mt: 1 }}
+                      startIcon={<span>＋</span>}
+                      variant="outlined"
+                      color="primary"
+                    >
+                      時間帯追加
+                    </Button>
+                  </>
+                ) : (
+                  <Typography sx={{ color: 'text.secondary', ml: 2 }}>休業</Typography>
+                )}
+              </Box>
+            );
+          })}
         </Box>
       </Paper>
     </Box>

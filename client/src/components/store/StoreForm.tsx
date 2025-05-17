@@ -2,6 +2,17 @@ import { useState, useEffect } from 'react';
 import { Store, StoreFormData, BusinessHours, SpecialBusinessDay, BusinessHourPeriod } from '../../types/store';
 import { getStoreInfo, updateStore } from '../../api/store';
 import { BusinessHoursInput } from './BusinessHoursInput';
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Alert,
+  Paper,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+} from '@mui/material';
 
 export const StoreForm = () => {
   const [store, setStore] = useState<Store | null>(null);
@@ -12,6 +23,7 @@ export const StoreForm = () => {
   const [businessHours, setBusinessHours] = useState<BusinessHours[]>([]);
   const [businessHoursError, setBusinessHoursError] = useState<string | null>(null);
   const [specialBusinessDays, setSpecialBusinessDays] = useState<SpecialBusinessDay[]>([]);
+  const [specialBusinessDaysError, setSpecialBusinessDaysError] = useState<string | null>(null);
 
   useEffect(() => {
     loadStoreInfo();
@@ -37,6 +49,24 @@ export const StoreForm = () => {
       setBusinessHoursError(null);
     }
   }, [businessHours]);
+
+  // 日付バリデーション関数
+  const validateSpecialBusinessDay = (date: string): boolean => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const inputDate = new Date(date);
+    inputDate.setHours(0, 0, 0, 0);
+    return inputDate >= today;
+  };
+
+  useEffect(() => {
+    const hasInvalidDate = specialBusinessDays.some(day => !validateSpecialBusinessDay(day.date));
+    if (hasInvalidDate) {
+      setSpecialBusinessDaysError('特別営業日は今日以降の日付を指定してください');
+    } else {
+      setSpecialBusinessDaysError(null);
+    }
+  }, [specialBusinessDays]);
 
   const loadStoreInfo = async () => {
     try {
@@ -140,30 +170,26 @@ export const StoreForm = () => {
 
   return (
     <div className="p-4">
-      <h2 className="text-2xl font-bold mb-6">店舗情報</h2>
+      <Typography variant="h4" component="h2" sx={{ mb: 4 }}>店舗情報</Typography>
       
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
+        <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
       )}
       
       {successMessage && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-          {successMessage}
-        </div>
+        <Alert severity="success" sx={{ mb: 2 }}>{successMessage}</Alert>
       )}
 
       {phoneError && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {phoneError}
-        </div>
+        <Alert severity="error" sx={{ mb: 2 }}>{phoneError}</Alert>
       )}
 
       {businessHoursError && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {businessHoursError}
-        </div>
+        <Alert severity="error" sx={{ mb: 2 }}>{businessHoursError}</Alert>
+      )}
+
+      {specialBusinessDaysError && (
+        <Alert severity="error" sx={{ mb: 2 }}>{specialBusinessDaysError}</Alert>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -222,8 +248,8 @@ export const StoreForm = () => {
 
         <BusinessHoursInput value={businessHours} onChange={setBusinessHours} />
 
-        <div className="mt-8">
-          <h3 className="text-lg font-bold mb-2">臨時休業日・特別営業日</h3>
+        <Box sx={{ mt: 4 }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>臨時休業日・特別営業日</Typography>
           {sortedSpecialBusinessDays.map((day, idx) => (
             <div key={idx} className="mb-4 p-2 border rounded">
               <div className="flex items-center gap-2 mb-2">
@@ -233,8 +259,12 @@ export const StoreForm = () => {
                   onChange={e => handleSpecialDayChange(idx, 'date', e.target.value)}
                   className="border rounded px-2 py-1"
                   required
+                  style={{ borderColor: !validateSpecialBusinessDay(day.date) ? 'red' : undefined }}
                 />
-                <button type="button" onClick={() => handleRemoveSpecialDay(idx)} className="text-red-500 ml-2">削除</button>
+                <Button color="error" size="small" variant="outlined" onClick={() => handleRemoveSpecialDay(idx)} sx={{ ml: 1 }}>削除</Button>
+                {!validateSpecialBusinessDay(day.date) && (
+                  <span style={{ color: 'red', marginLeft: 8 }}>今日以降の日付を指定してください</span>
+                )}
               </div>
               {day.periods.map((period, pIdx) => (
                 <div key={pIdx} className="flex items-center gap-2 mb-1">
@@ -280,25 +310,26 @@ export const StoreForm = () => {
                     <span className="text-gray-500 ml-2">休業</span>
                   )}
                   {day.periods.length > 1 && (
-                    <button type="button" onClick={() => handleRemoveSpecialPeriod(idx, pIdx)} className="text-red-400 ml-1">枠削除</button>
+                    <Button color="error" size="small" variant="outlined" onClick={() => handleRemoveSpecialPeriod(idx, pIdx)} sx={{ ml: 1 }}>枠削除</Button>
                   )}
                 </div>
               ))}
-              <button type="button" onClick={() => handleAddSpecialPeriod(idx)} className="text-blue-500 mt-1">＋時間帯追加</button>
+              <Button size="small" variant="outlined" color="primary" onClick={() => handleAddSpecialPeriod(idx)} sx={{ mt: 1 }} startIcon={<span>＋</span>}>時間帯追加</Button>
             </div>
           ))}
-          <button type="button" onClick={handleAddSpecialDay} className="text-blue-600 font-bold">＋特別営業日追加</button>
-        </div>
+          <Button color="primary" variant="outlined" onClick={handleAddSpecialDay} startIcon={<span>＋</span>}>特別営業日追加</Button>
+        </Box>
 
-        <div className="pt-4">
-          <button
+        <Box sx={{ pt: 4 }}>
+          <Button
             type="submit"
-            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-            disabled={loading || !!businessHoursError}
+            variant="contained"
+            color="primary"
+            disabled={loading || !!businessHoursError || !!specialBusinessDaysError}
           >
             保存
-          </button>
-        </div>
+          </Button>
+        </Box>
       </form>
     </div>
   );
