@@ -135,7 +135,27 @@ const MenuDisplay: React.FC = () => {
           {store.description && <p><strong>店舗説明:</strong> {store.description}</p>}
           <div><strong>住所:</strong> {store.address || '-'}</div>
           <div><strong>電話番号:</strong> {store.phone || '-'}</div>
-          <div><strong>営業時間:</strong> {store.businessHours || '-'}</div>
+          <div><strong>営業時間:</strong> {Array.isArray(store.businessHours) && store.businessHours.length > 0 ? (
+            <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+              {store.businessHours.map((hours, idx) => (
+                <li key={hours.dayOfWeek + '-' + idx}>
+                  {(() => {
+                    switch (hours.dayOfWeek) {
+                      case 'monday': return '月曜日';
+                      case 'tuesday': return '火曜日';
+                      case 'wednesday': return '水曜日';
+                      case 'thursday': return '木曜日';
+                      case 'friday': return '金曜日';
+                      case 'saturday': return '土曜日';
+                      case 'sunday': return '日曜日';
+                      default: return hours.dayOfWeek;
+                    }
+                  })()}
+                  ：{hours.isOpen ? `${hours.openTime}〜${hours.closeTime}` : '休業'}
+                </li>
+              ))}
+            </ul>
+          ) : '-'}</div>
         </section>
         {/* メニューセクション */}
         <section>

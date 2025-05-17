@@ -60,13 +60,17 @@ export const BusinessHoursInput: React.FC<BusinessHoursInputProps> = ({ value, o
   };
 
   const handleChange = (newValue: BusinessHours[]) => {
+    // dayOfWeekを必ずセット
+    const withDayOfWeek = newValue.map((hours, idx) => ({
+      ...hours,
+      dayOfWeek: DAYS_OF_WEEK[idx].value,
+    }));
     // 時間のバリデーション
-    const isValid = newValue.every(hours => 
+    const isValid = withDayOfWeek.every(hours => 
       !hours.isOpen || validateTimeRange(hours.openTime, hours.closeTime)
     );
-    
     if (isValid) {
-      onChange(newValue);
+      onChange(withDayOfWeek);
     }
   };
 
@@ -114,7 +118,7 @@ export const BusinessHoursInput: React.FC<BusinessHoursInputProps> = ({ value, o
                         control={control}
                         render={({ field }) => (
                           <Select
-                            value={field.value}
+                            value={field.value || ''}
                             onChange={(e) => {
                               field.onChange(e.target.value);
                               const newValue = [...businessHours];
@@ -142,7 +146,7 @@ export const BusinessHoursInput: React.FC<BusinessHoursInputProps> = ({ value, o
                         control={control}
                         render={({ field }) => (
                           <Select
-                            value={field.value}
+                            value={field.value || ''}
                             onChange={(e) => {
                               field.onChange(e.target.value);
                               const newValue = [...businessHours];
