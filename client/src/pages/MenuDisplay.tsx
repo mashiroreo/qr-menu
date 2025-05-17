@@ -78,6 +78,10 @@ const MenuDisplay: React.FC = () => {
   if (error) return <div style={{ color: 'red' }}>{error}</div>;
   if (!store) return <div>店舗情報が見つかりません</div>;
 
+  const sortedSpecialBusinessDays = Array.isArray(store.specialBusinessDays)
+    ? [...store.specialBusinessDays].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    : [];
+
   return (
     <div className="menu-root-responsive">
       {selectedImage && (
@@ -144,7 +148,7 @@ const MenuDisplay: React.FC = () => {
                   : '【特別営業日】'}
               </div>
               <ul style={{ margin: 0, padding: 0, listStyle: 'none', color: '#e53935' }}>
-                {store.specialBusinessDays.map((day, idx) => (
+                {sortedSpecialBusinessDays.map((day, idx) => (
                   <li key={day.date + '-' + idx}>
                     {day.date.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$2/$3')}：
                     {Array.isArray(day.periods) && day.periods.length > 0 ? (

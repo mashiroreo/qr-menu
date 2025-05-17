@@ -129,6 +129,11 @@ export const StoreForm = () => {
     setSpecialBusinessDays(newDays);
   };
 
+  // 日付順でソート
+  const sortedSpecialBusinessDays = [...specialBusinessDays].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
   if (loading) {
     return <div className="text-center">読み込み中...</div>;
   }
@@ -219,7 +224,7 @@ export const StoreForm = () => {
 
         <div className="mt-8">
           <h3 className="text-lg font-bold mb-2">特別営業日</h3>
-          {specialBusinessDays.map((day, idx) => (
+          {sortedSpecialBusinessDays.map((day, idx) => (
             <div key={idx} className="mb-4 p-2 border rounded">
               <div className="flex items-center gap-2 mb-2">
                 <input
