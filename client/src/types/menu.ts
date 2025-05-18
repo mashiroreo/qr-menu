@@ -15,7 +15,6 @@ export interface MenuItem {
   imageUrl?: string;
   categoryId: number;
   storeId: number;
-  order?: number;
   createdAt: string;
   updatedAt: string;
 }

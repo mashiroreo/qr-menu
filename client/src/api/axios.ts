@@ -16,7 +16,6 @@ api.interceptors.request.use(async (config) => {
   
   if (user) {
     try {
-      // 強制的に新しいトークンを取得
       const token = await user.getIdToken(true);
       config.headers.Authorization = `Bearer ${token}`;
     } catch (error) {
@@ -34,7 +33,6 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // トークンの期限切れエラーの場合
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
@@ -43,11 +41,8 @@ api.interceptors.response.use(
         const user = auth.currentUser;
         
         if (user) {
-          // 新しいトークンを取得
           const token = await user.getIdToken(true);
           originalRequest.headers.Authorization = `Bearer ${token}`;
-          
-          // リクエストを再試行
           return api(originalRequest);
         }
       } catch (refreshError) {
