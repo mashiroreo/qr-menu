@@ -683,24 +683,35 @@ export const StoreForm = () => {
                           </Box>
                         ) : (
                           <>
-                            <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                            <Box
+                              sx={
+                                isMobile
+                                  ? { display: 'block', flex: 1 }
+                                  : { display: 'flex', flexWrap: 'nowrap', alignItems: 'center', flex: 1, whiteSpace: 'nowrap' }
+                              }
+                            >
                               {Array.isArray(hours.periods) && hours.periods.length > 0 ? (
                                 hours.periods.map((period, pIdx) => (
-                                  <div key={pIdx} style={{ display: 'flex', alignItems: 'flex-start' }}>
-                                    <span style={{ fontWeight: 500, minWidth: 60, display: 'inline-block', visibility: pIdx === 0 ? 'visible' : 'hidden' }}>
-                                      {pIdx === 0 ? dayLabel : '　'}
-                                    </span>
-                                    <span>
-                                      {pIdx === 0 ? '：' : '　'}
-                                      {period.isOpen ? `${period.openTime}〜${period.closeTime}` : '休業'}
-                                      {pIdx < hours.periods.length - 1 && <span> ／ </span>}
-                                    </span>
-                                  </div>
+                                  <span
+                                    key={pIdx}
+                                    style={{
+                                      display: isMobile && pIdx > 0 ? 'block' : 'inline',
+                                      marginLeft: isMobile && pIdx > 0 ? 60 : 0,
+                                      whiteSpace: 'nowrap',
+                                    }}
+                                  >
+                                    {pIdx === 0 ? (
+                                      <>
+                                        <span style={{ fontWeight: 500, minWidth: 60, display: 'inline-block' }}>{dayLabel}</span>：
+                                      </>
+                                    ) : null}
+                                    {pIdx !== 0 && isMobile ? '　' : ''}
+                                    {period.isOpen ? `${period.openTime}〜${period.closeTime}` : '休業'}
+                                    {pIdx < hours.periods.length - 1 && (isMobile ? <><span> ／</span><br /></> : ' ／ ')}
+                                  </span>
                                 ))
                               ) : (
-                                <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-                                  <span style={{ fontWeight: 500, minWidth: 60, display: 'inline-block' }}>{dayLabel}</span>：休業
-                                </div>
+                                <span style={{ fontWeight: 500, minWidth: 60, display: 'inline-block' }}>{dayLabel}：休業</span>
                               )}
                             </Box>
                             <Box sx={{ alignSelf: 'flex-start' }}>
