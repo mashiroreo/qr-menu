@@ -388,6 +388,18 @@ export const StoreForm = () => {
     }
   };
 
+  // 編集フラグ
+  const isAnyEditing = editField !== null || editDayOfWeek !== null || editSpecialDayIndex !== null || isEditingHoliday;
+
+  // 編集ボタン・追加ボタンのonClickをラップ
+  const handleEditButton = (editAction: () => void) => {
+    if (isAnyEditing) {
+      window.alert('編集中の項目があります。入力を完了してください。');
+      return;
+    }
+    editAction();
+  };
+
   if (loading) {
     return <div className="text-center">読み込み中...</div>;
   }
@@ -431,11 +443,11 @@ export const StoreForm = () => {
           </Box>
           {editField === 'name' ? (
             <>
-              <IconButton color="primary" onClick={() => handleFieldSave('name')} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
+              <IconButton color="primary" onClick={() => handleEditButton(() => handleFieldSave('name'))} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
               <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, name: store?.name || '' })); }} sx={{ alignSelf: 'flex-start' }}><CloseIcon /></IconButton>
             </>
           ) : (
-            <EditIconButton onClick={() => setEditField('name')} />
+            <EditIconButton onClick={() => handleEditButton(() => setEditField('name'))} />
           )}
         </Box>
         {/* 店舗説明 */}
@@ -457,11 +469,11 @@ export const StoreForm = () => {
           </Box>
           {editField === 'description' ? (
             <>
-              <IconButton color="primary" onClick={() => handleFieldSave('description')} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
+              <IconButton color="primary" onClick={() => handleEditButton(() => handleFieldSave('description'))} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
               <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, description: store?.description || '' })); }} sx={{ alignSelf: 'flex-start' }}><CloseIcon /></IconButton>
             </>
           ) : (
-            <EditIconButton onClick={() => setEditField('description')} />
+            <EditIconButton onClick={() => handleEditButton(() => setEditField('description'))} />
           )}
         </Box>
         {/* 住所 */}
@@ -481,11 +493,11 @@ export const StoreForm = () => {
           </Box>
           {editField === 'address' ? (
             <>
-              <IconButton color="primary" onClick={() => handleFieldSave('address')} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
+              <IconButton color="primary" onClick={() => handleEditButton(() => handleFieldSave('address'))} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
               <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, address: store?.address || '' })); }} sx={{ alignSelf: 'flex-start' }}><CloseIcon /></IconButton>
             </>
           ) : (
-            <EditIconButton onClick={() => setEditField('address')} />
+            <EditIconButton onClick={() => handleEditButton(() => setEditField('address'))} />
           )}
         </Box>
         {/* 電話番号 */}
@@ -505,11 +517,11 @@ export const StoreForm = () => {
           </Box>
           {editField === 'phone' ? (
             <>
-              <IconButton color="primary" onClick={() => handleFieldSave('phone')} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
+              <IconButton color="primary" onClick={() => handleEditButton(() => handleFieldSave('phone'))} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
               <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, phone: store?.phone || '' })); }} sx={{ alignSelf: 'flex-start' }}><CloseIcon /></IconButton>
             </>
           ) : (
-            <EditIconButton onClick={() => setEditField('phone')} />
+            <EditIconButton onClick={() => handleEditButton(() => setEditField('phone'))} />
           )}
         </Box>
       </Box>
@@ -536,11 +548,11 @@ export const StoreForm = () => {
           </Box>
           {isEditingHoliday ? (
             <>
-              <IconButton color="primary" onClick={handleHolidaySave} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
-              <IconButton onClick={handleHolidayCancel} sx={{ alignSelf: 'flex-start' }}><CloseIcon /></IconButton>
+              <IconButton color="primary" onClick={() => handleEditButton(handleHolidaySave)} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
+              <IconButton onClick={() => handleEditButton(handleHolidayCancel)} sx={{ alignSelf: 'flex-start' }}><CloseIcon /></IconButton>
             </>
           ) : (
-            <EditIconButton onClick={handleHolidayEdit} />
+            <EditIconButton onClick={() => handleEditButton(handleHolidayEdit)} />
           )}
         </Box>
       </Box>
@@ -801,10 +813,10 @@ export const StoreForm = () => {
                               )}
                             </Box>
                             <Box sx={{ alignSelf: 'flex-start' }}>
-                              <EditIconButton onClick={() => {
+                              <EditIconButton onClick={() => handleEditButton(() => {
                                 setEditDayOfWeek(hours.dayOfWeek);
                                 setTempDayBusinessHours(hours.periods.map(p => ({ ...p })));
-                              }} />
+                              })} />
                             </Box>
                           </>
                         )}
@@ -1073,11 +1085,11 @@ export const StoreForm = () => {
                               )}
                             </Box>
                             <Box sx={{ alignSelf: 'flex-start', display: 'flex', gap: 1 }}>
-                              <EditIconButton onClick={() => {
+                              <EditIconButton onClick={() => handleEditButton(() => {
                                 setEditSpecialDayIndex(idx);
                                 setTempSpecialDayPeriods(day.periods.map(p => ({ ...p })));
                                 setTempSpecialDayDate(day.date);
-                              }} />
+                              })} />
                               <IconButton color="error" onClick={async () => {
                                 if (!window.confirm('この特別営業日を削除しますか？')) return;
                                 let newDays = specialBusinessDays.filter((_, i) => i !== idx);
@@ -1120,7 +1132,7 @@ export const StoreForm = () => {
               ) : (
                 <Typography sx={{ color: 'text.secondary' }}>未設定</Typography>
               )}
-              <Button color="primary" variant="outlined" onClick={() => {
+              <Button color="primary" variant="outlined" onClick={() => handleEditButton(() => {
                 const newDay = {
                   date: '',
                   periods: [{ isOpen: true, openTime: '09:00', closeTime: '18:00' }],
@@ -1130,7 +1142,7 @@ export const StoreForm = () => {
                 setEditSpecialDayIndex(newDays.length - 1);
                 setTempSpecialDayPeriods(newDay.periods);
                 setTempSpecialDayDate('');
-              }} startIcon={<span>＋</span>} sx={{ mt: 2 }}>特別営業日追加</Button>
+              })} startIcon={<span>＋</span>} sx={{ mt: 2 }}>特別営業日追加</Button>
             </Box>
           </Box>
         </Box>
