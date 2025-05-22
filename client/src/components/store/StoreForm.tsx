@@ -430,23 +430,27 @@ export const StoreForm = () => {
           <Box sx={{ flex: 1 }}>
             <Typography variant="subtitle2" color="text.secondary">店舗名</Typography>
             {editField === 'name' ? (
-              <TextField
-                value={editValues.name}
-                onChange={e => setEditValues(v => ({ ...v, name: e.target.value }))}
-                size="small"
-                autoFocus
-                sx={{ mt: 0.5, width: '100%' }}
-              />
+              <Box sx={{ backgroundColor: 'rgba(0, 0, 255, 0.05)', borderLeft: '4px solid #1976d2', pl: 1.5, py: 1, borderRadius: 1, mt: 0.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <Chip label="編集中" size="small" color="primary" variant="outlined" />
+                </Box>
+                <TextField
+                  value={editValues.name}
+                  onChange={e => setEditValues(v => ({ ...v, name: e.target.value }))}
+                  size="small"
+                  autoFocus
+                  sx={{ width: '100%' }}
+                />
+                <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                  <Button variant="contained" size="small" onClick={() => handleFieldSave('name')}>保存</Button>
+                  <Button variant="outlined" size="small" onClick={() => { setEditField(null); setEditValues(v => ({ ...v, name: store?.name || '' })); }}>キャンセル</Button>
+                </Box>
+              </Box>
             ) : (
               <Typography sx={{ mt: 0.5 }}>{store?.name || '-'}</Typography>
             )}
           </Box>
-          {editField === 'name' ? (
-            <>
-              <IconButton color="primary" onClick={() => handleFieldSave('name')}><CheckIcon /></IconButton>
-              <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, name: store?.name || '' })); }}><CloseIcon /></IconButton>
-            </>
-          ) : (
+          {editField !== 'name' && (
             <EditIconButton onClick={() => handleEditButton(() => setEditField('name'))} />
           )}
         </Box>
@@ -455,24 +459,28 @@ export const StoreForm = () => {
           <Box sx={{ flex: 1 }}>
             <Typography variant="subtitle2" color="text.secondary">店舗説明</Typography>
             {editField === 'description' ? (
-              <TextField
-                value={editValues.description}
-                onChange={e => setEditValues(v => ({ ...v, description: e.target.value }))}
-                size="small"
-                multiline
-                minRows={2}
-                sx={{ mt: 0.5, width: '100%' }}
-              />
+              <Box sx={{ backgroundColor: 'rgba(0, 0, 255, 0.05)', borderLeft: '4px solid #1976d2', pl: 1.5, py: 1, borderRadius: 1, mt: 0.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <Chip label="編集中" size="small" color="primary" variant="outlined" />
+                </Box>
+                <TextField
+                  value={editValues.description}
+                  onChange={e => setEditValues(v => ({ ...v, description: e.target.value }))}
+                  size="small"
+                  multiline
+                  minRows={2}
+                  sx={{ width: '100%' }}
+                />
+                <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                  <Button variant="contained" size="small" onClick={() => handleFieldSave('description')}>保存</Button>
+                  <Button variant="outlined" size="small" onClick={() => { setEditField(null); setEditValues(v => ({ ...v, description: store?.description || '' })); }}>キャンセル</Button>
+                </Box>
+              </Box>
             ) : (
               <Typography sx={{ mt: 0.5 }}>{store?.description || '-'}</Typography>
             )}
           </Box>
-          {editField === 'description' ? (
-            <>
-              <IconButton color="primary" onClick={() => handleFieldSave('description')}><CheckIcon /></IconButton>
-              <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, description: store?.description || '' })); }}><CloseIcon /></IconButton>
-            </>
-          ) : (
+          {editField !== 'description' && (
             <EditIconButton onClick={() => handleEditButton(() => setEditField('description'))} />
           )}
         </Box>
@@ -481,22 +489,26 @@ export const StoreForm = () => {
           <Box sx={{ flex: 1 }}>
             <Typography variant="subtitle2" color="text.secondary">住所</Typography>
             {editField === 'address' ? (
-              <TextField
-                value={editValues.address}
-                onChange={e => setEditValues(v => ({ ...v, address: e.target.value }))}
-                size="small"
-                sx={{ mt: 0.5, width: '100%' }}
-              />
+              <Box sx={{ backgroundColor: 'rgba(0, 0, 255, 0.05)', borderLeft: '4px solid #1976d2', pl: 1.5, py: 1, borderRadius: 1, mt: 0.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <Chip label="編集中" size="small" color="primary" variant="outlined" />
+                </Box>
+                <TextField
+                  value={editValues.address}
+                  onChange={e => setEditValues(v => ({ ...v, address: e.target.value }))}
+                  size="small"
+                  sx={{ width: '100%' }}
+                />
+                <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                  <Button variant="contained" size="small" onClick={() => handleFieldSave('address')}>保存</Button>
+                  <Button variant="outlined" size="small" onClick={() => { setEditField(null); setEditValues(v => ({ ...v, address: store?.address || '' })); }}>キャンセル</Button>
+                </Box>
+              </Box>
             ) : (
               <Typography sx={{ mt: 0.5 }}>{store?.address || '-'}</Typography>
             )}
           </Box>
-          {editField === 'address' ? (
-            <>
-              <IconButton color="primary" onClick={() => handleFieldSave('address')}><CheckIcon /></IconButton>
-              <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, address: store?.address || '' })); }}><CloseIcon /></IconButton>
-            </>
-          ) : (
+          {editField !== 'address' && (
             <EditIconButton onClick={() => handleEditButton(() => setEditField('address'))} />
           )}
         </Box>
@@ -505,22 +517,26 @@ export const StoreForm = () => {
           <Box sx={{ flex: 1 }}>
             <Typography variant="subtitle2" color="text.secondary">電話番号</Typography>
             {editField === 'phone' ? (
-              <TextField
-                value={editValues.phone}
-                onChange={e => setEditValues(v => ({ ...v, phone: e.target.value }))}
-                size="small"
-                sx={{ mt: 0.5, width: '100%' }}
-              />
+              <Box sx={{ backgroundColor: 'rgba(0, 0, 255, 0.05)', borderLeft: '4px solid #1976d2', pl: 1.5, py: 1, borderRadius: 1, mt: 0.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <Chip label="編集中" size="small" color="primary" variant="outlined" />
+                </Box>
+                <TextField
+                  value={editValues.phone}
+                  onChange={e => setEditValues(v => ({ ...v, phone: e.target.value }))}
+                  size="small"
+                  sx={{ width: '100%' }}
+                />
+                <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                  <Button variant="contained" size="small" onClick={() => handleFieldSave('phone')}>保存</Button>
+                  <Button variant="outlined" size="small" onClick={() => { setEditField(null); setEditValues(v => ({ ...v, phone: store?.phone || '' })); }}>キャンセル</Button>
+                </Box>
+              </Box>
             ) : (
               <Typography sx={{ mt: 0.5 }}>{store?.phone || '-'}</Typography>
             )}
           </Box>
-          {editField === 'phone' ? (
-            <>
-              <IconButton color="primary" onClick={() => handleFieldSave('phone')}><CheckIcon /></IconButton>
-              <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, phone: store?.phone || '' })); }}><CloseIcon /></IconButton>
-            </>
-          ) : (
+          {editField !== 'phone' && (
             <EditIconButton onClick={() => handleEditButton(() => setEditField('phone'))} />
           )}
         </Box>
