@@ -17,7 +17,7 @@ import {
   IconButton,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
+import { EditIconButton } from '../common/EditIconButton';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -429,7 +429,7 @@ export const StoreForm = () => {
               <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, name: store?.name || '' })); }}><CloseIcon /></IconButton>
             </>
           ) : (
-            <IconButton onClick={() => setEditField('name')}><EditIcon /></IconButton>
+            <EditIconButton onClick={() => setEditField('name')} />
           )}
         </Box>
         {/* 店舗説明 */}
@@ -455,7 +455,7 @@ export const StoreForm = () => {
               <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, description: store?.description || '' })); }}><CloseIcon /></IconButton>
             </>
           ) : (
-            <IconButton onClick={() => setEditField('description')}><EditIcon /></IconButton>
+            <EditIconButton onClick={() => setEditField('description')} />
           )}
         </Box>
         {/* 住所 */}
@@ -479,7 +479,7 @@ export const StoreForm = () => {
               <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, address: store?.address || '' })); }}><CloseIcon /></IconButton>
             </>
           ) : (
-            <IconButton onClick={() => setEditField('address')}><EditIcon /></IconButton>
+            <EditIconButton onClick={() => setEditField('address')} />
           )}
         </Box>
         {/* 電話番号 */}
@@ -503,7 +503,7 @@ export const StoreForm = () => {
               <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, phone: store?.phone || '' })); }}><CloseIcon /></IconButton>
             </>
           ) : (
-            <IconButton onClick={() => setEditField('phone')}><EditIcon /></IconButton>
+            <EditIconButton onClick={() => setEditField('phone')} />
           )}
         </Box>
       </Box>
@@ -534,7 +534,7 @@ export const StoreForm = () => {
               <IconButton onClick={handleHolidayCancel}><CloseIcon /></IconButton>
             </>
           ) : (
-            <IconButton onClick={handleHolidayEdit}><EditIcon /></IconButton>
+            <EditIconButton onClick={handleHolidayEdit} />
           )}
         </Box>
       </Box>
@@ -590,7 +590,7 @@ export const StoreForm = () => {
               <IconButton onClick={handleBusinessHoursCancel}><CloseIcon /></IconButton>
             </>
           ) : (
-            <IconButton onClick={handleBusinessHoursEdit}><EditIcon /></IconButton>
+            <EditIconButton onClick={handleBusinessHoursEdit} />
           )}
         </Box>
       </Box>
@@ -800,7 +800,7 @@ export const StoreForm = () => {
               <IconButton onClick={handleSpecialDaysCancel}><CloseIcon /></IconButton>
             </>
           ) : (
-            <IconButton onClick={handleSpecialDaysEdit}><EditIcon /></IconButton>
+            <EditIconButton onClick={handleSpecialDaysEdit} />
           )}
         </Box>
       </Box>
