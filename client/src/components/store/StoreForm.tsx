@@ -592,55 +592,80 @@ export const StoreForm = () => {
                               />
                             </Box>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                              {tempDayBusinessHours.map((period, pIdx) => (
-                                <Box key={pIdx} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <TextField
-                                    type="time"
-                                    value={period.openTime}
-                                    onChange={(e) => {
-                                      const newHours = [...tempDayBusinessHours];
-                                      newHours[pIdx] = { ...newHours[pIdx], openTime: e.target.value };
-                                      setTempDayBusinessHours(newHours);
-                                    }}
+                              <FormControl component="fieldset" size="small">
+                                <RadioGroup
+                                  row
+                                  value={tempDayBusinessHours.some(p => p.isOpen) ? 'open' : 'closed'}
+                                  onChange={(e) => {
+                                    const isOpen = e.target.value === 'open';
+                                    if (isOpen) {
+                                      if (tempDayBusinessHours.length === 0) {
+                                        setTempDayBusinessHours([{ isOpen: true, openTime: '09:00', closeTime: '17:00' }]);
+                                      } else {
+                                        setTempDayBusinessHours(tempDayBusinessHours.map(p => ({ ...p, isOpen: true })));
+                                      }
+                                    } else {
+                                      setTempDayBusinessHours(tempDayBusinessHours.map(p => ({ ...p, isOpen: false })));
+                                    }
+                                  }}
+                                >
+                                  <FormControlLabel value="open" control={<Radio size="small" />} label="営業" />
+                                  <FormControlLabel value="closed" control={<Radio size="small" />} label="休業" />
+                                </RadioGroup>
+                              </FormControl>
+                              {tempDayBusinessHours.some(p => p.isOpen) && (
+                                <>
+                                  {tempDayBusinessHours.map((period, pIdx) => (
+                                    <Box key={pIdx} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                      <TextField
+                                        type="time"
+                                        value={period.openTime}
+                                        onChange={(e) => {
+                                          const newHours = [...tempDayBusinessHours];
+                                          newHours[pIdx] = { ...newHours[pIdx], openTime: e.target.value };
+                                          setTempDayBusinessHours(newHours);
+                                        }}
+                                        size="small"
+                                        sx={{ width: 120 }}
+                                      />
+                                      <span>〜</span>
+                                      <TextField
+                                        type="time"
+                                        value={period.closeTime}
+                                        onChange={(e) => {
+                                          const newHours = [...tempDayBusinessHours];
+                                          newHours[pIdx] = { ...newHours[pIdx], closeTime: e.target.value };
+                                          setTempDayBusinessHours(newHours);
+                                        }}
+                                        size="small"
+                                        sx={{ width: 120 }}
+                                      />
+                                      <IconButton
+                                        size="small"
+                                        onClick={() => {
+                                          setTempDayBusinessHours(tempDayBusinessHours.filter((_, i) => i !== pIdx));
+                                        }}
+                                      >
+                                        <DeleteIcon fontSize="small" />
+                                      </IconButton>
+                                    </Box>
+                                  ))}
+                                  <Button
+                                    variant="outlined"
                                     size="small"
-                                    sx={{ width: 120 }}
-                                  />
-                                  <span>〜</span>
-                                  <TextField
-                                    type="time"
-                                    value={period.closeTime}
-                                    onChange={(e) => {
-                                      const newHours = [...tempDayBusinessHours];
-                                      newHours[pIdx] = { ...newHours[pIdx], closeTime: e.target.value };
-                                      setTempDayBusinessHours(newHours);
-                                    }}
-                                    size="small"
-                                    sx={{ width: 120 }}
-                                  />
-                                  <IconButton
-                                    size="small"
+                                    startIcon={<span>＋</span>}
                                     onClick={() => {
-                                      setTempDayBusinessHours(tempDayBusinessHours.filter((_, i) => i !== pIdx));
+                                      setTempDayBusinessHours([
+                                        ...tempDayBusinessHours,
+                                        { isOpen: true, openTime: '09:00', closeTime: '17:00' }
+                                      ]);
                                     }}
+                                    sx={{ alignSelf: 'flex-start' }}
                                   >
-                                    <DeleteIcon fontSize="small" />
-                                  </IconButton>
-                                </Box>
-                              ))}
-                              <Button
-                                variant="outlined"
-                                size="small"
-                                startIcon={<span>＋</span>}
-                                onClick={() => {
-                                  setTempDayBusinessHours([
-                                    ...tempDayBusinessHours,
-                                    { isOpen: true, openTime: '09:00', closeTime: '17:00' }
-                                  ]);
-                                }}
-                                sx={{ alignSelf: 'flex-start' }}
-                              >
-                                時間帯追加
-                              </Button>
+                                    時間帯追加
+                                  </Button>
+                                </>
+                              )}
                             </Box>
                             <Box sx={{ display: 'flex', gap: 1 }}>
                               <Button
