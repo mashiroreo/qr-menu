@@ -443,8 +443,8 @@ export const StoreForm = () => {
           </Box>
           {editField === 'name' ? (
             <>
-              <IconButton color="primary" onClick={() => handleEditButton(() => handleFieldSave('name'))} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
-              <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, name: store?.name || '' })); }} sx={{ alignSelf: 'flex-start' }}><CloseIcon /></IconButton>
+              <IconButton color="primary" onClick={() => handleFieldSave('name')}><CheckIcon /></IconButton>
+              <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, name: store?.name || '' })); }}><CloseIcon /></IconButton>
             </>
           ) : (
             <EditIconButton onClick={() => handleEditButton(() => setEditField('name'))} />
@@ -469,8 +469,8 @@ export const StoreForm = () => {
           </Box>
           {editField === 'description' ? (
             <>
-              <IconButton color="primary" onClick={() => handleEditButton(() => handleFieldSave('description'))} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
-              <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, description: store?.description || '' })); }} sx={{ alignSelf: 'flex-start' }}><CloseIcon /></IconButton>
+              <IconButton color="primary" onClick={() => handleFieldSave('description')}><CheckIcon /></IconButton>
+              <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, description: store?.description || '' })); }}><CloseIcon /></IconButton>
             </>
           ) : (
             <EditIconButton onClick={() => handleEditButton(() => setEditField('description'))} />
@@ -493,8 +493,8 @@ export const StoreForm = () => {
           </Box>
           {editField === 'address' ? (
             <>
-              <IconButton color="primary" onClick={() => handleEditButton(() => handleFieldSave('address'))} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
-              <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, address: store?.address || '' })); }} sx={{ alignSelf: 'flex-start' }}><CloseIcon /></IconButton>
+              <IconButton color="primary" onClick={() => handleFieldSave('address')}><CheckIcon /></IconButton>
+              <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, address: store?.address || '' })); }}><CloseIcon /></IconButton>
             </>
           ) : (
             <EditIconButton onClick={() => handleEditButton(() => setEditField('address'))} />
@@ -517,8 +517,8 @@ export const StoreForm = () => {
           </Box>
           {editField === 'phone' ? (
             <>
-              <IconButton color="primary" onClick={() => handleEditButton(() => handleFieldSave('phone'))} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
-              <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, phone: store?.phone || '' })); }} sx={{ alignSelf: 'flex-start' }}><CloseIcon /></IconButton>
+              <IconButton color="primary" onClick={() => handleFieldSave('phone')}><CheckIcon /></IconButton>
+              <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, phone: store?.phone || '' })); }}><CloseIcon /></IconButton>
             </>
           ) : (
             <EditIconButton onClick={() => handleEditButton(() => setEditField('phone'))} />
@@ -548,8 +548,8 @@ export const StoreForm = () => {
           </Box>
           {isEditingHoliday ? (
             <>
-              <IconButton color="primary" onClick={() => handleEditButton(handleHolidaySave)} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
-              <IconButton onClick={() => handleEditButton(handleHolidayCancel)} sx={{ alignSelf: 'flex-start' }}><CloseIcon /></IconButton>
+              <IconButton color="primary" onClick={() => handleHolidaySave()}><CheckIcon /></IconButton>
+              <IconButton onClick={() => handleHolidayCancel()}><CloseIcon /></IconButton>
             </>
           ) : (
             <EditIconButton onClick={() => handleEditButton(handleHolidayEdit)} />
