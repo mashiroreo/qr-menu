@@ -15,6 +15,7 @@ import {
   FormControl,
   FormLabel,
   IconButton,
+  Chip,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { EditIconButton } from '../common/EditIconButton';
@@ -567,118 +568,135 @@ export const StoreForm = () => {
                     // 編集中かどうか
                     const isEditing = editDayOfWeek === hours.dayOfWeek;
                     return (
-                      <li key={hours.dayOfWeek + '-' + idx} style={{ marginBottom: 4, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                      <li 
+                        key={hours.dayOfWeek + '-' + idx} 
+                        style={{ 
+                          marginBottom: 4, 
+                          display: 'flex', 
+                          alignItems: 'flex-start', 
+                          justifyContent: 'space-between',
+                          backgroundColor: editDayOfWeek === hours.dayOfWeek ? 'rgba(0, 0, 255, 0.05)' : 'transparent',
+                          borderLeft: editDayOfWeek === hours.dayOfWeek ? '4px solid #1976d2' : 'none',
+                          paddingLeft: editDayOfWeek === hours.dayOfWeek ? '8px' : '0',
+                        }}
+                      >
                         {isEditing ? (
                           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1 }}>
-                            {/* 編集UI: 時間帯input＋追加・削除 */}
-                            {tempDayBusinessHours.map((period, pIdx) => (
-                              <Box key={pIdx} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                <TextField
-                                  type="time"
-                                  value={period.openTime}
-                                  onChange={e => {
-                                    const newPeriods = [...tempDayBusinessHours];
-                                    newPeriods[pIdx].openTime = e.target.value;
-                                    setTempDayBusinessHours(newPeriods);
-                                  }}
-                                  size="small"
-                                  required={period.isOpen}
-                                  sx={{ minWidth: isMobile ? 60 : 120 }}
-                                />
-                                <Typography>〜</Typography>
-                                <TextField
-                                  type="time"
-                                  value={period.closeTime}
-                                  onChange={e => {
-                                    const newPeriods = [...tempDayBusinessHours];
-                                    newPeriods[pIdx].closeTime = e.target.value;
-                                    setTempDayBusinessHours(newPeriods);
-                                  }}
-                                  size="small"
-                                  required={period.isOpen}
-                                  sx={{ minWidth: isMobile ? 60 : 120 }}
-                                />
-                                {tempDayBusinessHours.length > 1 && (
-                                  <Button
-                                    size="small"
-                                    color="error"
-                                    onClick={() => {
-                                      const newPeriods = tempDayBusinessHours.filter((_, i) => i !== pIdx);
-                                      setTempDayBusinessHours(newPeriods);
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <span style={{ fontWeight: 500 }}>{dayLabel}</span>
+                              <Chip 
+                                label="編集中" 
+                                size="small" 
+                                color="primary" 
+                                variant="outlined"
+                              />
+                            </Box>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                              {tempDayBusinessHours.map((period, pIdx) => (
+                                <Box key={pIdx} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <TextField
+                                    type="time"
+                                    value={period.openTime}
+                                    onChange={(e) => {
+                                      const newHours = [...tempDayBusinessHours];
+                                      newHours[pIdx] = { ...newHours[pIdx], openTime: e.target.value };
+                                      setTempDayBusinessHours(newHours);
                                     }}
-                                    sx={{ minWidth: isMobile ? 28 : 60, ml: 1 }}
-                                    variant="outlined"
+                                    size="small"
+                                    sx={{ width: 120 }}
+                                  />
+                                  <span>〜</span>
+                                  <TextField
+                                    type="time"
+                                    value={period.closeTime}
+                                    onChange={(e) => {
+                                      const newHours = [...tempDayBusinessHours];
+                                      newHours[pIdx] = { ...newHours[pIdx], closeTime: e.target.value };
+                                      setTempDayBusinessHours(newHours);
+                                    }}
+                                    size="small"
+                                    sx={{ width: 120 }}
+                                  />
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => {
+                                      setTempDayBusinessHours(tempDayBusinessHours.filter((_, i) => i !== pIdx));
+                                    }}
                                   >
-                                    {isMobile ? <DeleteIcon fontSize="small" /> : '削除'}
-                                  </Button>
-                                )}
-                              </Box>
-                            ))}
-                            <Button
-                              size="small"
-                              onClick={() => {
-                                const periods = tempDayBusinessHours;
-                                let newOpen = '09:00';
-                                let newClose = '18:00';
-                                if (periods.length > 0) {
-                                  const last = periods[periods.length - 1];
-                                  newOpen = last.closeTime;
-                                  const [h, m] = last.closeTime.split(':').map(Number);
-                                  let endH = h + 1;
-                                  if (endH >= 24) endH = 0;
-                                  newClose = `${endH.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-                                }
-                                setTempDayBusinessHours([
-                                  ...periods,
-                                  { isOpen: true, openTime: newOpen, closeTime: newClose },
-                                ]);
-                              }}
-                              sx={{ mt: 1 }}
-                              startIcon={<span>＋</span>}
-                              variant="outlined"
-                              color="primary"
-                            >
-                              時間帯追加
-                            </Button>
-                            <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                              <IconButton color="primary" onClick={async () => {
-                                // 保存処理
-                                const newBusinessHours = businessHours.map(bh =>
-                                  bh.dayOfWeek === hours.dayOfWeek
-                                    ? { ...bh, periods: tempDayBusinessHours }
-                                    : bh
-                                );
-                                setBusinessHours(newBusinessHours);
-                                setEditDayOfWeek(null);
-                                // API保存
-                                if (store) {
-                                  setError(null);
-                                  setSuccessMessage(null);
-                                  try {
-                                    const data: StoreFormData = {
-                                      ...store,
-                                      name: editValues.name,
-                                      description: editValues.description,
-                                      address: editValues.address,
-                                      phone: editValues.phone,
-                                      businessHours: newBusinessHours,
-                                      specialBusinessDays: specialBusinessDays,
-                                      logoUrl: store.logoUrl || null,
-                                      isHolidayClosed: isHolidayClosed,
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
+                                </Box>
+                              ))}
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                startIcon={<span>＋</span>}
+                                onClick={() => {
+                                  setTempDayBusinessHours([
+                                    ...tempDayBusinessHours,
+                                    { isOpen: true, openTime: '09:00', closeTime: '17:00' }
+                                  ]);
+                                }}
+                                sx={{ alignSelf: 'flex-start' }}
+                              >
+                                時間帯追加
+                              </Button>
+                            </Box>
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                              <Button
+                                variant="contained"
+                                size="small"
+                                onClick={async () => {
+                                  const newHours = [...businessHours];
+                                  const index = newHours.findIndex(h => h.dayOfWeek === editDayOfWeek);
+                                  if (index !== -1) {
+                                    newHours[index] = {
+                                      ...newHours[index],
+                                      periods: tempDayBusinessHours
                                     };
-                                    const updatedStore = await updateStore(data);
-                                    setStore(updatedStore);
-                                    setSuccessMessage('営業時間を更新しました');
-                                  } catch (err) {
-                                    setError('営業時間の更新に失敗しました');
-                                    console.error('Error updating business hours:', err);
+                                    setBusinessHours(newHours);
+                                    
+                                    // API保存
+                                    if (store) {
+                                      setError(null);
+                                      setSuccessMessage(null);
+                                      try {
+                                        const data: StoreFormData = {
+                                          ...store,
+                                          name: editValues.name,
+                                          description: editValues.description,
+                                          address: editValues.address,
+                                          phone: editValues.phone,
+                                          businessHours: newHours,
+                                          specialBusinessDays: specialBusinessDays,
+                                          logoUrl: store.logoUrl || null,
+                                          isHolidayClosed: isHolidayClosed,
+                                        };
+                                        const updatedStore = await updateStore(data);
+                                        setStore(updatedStore);
+                                        setSuccessMessage('営業時間を更新しました');
+                                      } catch (err) {
+                                        setError('営業時間の更新に失敗しました');
+                                        console.error('Error updating business hours:', err);
+                                      }
+                                    }
                                   }
-                                }
-                              }} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
-                              <IconButton onClick={() => {
-                                setEditDayOfWeek(null);
-                                setTempDayBusinessHours([]);
-                              }} sx={{ alignSelf: 'flex-start' }}><CloseIcon /></IconButton>
+                                  setEditDayOfWeek(null);
+                                  setTempDayBusinessHours([]);
+                                }}
+                              >
+                                保存
+                              </Button>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                onClick={() => {
+                                  setEditDayOfWeek(null);
+                                  setTempDayBusinessHours([]);
+                                }}
+                              >
+                                キャンセル
+                              </Button>
                             </Box>
                           </Box>
                         ) : (
@@ -702,7 +720,23 @@ export const StoreForm = () => {
                                   >
                                     {pIdx === 0 ? (
                                       <>
-                                        <span style={{ fontWeight: 500, minWidth: 60, display: 'inline-block' }}>{dayLabel}</span>：
+                                        <span style={{ 
+                                          fontWeight: editDayOfWeek === hours.dayOfWeek ? 700 : 500,
+                                          minWidth: 60,
+                                          display: 'inline-block'
+                                        }}>
+                                          {dayLabel}
+                                        </span>
+                                        {editDayOfWeek === hours.dayOfWeek && (
+                                          <Chip 
+                                            label="選択中" 
+                                            size="small" 
+                                            color="primary" 
+                                            variant="outlined"
+                                            sx={{ ml: 1 }}
+                                          />
+                                        )}
+                                        ：
                                       </>
                                     ) : null}
                                     {pIdx !== 0 && isMobile ? '　' : ''}
