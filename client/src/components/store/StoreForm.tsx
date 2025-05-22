@@ -548,28 +548,34 @@ export const StoreForm = () => {
           <Box sx={{ flex: 1 }}>
             <Typography variant="subtitle2" color="text.secondary">祝日の営業</Typography>
             {isEditingHoliday ? (
-              <RadioGroup
-                row
-                value={tempIsHolidayClosed ? 'closed' : 'open'}
-                onChange={e => setTempIsHolidayClosed(e.target.value === 'closed')}
-              >
-                <FormControlLabel value="open" control={<Radio />} label="祝日も営業" />
-                <FormControlLabel value="closed" control={<Radio />} label="祝日は休業" />
-              </RadioGroup>
+              <Box sx={{ backgroundColor: 'rgba(0, 0, 255, 0.05)', borderLeft: '4px solid #1976d2', pl: 1.5, py: 1, borderRadius: 1, mt: 0.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <Chip label="編集中" size="small" color="primary" variant="outlined" />
+                </Box>
+                <RadioGroup
+                  row
+                  value={tempIsHolidayClosed ? 'closed' : 'open'}
+                  onChange={e => setTempIsHolidayClosed(e.target.value === 'closed')}
+                >
+                  <FormControlLabel value="open" control={<Radio />} label="祝日も営業" />
+                  <FormControlLabel value="closed" control={<Radio />} label="祝日は休業" />
+                </RadioGroup>
+                <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                  <Button variant="contained" size="small" onClick={handleHolidaySave}>保存</Button>
+                  <Button variant="outlined" size="small" onClick={handleHolidayCancel}>キャンセル</Button>
+                </Box>
+              </Box>
             ) : (
-              <Typography sx={{ mt: 0.5 }}>
-                {isHolidayClosed ? '祝日は休業' : '祝日も営業'}
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                <Box sx={{ flex: 1 }}>
+                  <Typography sx={{ mt: 0.5 }}>
+                    {isHolidayClosed ? '祝日は休業' : '祝日も営業'}
+                  </Typography>
+                </Box>
+                <EditIconButton onClick={() => handleEditButton(handleHolidayEdit)} />
+              </Box>
             )}
           </Box>
-          {isEditingHoliday ? (
-            <>
-              <IconButton color="primary" onClick={() => handleHolidaySave()}><CheckIcon /></IconButton>
-              <IconButton onClick={() => handleHolidayCancel()}><CloseIcon /></IconButton>
-            </>
-          ) : (
-            <EditIconButton onClick={() => handleEditButton(handleHolidayEdit)} />
-          )}
         </Box>
       </Box>
 
