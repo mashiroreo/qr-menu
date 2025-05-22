@@ -567,9 +567,9 @@ export const StoreForm = () => {
                     // 編集中かどうか
                     const isEditing = editDayOfWeek === hours.dayOfWeek;
                     return (
-                      <li key={hours.dayOfWeek + '-' + idx} style={{ marginBottom: 4 }}>
+                      <li key={hours.dayOfWeek + '-' + idx} style={{ marginBottom: 4, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                         {isEditing ? (
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1 }}>
                             {/* 編集UI: 時間帯input＋追加・削除 */}
                             {tempDayBusinessHours.map((period, pIdx) => (
                               <Box key={pIdx} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
@@ -682,30 +682,34 @@ export const StoreForm = () => {
                             </Box>
                           </Box>
                         ) : (
-                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            {Array.isArray(hours.periods) && hours.periods.length > 0 ? (
-                              hours.periods.map((period, pIdx) => (
-                                <div key={pIdx} style={{ display: 'flex', alignItems: 'flex-start' }}>
-                                  <span style={{ fontWeight: 500, minWidth: 60, display: 'inline-block', visibility: pIdx === 0 ? 'visible' : 'hidden' }}>
-                                    {pIdx === 0 ? dayLabel : '　'}
-                                  </span>
-                                  <span>
-                                    {pIdx === 0 ? '：' : '　'}
-                                    {period.isOpen ? `${period.openTime}〜${period.closeTime}` : '休業'}
-                                    {pIdx < hours.periods.length - 1 && <span> ／ </span>}
-                                  </span>
+                          <>
+                            <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                              {Array.isArray(hours.periods) && hours.periods.length > 0 ? (
+                                hours.periods.map((period, pIdx) => (
+                                  <div key={pIdx} style={{ display: 'flex', alignItems: 'flex-start' }}>
+                                    <span style={{ fontWeight: 500, minWidth: 60, display: 'inline-block', visibility: pIdx === 0 ? 'visible' : 'hidden' }}>
+                                      {pIdx === 0 ? dayLabel : '　'}
+                                    </span>
+                                    <span>
+                                      {pIdx === 0 ? '：' : '　'}
+                                      {period.isOpen ? `${period.openTime}〜${period.closeTime}` : '休業'}
+                                      {pIdx < hours.periods.length - 1 && <span> ／ </span>}
+                                    </span>
+                                  </div>
+                                ))
+                              ) : (
+                                <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                                  <span style={{ fontWeight: 500, minWidth: 60, display: 'inline-block' }}>{dayLabel}</span>：休業
                                 </div>
-                              ))
-                            ) : (
-                              <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-                                <span style={{ fontWeight: 500, minWidth: 60, display: 'inline-block' }}>{dayLabel}</span>：休業
-                              </div>
-                            )}
-                            <EditIconButton onClick={() => {
-                              setEditDayOfWeek(hours.dayOfWeek);
-                              setTempDayBusinessHours(hours.periods.map(p => ({ ...p })));
-                            }} />
-                          </Box>
+                              )}
+                            </Box>
+                            <Box sx={{ alignSelf: 'flex-start' }}>
+                              <EditIconButton onClick={() => {
+                                setEditDayOfWeek(hours.dayOfWeek);
+                                setTempDayBusinessHours(hours.periods.map(p => ({ ...p })));
+                              }} />
+                            </Box>
+                          </>
                         )}
                       </li>
                     );
