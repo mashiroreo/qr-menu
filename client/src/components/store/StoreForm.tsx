@@ -1062,12 +1062,43 @@ export const StoreForm = () => {
                                 <span style={{ fontWeight: 500, minWidth: 80, display: 'inline-block' }}>{day.date.replace(/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/, '$2/$3')}：休業</span>
                               )}
                             </Box>
-                            <Box sx={{ alignSelf: 'flex-start' }}>
+                            <Box sx={{ alignSelf: 'flex-start', display: 'flex', gap: 1 }}>
                               <EditIconButton onClick={() => {
                                 setEditSpecialDayIndex(idx);
                                 setTempSpecialDayPeriods(day.periods.map(p => ({ ...p })));
                                 setTempSpecialDayDate(day.date);
                               }} />
+                              <IconButton color="error" onClick={async () => {
+                                if (!window.confirm('この特別営業日を削除しますか？')) return;
+                                const newDays = specialBusinessDays.filter((_, i) => i !== idx);
+                                setSpecialBusinessDays(newDays);
+                                // API保存
+                                if (store) {
+                                  setError(null);
+                                  setSuccessMessage(null);
+                                  try {
+                                    const data: StoreFormData = {
+                                      ...store,
+                                      name: editValues.name,
+                                      description: editValues.description,
+                                      address: editValues.address,
+                                      phone: editValues.phone,
+                                      businessHours: businessHours,
+                                      specialBusinessDays: newDays,
+                                      logoUrl: store.logoUrl || null,
+                                      isHolidayClosed: isHolidayClosed,
+                                    };
+                                    const updatedStore = await updateStore(data);
+                                    setStore(updatedStore);
+                                    setSuccessMessage('特別営業日を削除しました');
+                                  } catch (err) {
+                                    setError('特別営業日の削除に失敗しました');
+                                    console.error('Error deleting special business day:', err);
+                                  }
+                                }
+                              }}>
+                                <DeleteIcon />
+                              </IconButton>
                             </Box>
                           </>
                         )}
@@ -1079,13 +1110,15 @@ export const StoreForm = () => {
                 <Typography sx={{ color: 'text.secondary' }}>未設定</Typography>
               )}
               <Button color="primary" variant="outlined" onClick={() => {
-                setSpecialBusinessDays([
-                  ...specialBusinessDays,
-                  {
-                    date: '',
-                    periods: [{ isOpen: true, openTime: '09:00', closeTime: '18:00' }],
-                  },
-                ]);
+                const newDay = {
+                  date: '',
+                  periods: [{ isOpen: true, openTime: '09:00', closeTime: '18:00' }],
+                };
+                const newDays = [...specialBusinessDays, newDay];
+                setSpecialBusinessDays(newDays);
+                setEditSpecialDayIndex(newDays.length - 1);
+                setTempSpecialDayPeriods(newDay.periods);
+                setTempSpecialDayDate('');
               }} startIcon={<span>＋</span>} sx={{ mt: 2 }}>特別営業日追加</Button>
             </Box>
           </Box>
