@@ -54,6 +54,10 @@ export const StoreForm = () => {
   const [isEditingHoliday, setIsEditingHoliday] = useState(false);
   const [tempIsHolidayClosed, setTempIsHolidayClosed] = useState(isHolidayClosed);
 
+  // 営業時間 曜日ごと編集用 state
+  const [editDayOfWeek, setEditDayOfWeek] = useState<string | null>(null);
+  const [tempDayBusinessHours, setTempDayBusinessHours] = useState<BusinessHourPeriod[]>([]);
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -539,68 +543,179 @@ export const StoreForm = () => {
         </Box>
       </Box>
 
-      {/* 営業時間 表示＋編集切り替え */}
+      {/* 営業時間 曜日ごと編集UI */}
       <Box sx={{ pl: { xs: 0, sm: 2, md: 4 }, pr: 2, mb: 4, maxWidth: 700 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <Box sx={{ flex: 1 }}>
             <Typography variant="subtitle2" color="text.secondary">営業時間</Typography>
-            {isEditingBusinessHours ? (
-              <BusinessHoursInput value={tempBusinessHours} onChange={setTempBusinessHours} />
-            ) : (
-              <Box sx={{ mt: 1 }}>
-                {Array.isArray(businessHours) && businessHours.length > 0 ? (
-                  <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-                    {businessHours.map((hours, idx) => {
-                      const dayLabel = (() => {
-                        switch (hours.dayOfWeek) {
-                          case 'monday': return '月曜日';
-                          case 'tuesday': return '火曜日';
-                          case 'wednesday': return '水曜日';
-                          case 'thursday': return '木曜日';
-                          case 'friday': return '金曜日';
-                          case 'saturday': return '土曜日';
-                          case 'sunday': return '日曜日';
-                          default: return hours.dayOfWeek;
-                        }
-                      })();
-                      return (
-                        <li key={hours.dayOfWeek + '-' + idx} style={{ marginBottom: 4 }}>
-                          {Array.isArray(hours.periods) && hours.periods.length > 0 ? (
-                            hours.periods.map((period, pIdx) => (
-                              <div key={pIdx} style={{ display: 'flex', alignItems: 'flex-start' }}>
-                                <span style={{ fontWeight: 500, minWidth: 60, display: 'inline-block', visibility: pIdx === 0 ? 'visible' : 'hidden' }}>
-                                  {pIdx === 0 ? dayLabel : '　'}
-                                </span>
-                                <span>
-                                  {pIdx === 0 ? '：' : '　'}
-                                  {period.isOpen ? `${period.openTime}〜${period.closeTime}` : '休業'}
-                                  {pIdx < hours.periods.length - 1 && <span> ／ </span>}
-                                </span>
+            <Box sx={{ mt: 1 }}>
+              {Array.isArray(businessHours) && businessHours.length > 0 ? (
+                <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                  {businessHours.map((hours, idx) => {
+                    const dayLabel = (() => {
+                      switch (hours.dayOfWeek) {
+                        case 'monday': return '月曜日';
+                        case 'tuesday': return '火曜日';
+                        case 'wednesday': return '水曜日';
+                        case 'thursday': return '木曜日';
+                        case 'friday': return '金曜日';
+                        case 'saturday': return '土曜日';
+                        case 'sunday': return '日曜日';
+                        default: return hours.dayOfWeek;
+                      }
+                    })();
+                    // 編集中かどうか
+                    const isEditing = editDayOfWeek === hours.dayOfWeek;
+                    return (
+                      <li key={hours.dayOfWeek + '-' + idx} style={{ marginBottom: 4 }}>
+                        {isEditing ? (
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                            {/* 編集UI: 時間帯input＋追加・削除 */}
+                            {tempDayBusinessHours.map((period, pIdx) => (
+                              <Box key={pIdx} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                                <TextField
+                                  type="time"
+                                  value={period.openTime}
+                                  onChange={e => {
+                                    const newPeriods = [...tempDayBusinessHours];
+                                    newPeriods[pIdx].openTime = e.target.value;
+                                    setTempDayBusinessHours(newPeriods);
+                                  }}
+                                  size="small"
+                                  required={period.isOpen}
+                                  sx={{ minWidth: isMobile ? 60 : 120 }}
+                                />
+                                <Typography>〜</Typography>
+                                <TextField
+                                  type="time"
+                                  value={period.closeTime}
+                                  onChange={e => {
+                                    const newPeriods = [...tempDayBusinessHours];
+                                    newPeriods[pIdx].closeTime = e.target.value;
+                                    setTempDayBusinessHours(newPeriods);
+                                  }}
+                                  size="small"
+                                  required={period.isOpen}
+                                  sx={{ minWidth: isMobile ? 60 : 120 }}
+                                />
+                                {tempDayBusinessHours.length > 1 && (
+                                  <Button
+                                    size="small"
+                                    color="error"
+                                    onClick={() => {
+                                      const newPeriods = tempDayBusinessHours.filter((_, i) => i !== pIdx);
+                                      setTempDayBusinessHours(newPeriods);
+                                    }}
+                                    sx={{ minWidth: isMobile ? 28 : 60, ml: 1 }}
+                                    variant="outlined"
+                                  >
+                                    {isMobile ? <DeleteIcon fontSize="small" /> : '削除'}
+                                  </Button>
+                                )}
+                              </Box>
+                            ))}
+                            <Button
+                              size="small"
+                              onClick={() => {
+                                const periods = tempDayBusinessHours;
+                                let newOpen = '09:00';
+                                let newClose = '18:00';
+                                if (periods.length > 0) {
+                                  const last = periods[periods.length - 1];
+                                  newOpen = last.closeTime;
+                                  const [h, m] = last.closeTime.split(':').map(Number);
+                                  let endH = h + 1;
+                                  if (endH >= 24) endH = 0;
+                                  newClose = `${endH.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                                }
+                                setTempDayBusinessHours([
+                                  ...periods,
+                                  { isOpen: true, openTime: newOpen, closeTime: newClose },
+                                ]);
+                              }}
+                              sx={{ mt: 1 }}
+                              startIcon={<span>＋</span>}
+                              variant="outlined"
+                              color="primary"
+                            >
+                              時間帯追加
+                            </Button>
+                            <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                              <IconButton color="primary" onClick={async () => {
+                                // 保存処理
+                                const newBusinessHours = businessHours.map(bh =>
+                                  bh.dayOfWeek === hours.dayOfWeek
+                                    ? { ...bh, periods: tempDayBusinessHours }
+                                    : bh
+                                );
+                                setBusinessHours(newBusinessHours);
+                                setEditDayOfWeek(null);
+                                // API保存
+                                if (store) {
+                                  setError(null);
+                                  setSuccessMessage(null);
+                                  try {
+                                    const data: StoreFormData = {
+                                      ...store,
+                                      name: editValues.name,
+                                      description: editValues.description,
+                                      address: editValues.address,
+                                      phone: editValues.phone,
+                                      businessHours: newBusinessHours,
+                                      specialBusinessDays: specialBusinessDays,
+                                      logoUrl: store.logoUrl || null,
+                                      isHolidayClosed: isHolidayClosed,
+                                    };
+                                    const updatedStore = await updateStore(data);
+                                    setStore(updatedStore);
+                                    setSuccessMessage('営業時間を更新しました');
+                                  } catch (err) {
+                                    setError('営業時間の更新に失敗しました');
+                                    console.error('Error updating business hours:', err);
+                                  }
+                                }
+                              }} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
+                              <IconButton onClick={() => {
+                                setEditDayOfWeek(null);
+                                setTempDayBusinessHours([]);
+                              }} sx={{ alignSelf: 'flex-start' }}><CloseIcon /></IconButton>
+                            </Box>
+                          </Box>
+                        ) : (
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            {Array.isArray(hours.periods) && hours.periods.length > 0 ? (
+                              hours.periods.map((period, pIdx) => (
+                                <div key={pIdx} style={{ display: 'flex', alignItems: 'flex-start' }}>
+                                  <span style={{ fontWeight: 500, minWidth: 60, display: 'inline-block', visibility: pIdx === 0 ? 'visible' : 'hidden' }}>
+                                    {pIdx === 0 ? dayLabel : '　'}
+                                  </span>
+                                  <span>
+                                    {pIdx === 0 ? '：' : '　'}
+                                    {period.isOpen ? `${period.openTime}〜${period.closeTime}` : '休業'}
+                                    {pIdx < hours.periods.length - 1 && <span> ／ </span>}
+                                  </span>
+                                </div>
+                              ))
+                            ) : (
+                              <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                                <span style={{ fontWeight: 500, minWidth: 60, display: 'inline-block' }}>{dayLabel}</span>：休業
                               </div>
-                            ))
-                          ) : (
-                            <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-                              <span style={{ fontWeight: 500, minWidth: 60, display: 'inline-block' }}>{dayLabel}</span>：休業
-                            </div>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                ) : (
-                  <Typography sx={{ color: 'text.secondary' }}>未設定</Typography>
-                )}
-              </Box>
-            )}
+                            )}
+                            <EditIconButton onClick={() => {
+                              setEditDayOfWeek(hours.dayOfWeek);
+                              setTempDayBusinessHours(hours.periods.map(p => ({ ...p })));
+                            }} />
+                          </Box>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <Typography sx={{ color: 'text.secondary' }}>未設定</Typography>
+              )}
+            </Box>
           </Box>
-          {isEditingBusinessHours ? (
-            <>
-              <IconButton color="primary" onClick={handleBusinessHoursSave} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
-              <IconButton onClick={handleBusinessHoursCancel} sx={{ alignSelf: 'flex-start' }}><CloseIcon /></IconButton>
-            </>
-          ) : (
-            <EditIconButton onClick={handleBusinessHoursEdit} />
-          )}
         </Box>
       </Box>
 
