@@ -50,6 +50,10 @@ export const StoreForm = () => {
   const [isEditingSpecialDays, setIsEditingSpecialDays] = useState(false);
   const [tempSpecialBusinessDays, setTempSpecialBusinessDays] = useState<SpecialBusinessDay[]>([]);
 
+  // 祝日営業編集モード
+  const [isEditingHoliday, setIsEditingHoliday] = useState(false);
+  const [tempIsHolidayClosed, setTempIsHolidayClosed] = useState(isHolidayClosed);
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -124,6 +128,10 @@ export const StoreForm = () => {
       setTempSpecialBusinessDays(store.specialBusinessDays);
     }
   }, [store]);
+
+  useEffect(() => {
+    setTempIsHolidayClosed(isHolidayClosed);
+  }, [isHolidayClosed]);
 
   const loadStoreInfo = async () => {
     try {
@@ -334,6 +342,42 @@ export const StoreForm = () => {
     }
   };
 
+  // 祝日営業編集モード
+  const handleHolidayEdit = () => {
+    setTempIsHolidayClosed(isHolidayClosed);
+    setIsEditingHoliday(true);
+  };
+  const handleHolidayCancel = () => {
+    setTempIsHolidayClosed(isHolidayClosed);
+    setIsEditingHoliday(false);
+  };
+  const handleHolidaySave = async () => {
+    if (!store) return;
+    setError(null);
+    setSuccessMessage(null);
+    const data: StoreFormData = {
+      ...store,
+      name: editValues.name,
+      description: editValues.description,
+      address: editValues.address,
+      phone: editValues.phone,
+      businessHours: businessHours,
+      specialBusinessDays: specialBusinessDays,
+      logoUrl: store.logoUrl || null,
+      isHolidayClosed: tempIsHolidayClosed,
+    };
+    try {
+      const updatedStore = await updateStore(data);
+      setStore(updatedStore);
+      setIsHolidayClosed(tempIsHolidayClosed);
+      setSuccessMessage('祝日の営業情報を更新しました');
+      setIsEditingHoliday(false);
+    } catch (err) {
+      setError('祝日の営業情報の更新に失敗しました');
+      console.error('Error updating holiday info:', err);
+    }
+  };
+
   if (loading) {
     return <div className="text-center">読み込み中...</div>;
   }
@@ -362,7 +406,7 @@ export const StoreForm = () => {
         <Alert severity="error" sx={{ mb: 2 }}>{specialBusinessDaysError}</Alert>
       )}
 
-      <Box sx={{ maxWidth: 600, mx: 'auto', mb: 4 }}>
+      <Box sx={{ pl: { xs: 0, sm: 2, md: 4 }, pr: 2, mb: 4, maxWidth: 700 }}>
         {/* 店舗名 */}
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <Box sx={{ flex: 1 }}>
@@ -464,302 +508,302 @@ export const StoreForm = () => {
         </Box>
       </Box>
 
-      
-
-        <FormControl component="fieldset" sx={{ mt: 2 }}>
-          <FormLabel component="legend">祝日の営業</FormLabel>
-          <RadioGroup
-            row
-            value={isHolidayClosed ? 'closed' : 'open'}
-            onChange={e => setIsHolidayClosed(e.target.value === 'closed')}
-          >
-            <FormControlLabel value="open" control={<Radio />} label="祝日も営業" />
-            <FormControlLabel value="closed" control={<Radio />} label="祝日は休業" />
-          </RadioGroup>
-        </FormControl>
-
-        {/* 営業時間 表示＋編集切り替え */}
-        <Box sx={{ maxWidth: 600, mx: 'auto', mb: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="subtitle2" color="text.secondary">営業時間</Typography>
-              {isEditingBusinessHours ? (
-                <BusinessHoursInput value={tempBusinessHours} onChange={setTempBusinessHours} />
-              ) : (
-                <Box sx={{ mt: 1 }}>
-                  {Array.isArray(businessHours) && businessHours.length > 0 ? (
-                    <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-                      {businessHours.map((hours, idx) => (
-                        <li key={hours.dayOfWeek + '-' + idx} style={{ marginBottom: 4 }}>
-                          <span style={{ fontWeight: 500, minWidth: 60, display: 'inline-block' }}>
-                            {(() => {
-                              switch (hours.dayOfWeek) {
-                                case 'monday': return '月曜日';
-                                case 'tuesday': return '火曜日';
-                                case 'wednesday': return '水曜日';
-                                case 'thursday': return '木曜日';
-                                case 'friday': return '金曜日';
-                                case 'saturday': return '土曜日';
-                                case 'sunday': return '日曜日';
-                                default: return hours.dayOfWeek;
-                              }
-                            })()}
-                          </span>
-                          ：
-                          {Array.isArray(hours.periods) && hours.periods.length > 0 ? (
-                            hours.periods.map((period, pIdx) => (
-                              <span key={pIdx}>
-                                {period.isOpen ? `${period.openTime}〜${period.closeTime}` : '休業'}
-                                {pIdx < hours.periods.length - 1 && <span> ／ </span>}
-                              </span>
-                            ))
-                          ) : '休業'}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <Typography sx={{ color: 'text.secondary' }}>未設定</Typography>
-                  )}
-                </Box>
-              )}
-            </Box>
-            {isEditingBusinessHours ? (
-              <>
-                <IconButton color="primary" onClick={handleBusinessHoursSave}><CheckIcon /></IconButton>
-                <IconButton onClick={handleBusinessHoursCancel}><CloseIcon /></IconButton>
-              </>
+      {/* 祝日の営業 表示＋編集切り替え */}
+      <Box sx={{ pl: { xs: 0, sm: 2, md: 4 }, pr: 2, mb: 4, maxWidth: 700 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="subtitle2" color="text.secondary">祝日の営業</Typography>
+            {isEditingHoliday ? (
+              <RadioGroup
+                row
+                value={tempIsHolidayClosed ? 'closed' : 'open'}
+                onChange={e => setTempIsHolidayClosed(e.target.value === 'closed')}
+              >
+                <FormControlLabel value="open" control={<Radio />} label="祝日も営業" />
+                <FormControlLabel value="closed" control={<Radio />} label="祝日は休業" />
+              </RadioGroup>
             ) : (
-              <IconButton onClick={handleBusinessHoursEdit}><EditIcon /></IconButton>
+              <Typography sx={{ mt: 0.5 }}>
+                {isHolidayClosed ? '祝日は休業' : '祝日も営業'}
+              </Typography>
             )}
           </Box>
+          {isEditingHoliday ? (
+            <>
+              <IconButton color="primary" onClick={handleHolidaySave}><CheckIcon /></IconButton>
+              <IconButton onClick={handleHolidayCancel}><CloseIcon /></IconButton>
+            </>
+          ) : (
+            <IconButton onClick={handleHolidayEdit}><EditIcon /></IconButton>
+          )}
         </Box>
+      </Box>
 
-        {/* 特別営業日 表示＋編集切り替え */}
-        <Box sx={{ maxWidth: 600, mx: 'auto', mb: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="subtitle2" color="text.secondary">臨時休業日・特別営業日</Typography>
-              {isEditingSpecialDays ? (
-                // 従来の特別営業日入力UIをそのまま利用
-                <Box sx={{ mt: 1 }}>
-                  {/* ここに従来の特別営業日入力UIを移動 */}
-                  {/* --- ここから --- */}
-                  {specialBusinessDaysError && (
-                    <Alert severity="error" sx={{ mb: 2 }}>{specialBusinessDaysError}</Alert>
-                  )}
-                  {tempSpecialBusinessDays.map((day, idx) => {
-                    const isOpenDay = day.periods.some(p => p.isOpen);
-                    return (
-                      <Box key={idx} sx={{ mb: 2, p: 2, border: '1px solid #ddd', borderRadius: 2 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap', mb: 1 }}>
-                          <TextField
-                            type="date"
-                            value={day.date}
+      {/* 営業時間 表示＋編集切り替え */}
+      <Box sx={{ pl: { xs: 0, sm: 2, md: 4 }, pr: 2, mb: 4, maxWidth: 700 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="subtitle2" color="text.secondary">営業時間</Typography>
+            {isEditingBusinessHours ? (
+              <BusinessHoursInput value={tempBusinessHours} onChange={setTempBusinessHours} />
+            ) : (
+              <Box sx={{ mt: 1 }}>
+                {Array.isArray(businessHours) && businessHours.length > 0 ? (
+                  <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                    {businessHours.map((hours, idx) => (
+                      <li key={hours.dayOfWeek + '-' + idx} style={{ marginBottom: 4 }}>
+                        <span style={{ fontWeight: 500, minWidth: 60, display: 'inline-block' }}>
+                          {(() => {
+                            switch (hours.dayOfWeek) {
+                              case 'monday': return '月曜日';
+                              case 'tuesday': return '火曜日';
+                              case 'wednesday': return '水曜日';
+                              case 'thursday': return '木曜日';
+                              case 'friday': return '金曜日';
+                              case 'saturday': return '土曜日';
+                              case 'sunday': return '日曜日';
+                              default: return hours.dayOfWeek;
+                            }
+                          })()}
+                        </span>
+                        ：
+                        {Array.isArray(hours.periods) && hours.periods.length > 0 ? (
+                          hours.periods.map((period, pIdx) => (
+                            <span key={pIdx}>
+                              {period.isOpen ? `${period.openTime}〜${period.closeTime}` : '休業'}
+                              {pIdx < hours.periods.length - 1 && <span> ／ </span>}
+                            </span>
+                          ))
+                        ) : '休業'}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <Typography sx={{ color: 'text.secondary' }}>未設定</Typography>
+                )}
+              </Box>
+            )}
+          </Box>
+          {isEditingBusinessHours ? (
+            <>
+              <IconButton color="primary" onClick={handleBusinessHoursSave}><CheckIcon /></IconButton>
+              <IconButton onClick={handleBusinessHoursCancel}><CloseIcon /></IconButton>
+            </>
+          ) : (
+            <IconButton onClick={handleBusinessHoursEdit}><EditIcon /></IconButton>
+          )}
+        </Box>
+      </Box>
+
+      {/* 特別営業日 表示＋編集切り替え */}
+      <Box sx={{ pl: { xs: 0, sm: 2, md: 4 }, pr: 2, mb: 4, maxWidth: 700 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="subtitle2" color="text.secondary">臨時休業日・特別営業日</Typography>
+            {isEditingSpecialDays ? (
+              // 従来の特別営業日入力UIをそのまま利用
+              <Box sx={{ mt: 1 }}>
+                {/* ここに従来の特別営業日入力UIを移動 */}
+                {/* --- ここから --- */}
+                {specialBusinessDaysError && (
+                  <Alert severity="error" sx={{ mb: 2 }}>{specialBusinessDaysError}</Alert>
+                )}
+                {tempSpecialBusinessDays.map((day, idx) => {
+                  const isOpenDay = day.periods.some(p => p.isOpen);
+                  return (
+                    <Box key={idx} sx={{ mb: 2, p: 2, border: '1px solid #ddd', borderRadius: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap', mb: 1 }}>
+                        <TextField
+                          type="date"
+                          value={day.date}
+                          onChange={e => {
+                            const newDays = [...tempSpecialBusinessDays];
+                            newDays[idx] = { ...newDays[idx], date: e.target.value };
+                            setTempSpecialBusinessDays(newDays);
+                          }}
+                          error={!validateSpecialBusinessDay(day.date) || isDuplicateDate(day.date, idx)}
+                          helperText={
+                            !validateSpecialBusinessDay(day.date)
+                              ? '今日以降の日付を指定してください'
+                              : isDuplicateDate(day.date, idx)
+                                ? 'この日付はすでに登録済みです'
+                                : ''
+                          }
+                          required
+                          size="small"
+                          sx={{ width: isMobile ? 150 : 190 }}
+                        />
+                        <FormControl component="fieldset" size="small" sx={{ ml: 0.5 }}>
+                          <RadioGroup
+                            row
+                            value={isOpenDay ? 'open' : 'closed'}
                             onChange={e => {
+                              const open = e.target.value === 'open';
                               const newDays = [...tempSpecialBusinessDays];
-                              newDays[idx] = { ...newDays[idx], date: e.target.value };
+                              if (open) {
+                                if (!isOpenDay) {
+                                  newDays[idx].periods = [{ isOpen: true, openTime: '09:00', closeTime: '18:00' }];
+                                } else {
+                                  newDays[idx].periods = newDays[idx].periods.map(p => ({ ...p, isOpen: true }));
+                                }
+                              } else {
+                                newDays[idx].periods = newDays[idx].periods.map(p => ({ ...p, isOpen: false }));
+                              }
                               setTempSpecialBusinessDays(newDays);
                             }}
-                            error={!validateSpecialBusinessDay(day.date) || isDuplicateDate(day.date, idx)}
-                            helperText={
-                              !validateSpecialBusinessDay(day.date)
-                                ? '今日以降の日付を指定してください'
-                                : isDuplicateDate(day.date, idx)
-                                  ? 'この日付はすでに登録済みです'
-                                  : ''
-                            }
-                            required
-                            size="small"
-                            sx={{ width: isMobile ? 150 : 190 }}
-                          />
-                          <FormControl component="fieldset" size="small" sx={{ ml: 0.5 }}>
-                            <RadioGroup
-                              row
-                              value={isOpenDay ? 'open' : 'closed'}
-                              onChange={e => {
-                                const open = e.target.value === 'open';
-                                const newDays = [...tempSpecialBusinessDays];
-                                if (open) {
-                                  if (!isOpenDay) {
-                                    newDays[idx].periods = [{ isOpen: true, openTime: '09:00', closeTime: '18:00' }];
-                                  } else {
-                                    newDays[idx].periods = newDays[idx].periods.map(p => ({ ...p, isOpen: true }));
-                                  }
-                                } else {
-                                  newDays[idx].periods = newDays[idx].periods.map(p => ({ ...p, isOpen: false }));
-                                }
-                                setTempSpecialBusinessDays(newDays);
-                              }}
-                              sx={{ gap: 0.25 }}
-                            >
-                              <FormControlLabel value="open" control={<Radio size="small" />} label={isMobile ? "営" : "営業"} sx={{ mr: 0.25 }} />
-                              <FormControlLabel value="closed" control={<Radio size="small" />} label={isMobile ? "休" : "休業"} sx={{ mr: 0.25 }} />
-                            </RadioGroup>
-                          </FormControl>
+                            sx={{ gap: 0.25 }}
+                          >
+                            <FormControlLabel value="open" control={<Radio size="small" />} label={isMobile ? "営" : "営業"} sx={{ mr: 0.25 }} />
+                            <FormControlLabel value="closed" control={<Radio size="small" />} label={isMobile ? "休" : "休業"} sx={{ mr: 0.25 }} />
+                          </RadioGroup>
+                        </FormControl>
+                        <Button
+                          size="small"
+                          color="error"
+                          onClick={() => {
+                            const newDays = tempSpecialBusinessDays.filter((_, i) => i !== idx);
+                            setTempSpecialBusinessDays(newDays);
+                          }}
+                          sx={{ minWidth: isMobile ? 28 : 60, ml: 0.5 }}
+                          variant="outlined"
+                        >
+                          {isMobile ? <DeleteIcon fontSize="small" /> : '削除'}
+                        </Button>
+                      </Box>
+                      {isOpenDay ? (
+                        <>
+                          {day.periods.map((period, pIdx) => {
+                            if (!period.isOpen) return null;
+                            return (
+                              <Box key={pIdx} sx={{ display: 'flex', gap: 1, mb: 1, minHeight: 48, flexWrap: 'nowrap', width: '100%', maxWidth: '100%', flexDirection: 'column', alignItems: 'flex-start' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                                  <FormControl size="small" sx={{ minWidth: isMobile ? 60 : 120, flexShrink: 1 }}>
+                                    <TextField
+                                      type="time"
+                                      value={period.openTime}
+                                      onChange={e => {
+                                        const newDays = [...tempSpecialBusinessDays];
+                                        newDays[idx].periods[pIdx].openTime = e.target.value;
+                                        setTempSpecialBusinessDays(newDays);
+                                      }}
+                                      size="small"
+                                      required={period.isOpen}
+                                    />
+                                  </FormControl>
+                                  <Typography>〜</Typography>
+                                  <FormControl size="small" sx={{ minWidth: isMobile ? 60 : 120, flexShrink: 1 }}>
+                                    <TextField
+                                      type="time"
+                                      value={period.closeTime}
+                                      onChange={e => {
+                                        const newDays = [...tempSpecialBusinessDays];
+                                        newDays[idx].periods[pIdx].closeTime = e.target.value;
+                                        setTempSpecialBusinessDays(newDays);
+                                      }}
+                                      size="small"
+                                      required={period.isOpen}
+                                    />
+                                  </FormControl>
+                                  {day.periods.length > 1 && (
+                                    <Button
+                                      size="small"
+                                      color="error"
+                                      onClick={() => {
+                                        const newDays = [...tempSpecialBusinessDays];
+                                        newDays[idx].periods = newDays[idx].periods.filter((_, i) => i !== pIdx);
+                                        setTempSpecialBusinessDays(newDays);
+                                      }}
+                                      sx={{ minWidth: isMobile ? 28 : 60, ml: 1, alignSelf: 'center', py: 1 }}
+                                      variant="outlined"
+                                    >
+                                      {isMobile ? <DeleteIcon fontSize="small" /> : '削除'}
+                                    </Button>
+                                  )}
+                                </Box>
+                              </Box>
+                            );
+                          })}
                           <Button
                             size="small"
-                            color="error"
                             onClick={() => {
-                              const newDays = tempSpecialBusinessDays.filter((_, i) => i !== idx);
+                              const newDays = [...tempSpecialBusinessDays];
+                              const periods = newDays[idx].periods;
+                              let newOpen = '09:00';
+                              let newClose = '18:00';
+                              if (periods.length > 0) {
+                                const last = periods[periods.length - 1];
+                                newOpen = last.closeTime;
+                                const [h, m] = last.closeTime.split(':').map(Number);
+                                let endH = h + 1;
+                                if (endH >= 24) endH = 0;
+                                newClose = `${endH.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                              }
+                              newDays[idx].periods = [
+                                ...periods,
+                                { isOpen: true, openTime: newOpen, closeTime: newClose },
+                              ];
                               setTempSpecialBusinessDays(newDays);
                             }}
-                            sx={{ minWidth: isMobile ? 28 : 60, ml: 0.5 }}
+                            sx={{ mt: 1 }}
+                            startIcon={<span>＋</span>}
                             variant="outlined"
+                            color="primary"
                           >
-                            {isMobile ? <DeleteIcon fontSize="small" /> : '削除'}
+                            時間帯追加
                           </Button>
-                        </Box>
-                        {isOpenDay ? (
-                          <>
-                            {day.periods.map((period, pIdx) => {
-                              if (!period.isOpen) return null;
-                              return (
-                                <Box key={pIdx} sx={{ display: 'flex', gap: 1, mb: 1, minHeight: 48, flexWrap: 'nowrap', width: '100%', maxWidth: '100%', flexDirection: 'column', alignItems: 'flex-start' }}>
-                                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                                    <FormControl size="small" sx={{ minWidth: isMobile ? 60 : 120, flexShrink: 1 }}>
-                                      <TextField
-                                        type="time"
-                                        value={period.openTime}
-                                        onChange={e => {
-                                          const newDays = [...tempSpecialBusinessDays];
-                                          newDays[idx].periods[pIdx].openTime = e.target.value;
-                                          setTempSpecialBusinessDays(newDays);
-                                        }}
-                                        size="small"
-                                        required={period.isOpen}
-                                      />
-                                    </FormControl>
-                                    <Typography>〜</Typography>
-                                    <FormControl size="small" sx={{ minWidth: isMobile ? 60 : 120, flexShrink: 1 }}>
-                                      <TextField
-                                        type="time"
-                                        value={period.closeTime}
-                                        onChange={e => {
-                                          const newDays = [...tempSpecialBusinessDays];
-                                          newDays[idx].periods[pIdx].closeTime = e.target.value;
-                                          setTempSpecialBusinessDays(newDays);
-                                        }}
-                                        size="small"
-                                        required={period.isOpen}
-                                      />
-                                    </FormControl>
-                                    {day.periods.length > 1 && (
-                                      <Button
-                                        size="small"
-                                        color="error"
-                                        onClick={() => {
-                                          const newDays = [...tempSpecialBusinessDays];
-                                          newDays[idx].periods = newDays[idx].periods.filter((_, i) => i !== pIdx);
-                                          setTempSpecialBusinessDays(newDays);
-                                        }}
-                                        sx={{ minWidth: isMobile ? 28 : 60, ml: 1, alignSelf: 'center', py: 1 }}
-                                        variant="outlined"
-                                      >
-                                        {isMobile ? <DeleteIcon fontSize="small" /> : '削除'}
-                                      </Button>
-                                    )}
-                                  </Box>
-                                </Box>
-                              );
-                            })}
-                            <Button
-                              size="small"
-                              onClick={() => {
-                                const newDays = [...tempSpecialBusinessDays];
-                                const periods = newDays[idx].periods;
-                                let newOpen = '09:00';
-                                let newClose = '18:00';
-                                if (periods.length > 0) {
-                                  const last = periods[periods.length - 1];
-                                  newOpen = last.closeTime;
-                                  const [h, m] = last.closeTime.split(':').map(Number);
-                                  let endH = h + 1;
-                                  if (endH >= 24) endH = 0;
-                                  newClose = `${endH.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-                                }
-                                newDays[idx].periods = [
-                                  ...periods,
-                                  { isOpen: true, openTime: newOpen, closeTime: newClose },
-                                ];
-                                setTempSpecialBusinessDays(newDays);
-                              }}
-                              sx={{ mt: 1 }}
-                              startIcon={<span>＋</span>}
-                              variant="outlined"
-                              color="primary"
-                            >
-                              時間帯追加
-                            </Button>
-                          </>
-                        ) : (
-                          <Typography sx={{ color: 'text.secondary', ml: 2 }}>休業</Typography>
-                        )}
-                      </Box>
-                    );
-                  })}
-                  <Button color="primary" variant="outlined" onClick={() => {
-                    setTempSpecialBusinessDays([
-                      ...tempSpecialBusinessDays,
-                      {
-                        date: '',
-                        periods: [{ isOpen: true, openTime: '09:00', closeTime: '18:00' }],
-                      },
-                    ]);
-                  }} startIcon={<span>＋</span>}>特別営業日追加</Button>
-                  {/* --- ここまで --- */}
-                </Box>
-              ) : (
-                <Box sx={{ mt: 1 }}>
-                  {Array.isArray(specialBusinessDays) && specialBusinessDays.length > 0 ? (
-                    <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-                      {specialBusinessDays.map((day, idx) => (
-                        <li key={day.date + '-' + idx} style={{ marginBottom: 8 }}>
-                          <span style={{ fontWeight: 500, minWidth: 80, display: 'inline-block' }}>{day.date.replace(/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/, '$2/$3')}</span>
-                          ：
-                          {Array.isArray(day.periods) && day.periods.length > 0 ? (
-                            day.periods.map((period, pIdx) => (
-                              <span key={pIdx}>
-                                {period.isOpen ? `${period.openTime}〜${period.closeTime}` : '休業'}
-                                {pIdx < day.periods.length - 1 && <span> ／ </span>}
-                              </span>
-                            ))
-                          ) : '休業'}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <Typography sx={{ color: 'text.secondary' }}>未設定</Typography>
-                  )}
-                </Box>
-              )}
-            </Box>
-            {isEditingSpecialDays ? (
-              <>
-                <IconButton color="primary" onClick={handleSpecialDaysSave}><CheckIcon /></IconButton>
-                <IconButton onClick={handleSpecialDaysCancel}><CloseIcon /></IconButton>
-              </>
+                        </>
+                      ) : (
+                        <Typography sx={{ color: 'text.secondary', ml: 2 }}>休業</Typography>
+                      )}
+                    </Box>
+                  );
+                })}
+                <Button color="primary" variant="outlined" onClick={() => {
+                  setTempSpecialBusinessDays([
+                    ...tempSpecialBusinessDays,
+                    {
+                      date: '',
+                      periods: [{ isOpen: true, openTime: '09:00', closeTime: '18:00' }],
+                    },
+                  ]);
+                }} startIcon={<span>＋</span>}>特別営業日追加</Button>
+                {/* --- ここまで --- */}
+              </Box>
             ) : (
-              <IconButton onClick={handleSpecialDaysEdit}><EditIcon /></IconButton>
+              <Box sx={{ mt: 1 }}>
+                {Array.isArray(specialBusinessDays) && specialBusinessDays.length > 0 ? (
+                  <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                    {specialBusinessDays.map((day, idx) => (
+                      <li key={day.date + '-' + idx} style={{ marginBottom: 8 }}>
+                        <span style={{ fontWeight: 500, minWidth: 80, display: 'inline-block' }}>{day.date.replace(/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/, '$2/$3')}</span>
+                        ：
+                        {Array.isArray(day.periods) && day.periods.length > 0 ? (
+                          day.periods.map((period, pIdx) => (
+                            <span key={pIdx}>
+                              {period.isOpen ? `${period.openTime}〜${period.closeTime}` : '休業'}
+                              {pIdx < day.periods.length - 1 && <span> ／ </span>}
+                            </span>
+                          ))
+                        ) : '休業'}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <Typography sx={{ color: 'text.secondary' }}>未設定</Typography>
+                )}
+              </Box>
             )}
           </Box>
+          {isEditingSpecialDays ? (
+            <>
+              <IconButton color="primary" onClick={handleSpecialDaysSave}><CheckIcon /></IconButton>
+              <IconButton onClick={handleSpecialDaysCancel}><CloseIcon /></IconButton>
+            </>
+          ) : (
+            <IconButton onClick={handleSpecialDaysEdit}><EditIcon /></IconButton>
+          )}
         </Box>
-
-        <Box sx={{ pt: 4 }}>
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            disabled={
-              loading ||
-              !!businessHoursError ||
-              !!specialBusinessDaysError ||
-              specialBusinessDays.some((d, i) => isDuplicateDate(d.date, i))
-            }
-          >
-            保存
-          </Button>
-        </Box>
-      
+      </Box>
     </div>
   );
 }; 
