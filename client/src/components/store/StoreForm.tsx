@@ -425,8 +425,8 @@ export const StoreForm = () => {
           </Box>
           {editField === 'name' ? (
             <>
-              <IconButton color="primary" onClick={() => handleFieldSave('name')}><CheckIcon /></IconButton>
-              <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, name: store?.name || '' })); }}><CloseIcon /></IconButton>
+              <IconButton color="primary" onClick={() => handleFieldSave('name')} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
+              <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, name: store?.name || '' })); }} sx={{ alignSelf: 'flex-start' }}><CloseIcon /></IconButton>
             </>
           ) : (
             <EditIconButton onClick={() => setEditField('name')} />
@@ -451,8 +451,8 @@ export const StoreForm = () => {
           </Box>
           {editField === 'description' ? (
             <>
-              <IconButton color="primary" onClick={() => handleFieldSave('description')}><CheckIcon /></IconButton>
-              <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, description: store?.description || '' })); }}><CloseIcon /></IconButton>
+              <IconButton color="primary" onClick={() => handleFieldSave('description')} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
+              <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, description: store?.description || '' })); }} sx={{ alignSelf: 'flex-start' }}><CloseIcon /></IconButton>
             </>
           ) : (
             <EditIconButton onClick={() => setEditField('description')} />
@@ -475,8 +475,8 @@ export const StoreForm = () => {
           </Box>
           {editField === 'address' ? (
             <>
-              <IconButton color="primary" onClick={() => handleFieldSave('address')}><CheckIcon /></IconButton>
-              <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, address: store?.address || '' })); }}><CloseIcon /></IconButton>
+              <IconButton color="primary" onClick={() => handleFieldSave('address')} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
+              <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, address: store?.address || '' })); }} sx={{ alignSelf: 'flex-start' }}><CloseIcon /></IconButton>
             </>
           ) : (
             <EditIconButton onClick={() => setEditField('address')} />
@@ -499,8 +499,8 @@ export const StoreForm = () => {
           </Box>
           {editField === 'phone' ? (
             <>
-              <IconButton color="primary" onClick={() => handleFieldSave('phone')}><CheckIcon /></IconButton>
-              <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, phone: store?.phone || '' })); }}><CloseIcon /></IconButton>
+              <IconButton color="primary" onClick={() => handleFieldSave('phone')} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
+              <IconButton onClick={() => { setEditField(null); setEditValues(v => ({ ...v, phone: store?.phone || '' })); }} sx={{ alignSelf: 'flex-start' }}><CloseIcon /></IconButton>
             </>
           ) : (
             <EditIconButton onClick={() => setEditField('phone')} />
@@ -530,8 +530,8 @@ export const StoreForm = () => {
           </Box>
           {isEditingHoliday ? (
             <>
-              <IconButton color="primary" onClick={handleHolidaySave}><CheckIcon /></IconButton>
-              <IconButton onClick={handleHolidayCancel}><CloseIcon /></IconButton>
+              <IconButton color="primary" onClick={handleHolidaySave} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
+              <IconButton onClick={handleHolidayCancel} sx={{ alignSelf: 'flex-start' }}><CloseIcon /></IconButton>
             </>
           ) : (
             <EditIconButton onClick={handleHolidayEdit} />
@@ -550,33 +550,42 @@ export const StoreForm = () => {
               <Box sx={{ mt: 1 }}>
                 {Array.isArray(businessHours) && businessHours.length > 0 ? (
                   <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-                    {businessHours.map((hours, idx) => (
-                      <li key={hours.dayOfWeek + '-' + idx} style={{ marginBottom: 4 }}>
-                        <span style={{ fontWeight: 500, minWidth: 60, display: 'inline-block' }}>
-                          {(() => {
-                            switch (hours.dayOfWeek) {
-                              case 'monday': return '月曜日';
-                              case 'tuesday': return '火曜日';
-                              case 'wednesday': return '水曜日';
-                              case 'thursday': return '木曜日';
-                              case 'friday': return '金曜日';
-                              case 'saturday': return '土曜日';
-                              case 'sunday': return '日曜日';
-                              default: return hours.dayOfWeek;
-                            }
-                          })()}
-                        </span>
-                        ：
-                        {Array.isArray(hours.periods) && hours.periods.length > 0 ? (
-                          hours.periods.map((period, pIdx) => (
-                            <span key={pIdx}>
-                              {period.isOpen ? `${period.openTime}〜${period.closeTime}` : '休業'}
-                              {pIdx < hours.periods.length - 1 && <span> ／ </span>}
-                            </span>
-                          ))
-                        ) : '休業'}
-                      </li>
-                    ))}
+                    {businessHours.map((hours, idx) => {
+                      const dayLabel = (() => {
+                        switch (hours.dayOfWeek) {
+                          case 'monday': return '月曜日';
+                          case 'tuesday': return '火曜日';
+                          case 'wednesday': return '水曜日';
+                          case 'thursday': return '木曜日';
+                          case 'friday': return '金曜日';
+                          case 'saturday': return '土曜日';
+                          case 'sunday': return '日曜日';
+                          default: return hours.dayOfWeek;
+                        }
+                      })();
+                      return (
+                        <li key={hours.dayOfWeek + '-' + idx} style={{ marginBottom: 4 }}>
+                          {Array.isArray(hours.periods) && hours.periods.length > 0 ? (
+                            hours.periods.map((period, pIdx) => (
+                              <div key={pIdx} style={{ display: 'flex', alignItems: 'flex-start' }}>
+                                <span style={{ fontWeight: 500, minWidth: 60, display: 'inline-block', visibility: pIdx === 0 ? 'visible' : 'hidden' }}>
+                                  {pIdx === 0 ? dayLabel : '　'}
+                                </span>
+                                <span>
+                                  {pIdx === 0 ? '：' : '　'}
+                                  {period.isOpen ? `${period.openTime}〜${period.closeTime}` : '休業'}
+                                  {pIdx < hours.periods.length - 1 && <span> ／ </span>}
+                                </span>
+                              </div>
+                            ))
+                          ) : (
+                            <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                              <span style={{ fontWeight: 500, minWidth: 60, display: 'inline-block' }}>{dayLabel}</span>：休業
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 ) : (
                   <Typography sx={{ color: 'text.secondary' }}>未設定</Typography>
@@ -586,8 +595,8 @@ export const StoreForm = () => {
           </Box>
           {isEditingBusinessHours ? (
             <>
-              <IconButton color="primary" onClick={handleBusinessHoursSave}><CheckIcon /></IconButton>
-              <IconButton onClick={handleBusinessHoursCancel}><CloseIcon /></IconButton>
+              <IconButton color="primary" onClick={handleBusinessHoursSave} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
+              <IconButton onClick={handleBusinessHoursCancel} sx={{ alignSelf: 'flex-start' }}><CloseIcon /></IconButton>
             </>
           ) : (
             <EditIconButton onClick={handleBusinessHoursEdit} />
@@ -775,16 +784,24 @@ export const StoreForm = () => {
                   <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
                     {specialBusinessDays.map((day, idx) => (
                       <li key={day.date + '-' + idx} style={{ marginBottom: 8 }}>
-                        <span style={{ fontWeight: 500, minWidth: 80, display: 'inline-block' }}>{day.date.replace(/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/, '$2/$3')}</span>
-                        ：
                         {Array.isArray(day.periods) && day.periods.length > 0 ? (
                           day.periods.map((period, pIdx) => (
-                            <span key={pIdx}>
-                              {period.isOpen ? `${period.openTime}〜${period.closeTime}` : '休業'}
-                              {pIdx < day.periods.length - 1 && <span> ／ </span>}
-                            </span>
+                            <div key={pIdx} style={{ display: 'flex', alignItems: 'flex-start' }}>
+                              <span style={{ fontWeight: 500, minWidth: 80, display: 'inline-block', visibility: pIdx === 0 ? 'visible' : 'hidden' }}>
+                                {pIdx === 0 ? day.date.replace(/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/, '$2/$3') : '　'}
+                              </span>
+                              <span>
+                                {pIdx === 0 ? '：' : '　'}
+                                {period.isOpen ? `${period.openTime}〜${period.closeTime}` : '休業'}
+                                {pIdx < day.periods.length - 1 && <span> ／ </span>}
+                              </span>
+                            </div>
                           ))
-                        ) : '休業'}
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                            <span style={{ fontWeight: 500, minWidth: 80, display: 'inline-block' }}>{day.date.replace(/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/, '$2/$3')}</span>：休業
+                          </div>
+                        )}
                       </li>
                     ))}
                   </ul>
@@ -796,8 +813,8 @@ export const StoreForm = () => {
           </Box>
           {isEditingSpecialDays ? (
             <>
-              <IconButton color="primary" onClick={handleSpecialDaysSave}><CheckIcon /></IconButton>
-              <IconButton onClick={handleSpecialDaysCancel}><CloseIcon /></IconButton>
+              <IconButton color="primary" onClick={handleSpecialDaysSave} sx={{ alignSelf: 'flex-start' }}><CheckIcon /></IconButton>
+              <IconButton onClick={handleSpecialDaysCancel} sx={{ alignSelf: 'flex-start' }}><CloseIcon /></IconButton>
             </>
           ) : (
             <EditIconButton onClick={handleSpecialDaysEdit} />
