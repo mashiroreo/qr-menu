@@ -66,6 +66,11 @@ export const StoreForm = () => {
 
   const [lastUpdatedField, setLastUpdatedField] = useState<string | null>(null);
 
+  // 追加: 各項目ごとのバリデーションエラーstate
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [descriptionError, setDescriptionError] = useState<string | null>(null);
+  const [addressError, setAddressError] = useState<string | null>(null);
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -165,25 +170,28 @@ export const StoreForm = () => {
     if (!store) return;
     setError(null);
     setSuccessMessage(null);
+    setNameError(null);
+    setDescriptionError(null);
+    setAddressError(null);
     setPhoneError(null);
     // 必須バリデーション
     if (field === 'name' && !editValues.name.trim()) {
-      setError('店舗名は必須です');
+      setNameError('店舗名は必須です');
       return;
     }
     if (field === 'description' && !editValues.description.trim()) {
-      setError('店舗説明は必須です');
+      setDescriptionError('店舗説明は必須です');
       return;
     }
     if (field === 'address' && !editValues.address.trim()) {
-      setError('住所は必須です');
+      setAddressError('住所は必須です');
       return;
     }
     if (field === 'phone' && !editValues.phone.trim()) {
-      setError('電話番号は必須です');
+      setPhoneError('電話番号は必須です');
       return;
     }
-    if (field === 'phone' && !/^\d+$/.test(editValues.phone)) {
+    if (field === 'phone' && !/^[0-9]+$/.test(editValues.phone)) {
       setPhoneError('電話番号は数字のみで入力してください');
       return;
     }
@@ -431,12 +439,12 @@ export const StoreForm = () => {
         <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
       )} */}
       
-      {phoneError && (
-        <Alert severity="error" sx={{ mb: 2 }}>{phoneError}</Alert>
-      )}
-
       {businessHoursError && (
         <Alert severity="error" sx={{ mb: 2 }}>{businessHoursError}</Alert>
+      )}
+
+      {specialBusinessDaysError && (
+        <Alert severity="error" sx={{ mb: 2 }}>{specialBusinessDaysError}</Alert>
       )}
 
       <Box sx={{ pl: { xs: 0, sm: 2, md: 4 }, pr: 2, mb: 4, maxWidth: 700 }}>
@@ -458,8 +466,9 @@ export const StoreForm = () => {
                 />
                 <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
                   <Button variant="contained" size="small" onClick={() => handleFieldSave('name')}>保存</Button>
-                  <Button variant="outlined" size="small" onClick={() => { setEditField(null); setEditValues(v => ({ ...v, name: store?.name || '' })); }}>キャンセル</Button>
+                  <Button variant="outlined" size="small" onClick={() => { setEditField(null); setEditValues(v => ({ ...v, name: store?.name || '' })); setNameError(null); }}>キャンセル</Button>
                 </Box>
+                {nameError && <Alert severity="error" sx={{ mt: 1 }}>{nameError}</Alert>}
               </Box>
             ) : (
               <>
@@ -493,8 +502,9 @@ export const StoreForm = () => {
                 />
                 <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
                   <Button variant="contained" size="small" onClick={() => handleFieldSave('description')}>保存</Button>
-                  <Button variant="outlined" size="small" onClick={() => { setEditField(null); setEditValues(v => ({ ...v, description: store?.description || '' })); }}>キャンセル</Button>
+                  <Button variant="outlined" size="small" onClick={() => { setEditField(null); setEditValues(v => ({ ...v, description: store?.description || '' })); setDescriptionError(null); }}>キャンセル</Button>
                 </Box>
+                {descriptionError && <Alert severity="error" sx={{ mt: 1 }}>{descriptionError}</Alert>}
               </Box>
             ) : (
               <>
@@ -526,8 +536,9 @@ export const StoreForm = () => {
                 />
                 <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
                   <Button variant="contained" size="small" onClick={() => handleFieldSave('address')}>保存</Button>
-                  <Button variant="outlined" size="small" onClick={() => { setEditField(null); setEditValues(v => ({ ...v, address: store?.address || '' })); }}>キャンセル</Button>
+                  <Button variant="outlined" size="small" onClick={() => { setEditField(null); setEditValues(v => ({ ...v, address: store?.address || '' })); setAddressError(null); }}>キャンセル</Button>
                 </Box>
+                {addressError && <Alert severity="error" sx={{ mt: 1 }}>{addressError}</Alert>}
               </Box>
             ) : (
               <>
@@ -559,8 +570,9 @@ export const StoreForm = () => {
                 />
                 <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
                   <Button variant="contained" size="small" onClick={() => handleFieldSave('phone')}>保存</Button>
-                  <Button variant="outlined" size="small" onClick={() => { setEditField(null); setEditValues(v => ({ ...v, phone: store?.phone || '' })); }}>キャンセル</Button>
+                  <Button variant="outlined" size="small" onClick={() => { setEditField(null); setEditValues(v => ({ ...v, phone: store?.phone || '' })); setPhoneError(null); }}>キャンセル</Button>
                 </Box>
+                {phoneError && <Alert severity="error" sx={{ mt: 1 }}>{phoneError}</Alert>}
               </Box>
             ) : (
               <>
