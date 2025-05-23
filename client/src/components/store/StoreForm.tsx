@@ -427,9 +427,9 @@ export const StoreForm = () => {
     <div className="p-4">
       <Typography variant="h4" component="h2" sx={{ mb: 4 }}>店舗情報</Typography>
       
-      {error && (
+      {/* {error && (
         <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
-      )}
+      )} */}
       
       {phoneError && (
         <Alert severity="error" sx={{ mb: 2 }}>{phoneError}</Alert>
@@ -1093,6 +1093,9 @@ export const StoreForm = () => {
                                 キャンセル
                               </Button>
                             </Box>
+                            {error && (
+                              <Alert severity="error" sx={{ mt: 1 }}>{error}</Alert>
+                            )}
                           </Box>
                         ) : (
                           <>
