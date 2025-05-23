@@ -64,6 +64,8 @@ export const StoreForm = () => {
   const [tempSpecialDayPeriods, setTempSpecialDayPeriods] = useState<BusinessHourPeriod[]>([]);
   const [tempSpecialDayDate, setTempSpecialDayDate] = useState<string>('');
 
+  const [lastUpdatedField, setLastUpdatedField] = useState<string | null>(null);
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -199,15 +201,7 @@ export const StoreForm = () => {
     try {
       const updatedStore = await updateStore(data);
       setStore(updatedStore);
-      let msg = '';
-      switch (field) {
-        case 'name': msg = '店舗名を更新しました'; break;
-        case 'description': msg = '店舗説明を更新しました'; break;
-        case 'address': msg = '住所を更新しました'; break;
-        case 'phone': msg = '電話番号を更新しました'; break;
-        default: msg = '店舗情報を更新しました'; break;
-      }
-      setSuccessMessage(msg);
+      setLastUpdatedField(field);
       setEditField(null);
     } catch (err) {
       setError('店舗情報の更新に失敗しました');
@@ -333,7 +327,7 @@ export const StoreForm = () => {
       const updatedStore = await updateStore(data);
       setStore(updatedStore);
       setBusinessHours(tempBusinessHours);
-      setSuccessMessage('営業時間を更新しました');
+      setLastUpdatedField(`businessHours-${editDayOfWeek}`);
       setIsEditingBusinessHours(false);
     } catch (err) {
       setError('営業時間の更新に失敗しました');
@@ -369,7 +363,7 @@ export const StoreForm = () => {
       const updatedStore = await updateStore(data);
       setStore(updatedStore);
       setSpecialBusinessDays(tempSpecialBusinessDays);
-      setSuccessMessage('特別営業日を更新しました');
+      setLastUpdatedField(`specialBusinessDay-${tempSpecialDayDate}`);
       setIsEditingSpecialDays(false);
     } catch (err) {
       setError('特別営業日の更新に失敗しました');
@@ -405,7 +399,7 @@ export const StoreForm = () => {
       const updatedStore = await updateStore(data);
       setStore(updatedStore);
       setIsHolidayClosed(tempIsHolidayClosed);
-      setSuccessMessage('祝日の営業情報を更新しました');
+      setLastUpdatedField('holiday');
       setIsEditingHoliday(false);
     } catch (err) {
       setError('祝日の営業情報の更新に失敗しました');
@@ -437,10 +431,6 @@ export const StoreForm = () => {
         <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
       )}
       
-      {successMessage && (
-        <Alert severity="success" sx={{ mb: 2 }}>{successMessage}</Alert>
-      )}
-
       {phoneError && (
         <Alert severity="error" sx={{ mb: 2 }}>{phoneError}</Alert>
       )}
@@ -472,7 +462,12 @@ export const StoreForm = () => {
                 </Box>
               </Box>
             ) : (
-              <Typography sx={{ mt: 0.5 }}>{store?.name || '-'}</Typography>
+              <>
+                <Typography sx={{ mt: 0.5 }}>{store?.name || '-'}</Typography>
+                {lastUpdatedField === 'name' && (
+                  <Alert severity="success" sx={{ mt: 1 }}>店舗名を更新しました</Alert>
+                )}
+              </>
             )}
           </Box>
           {editField !== 'name' && (
@@ -502,7 +497,12 @@ export const StoreForm = () => {
                 </Box>
               </Box>
             ) : (
-              <Typography sx={{ mt: 0.5 }}>{store?.description || '-'}</Typography>
+              <>
+                <Typography sx={{ mt: 0.5 }}>{store?.description || '-'}</Typography>
+                {lastUpdatedField === 'description' && (
+                  <Alert severity="success" sx={{ mt: 1 }}>店舗説明を更新しました</Alert>
+                )}
+              </>
             )}
           </Box>
           {editField !== 'description' && (
@@ -530,7 +530,12 @@ export const StoreForm = () => {
                 </Box>
               </Box>
             ) : (
-              <Typography sx={{ mt: 0.5 }}>{store?.address || '-'}</Typography>
+              <>
+                <Typography sx={{ mt: 0.5 }}>{store?.address || '-'}</Typography>
+                {lastUpdatedField === 'address' && (
+                  <Alert severity="success" sx={{ mt: 1 }}>住所を更新しました</Alert>
+                )}
+              </>
             )}
           </Box>
           {editField !== 'address' && (
@@ -558,7 +563,12 @@ export const StoreForm = () => {
                 </Box>
               </Box>
             ) : (
-              <Typography sx={{ mt: 0.5 }}>{store?.phone || '-'}</Typography>
+              <>
+                <Typography sx={{ mt: 0.5 }}>{store?.phone || '-'}</Typography>
+                {lastUpdatedField === 'phone' && (
+                  <Alert severity="success" sx={{ mt: 1 }}>電話番号を更新しました</Alert>
+                )}
+              </>
             )}
           </Box>
           {editField !== 'phone' && (
@@ -596,6 +606,9 @@ export const StoreForm = () => {
                   <Typography sx={{ mt: 0.5 }}>
                     {isHolidayClosed ? '祝日は休業' : '祝日も営業'}
                   </Typography>
+                  {lastUpdatedField === 'holiday' && (
+                    <Alert severity="success" sx={{ mt: 1 }}>祝日の営業情報を更新しました</Alert>
+                  )}
                 </Box>
                 <EditIconButton onClick={() => handleEditButton(handleHolidayEdit)} />
               </Box>
@@ -628,28 +641,23 @@ export const StoreForm = () => {
                     // 編集中かどうか
                     const isEditing = editDayOfWeek === hours.dayOfWeek;
                     return (
-                      <li 
-                        key={hours.dayOfWeek + '-' + idx} 
-                        style={{ 
-                          marginBottom: 4, 
-                          display: 'flex', 
-                          alignItems: 'flex-start', 
+                      <li
+                        key={hours.dayOfWeek + '-' + idx}
+                        style={{
+                          marginBottom: 4,
+                          display: 'block',
+                          alignItems: 'flex-start',
                           justifyContent: 'space-between',
                           backgroundColor: editDayOfWeek === hours.dayOfWeek ? 'rgba(0, 0, 255, 0.05)' : 'transparent',
                           borderLeft: editDayOfWeek === hours.dayOfWeek ? '4px solid #1976d2' : 'none',
                           paddingLeft: editDayOfWeek === hours.dayOfWeek ? '8px' : '0',
                         }}
                       >
-                        {isEditing ? (
+                        {editDayOfWeek === hours.dayOfWeek ? (
                           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <span style={{ fontWeight: 500 }}>{dayLabel}</span>
-                              <Chip 
-                                label="編集中" 
-                                size="small" 
-                                color="primary" 
-                                variant="outlined"
-                              />
+                              <Chip label="編集中" size="small" color="primary" variant="outlined" />
                             </Box>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                               <FormControl component="fieldset" size="small">
@@ -683,12 +691,11 @@ export const StoreForm = () => {
                                         onChange={(e) => {
                                           const newHours = [...tempDayBusinessHours];
                                           newHours[pIdx] = { ...newHours[pIdx], openTime: e.target.value };
-                                          // 重複チェック
                                           if (checkPeriodOverlap(newHours, pIdx)) {
                                             setError('時間帯が重複しています');
                                             return;
                                           }
-                                          setError(null); // エラーをクリア
+                                          setError(null);
                                           setTempDayBusinessHours(newHours);
                                         }}
                                         size="small"
@@ -702,12 +709,11 @@ export const StoreForm = () => {
                                         onChange={(e) => {
                                           const newHours = [...tempDayBusinessHours];
                                           newHours[pIdx] = { ...newHours[pIdx], closeTime: e.target.value };
-                                          // 重複チェック
                                           if (checkPeriodOverlap(newHours, pIdx)) {
                                             setError('時間帯が重複しています');
                                             return;
                                           }
-                                          setError(null); // エラーをクリア
+                                          setError(null);
                                           setTempDayBusinessHours(newHours);
                                         }}
                                         size="small"
@@ -736,14 +742,12 @@ export const StoreForm = () => {
                                       if (periods.length > 0) {
                                         const last = periods[periods.length - 1];
                                         newOpen = last.closeTime;
-                                        // デフォルト終了時刻は+1時間（24:00超えは00:00に）
                                         const [h, m] = last.closeTime.split(':').map(Number);
                                         let endH = h + 1;
                                         if (endH >= 24) endH = 0;
                                         newClose = `${endH.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
                                       }
                                       const newPeriod = { isOpen: true, openTime: newOpen, closeTime: newClose };
-                                      // 重複チェック
                                       if (checkPeriodOverlap([...periods, newPeriod], periods.length)) {
                                         setError('時間帯が重複しています');
                                         return;
@@ -770,8 +774,6 @@ export const StoreForm = () => {
                                       periods: tempDayBusinessHours
                                     };
                                     setBusinessHours(newHours);
-                                    
-                                    // API保存
                                     if (store) {
                                       setError(null);
                                       setSuccessMessage(null);
@@ -789,7 +791,7 @@ export const StoreForm = () => {
                                         };
                                         const updatedStore = await updateStore(data);
                                         setStore(updatedStore);
-                                        setSuccessMessage('営業時間を更新しました');
+                                        setLastUpdatedField(`businessHours-${editDayOfWeek}`);
                                       } catch (err) {
                                         setError('営業時間の更新に失敗しました');
                                         console.error('Error updating business hours:', err);
@@ -817,54 +819,56 @@ export const StoreForm = () => {
                         ) : (
                           <>
                             <Box
-                              sx={
-                                isMobile
-                                  ? { display: 'block', flex: 1 }
-                                  : { display: 'flex', flexWrap: 'nowrap', alignItems: 'center', flex: 1, whiteSpace: 'nowrap' }
-                              }
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                justifyContent: 'space-between',
+                              }}
                             >
-                              {Array.isArray(hours.periods) && hours.periods.length > 0 ? (
-                                hours.periods.map((period, pIdx) => (
-                                  <span
-                                    key={pIdx}
-                                    style={{
-                                      display: isMobile && pIdx > 0 ? 'block' : 'inline',
-                                      marginLeft: isMobile && pIdx > 0 ? 88 : 0,
-                                      whiteSpace: 'nowrap',
-                                    }}
-                                  >
-                                    {pIdx === 0 ? (
-                                      <>
-                                        <span style={{ fontWeight: editDayOfWeek === hours.dayOfWeek ? 700 : 500, minWidth: 88, display: 'inline-block' }}>
-                                          {dayLabel}
-                                        </span>
-                                        {editDayOfWeek === hours.dayOfWeek && (
-                                          <Chip 
-                                            label="選択中" 
-                                            size="small" 
-                                            color="primary" 
-                                            variant="outlined"
-                                            sx={{ ml: 1 }}
-                                          />
-                                        )}
-                                        ：
-                                      </>
-                                    ) : null}
-                                    {pIdx !== 0 && isMobile ? '　' : ''}
-                                    {period.isOpen ? `${period.openTime}〜${period.closeTime}` : '休業'}
-                                    {pIdx < hours.periods.length - 1 && (isMobile ? <><span> ／</span><br /></> : ' ／ ')}
-                                  </span>
-                                ))
-                              ) : (
-                                <span style={{ fontWeight: 500, minWidth: 88, display: 'inline-block' }}>{dayLabel}：休業</span>
-                              )}
+                              <Box
+                                sx={
+                                  isMobile
+                                    ? { display: 'block', flex: 1 }
+                                    : { display: 'flex', flexWrap: 'nowrap', alignItems: 'center', flex: 1, whiteSpace: 'nowrap' }
+                                }
+                              >
+                                {Array.isArray(hours.periods) && hours.periods.length > 0 ? (
+                                  hours.periods.map((period, pIdx) => (
+                                    <span
+                                      key={pIdx}
+                                      style={{
+                                        display: isMobile && pIdx > 0 ? 'block' : 'inline',
+                                        marginLeft: isMobile && pIdx > 0 ? 88 : 0,
+                                        whiteSpace: 'nowrap',
+                                      }}
+                                    >
+                                      {pIdx === 0 ? (
+                                        <>
+                                          <span style={{ fontWeight: 500, minWidth: 88, display: 'inline-block' }}>
+                                            {dayLabel}
+                                          </span>
+                                          ：
+                                        </>
+                                      ) : null}
+                                      {pIdx !== 0 && isMobile ? '　' : ''}
+                                      {period.isOpen ? `${period.openTime}〜${period.closeTime}` : '休業'}
+                                      {pIdx < hours.periods.length - 1 && (isMobile ? <><span> ／</span><br /></> : ' ／ ')}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span style={{ fontWeight: 500, minWidth: 88, display: 'inline-block' }}>{dayLabel}：休業</span>
+                                )}
+                              </Box>
+                              <Box sx={{ alignSelf: 'flex-start' }}>
+                                <EditIconButton onClick={() => handleEditButton(() => {
+                                  setEditDayOfWeek(hours.dayOfWeek);
+                                  setTempDayBusinessHours(hours.periods.map(p => ({ ...p })));
+                                })} />
+                              </Box>
                             </Box>
-                            <Box sx={{ alignSelf: 'flex-start' }}>
-                              <EditIconButton onClick={() => handleEditButton(() => {
-                                setEditDayOfWeek(hours.dayOfWeek);
-                                setTempDayBusinessHours(hours.periods.map(p => ({ ...p })));
-                              })} />
-                            </Box>
+                            {lastUpdatedField === `businessHours-${hours.dayOfWeek}` && (
+                              <Alert severity="success" sx={{ mt: 1 }}>{dayLabel}の営業時間を更新しました</Alert>
+                            )}
                           </>
                         )}
                       </li>
@@ -895,15 +899,15 @@ export const StoreForm = () => {
                         key={day.date + '-' + idx}
                         style={{
                           marginBottom: 8,
-                          display: 'flex',
+                          display: 'block',
                           alignItems: 'flex-start',
                           justifyContent: 'space-between',
-                          backgroundColor: isEditing ? 'rgba(0, 0, 255, 0.05)' : 'transparent',
-                          borderLeft: isEditing ? '4px solid #1976d2' : 'none',
-                          paddingLeft: isEditing ? '8px' : '0',
+                          backgroundColor: editSpecialDayIndex === idx ? 'rgba(0, 0, 255, 0.05)' : 'transparent',
+                          borderLeft: editSpecialDayIndex === idx ? '4px solid #1976d2' : 'none',
+                          paddingLeft: editSpecialDayIndex === idx ? '8px' : '0',
                         }}
                       >
-                        {isEditing ? (
+                        {editSpecialDayIndex === idx ? (
                           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <TextField
@@ -946,7 +950,6 @@ export const StoreForm = () => {
                                       onChange={e => {
                                         const newPeriods = [...tempSpecialDayPeriods];
                                         newPeriods[pIdx] = { ...newPeriods[pIdx], openTime: e.target.value };
-                                        // 重複チェック
                                         if (checkPeriodOverlap(newPeriods, pIdx)) {
                                           setError('時間帯が重複しています');
                                           return;
@@ -965,7 +968,6 @@ export const StoreForm = () => {
                                       onChange={e => {
                                         const newPeriods = [...tempSpecialDayPeriods];
                                         newPeriods[pIdx] = { ...newPeriods[pIdx], closeTime: e.target.value };
-                                        // 重複チェック
                                         if (checkPeriodOverlap(newPeriods, pIdx)) {
                                           setError('時間帯が重複しています');
                                           return;
@@ -1063,7 +1065,7 @@ export const StoreForm = () => {
                                       };
                                       const updatedStore = await updateStore(data);
                                       setStore(updatedStore);
-                                      setSuccessMessage('特別営業日を更新しました');
+                                      setLastUpdatedField(`specialBusinessDay-${tempSpecialDayDate}`);
                                     } catch (err) {
                                       setError('特別営業日の更新に失敗しました');
                                       console.error('Error updating special business days:', err);
@@ -1095,81 +1097,89 @@ export const StoreForm = () => {
                         ) : (
                           <>
                             <Box
-                              sx={
-                                isMobile
-                                  ? { display: 'block', flex: 1 }
-                                  : { display: 'flex', flexWrap: 'nowrap', alignItems: 'center', flex: 1, whiteSpace: 'nowrap' }
-                              }
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                justifyContent: 'space-between',
+                              }}
                             >
-                              {Array.isArray(day.periods) && day.periods.length > 0 ? (
-                                day.periods.map((period, pIdx) => (
-                                  <span
-                                    key={pIdx}
-                                    style={{
-                                      display: isMobile && pIdx > 0 ? 'block' : 'inline',
-                                      marginLeft: isMobile && pIdx > 0 ? 88 : 0,
-                                      whiteSpace: 'nowrap',
-                                    }}
-                                  >
-                                    {pIdx === 0 ? (
-                                      <>
-                                        <span style={{ fontWeight: editSpecialDayIndex === idx ? 700 : 500, minWidth: 88, display: 'inline-block' }}>
-                                          {day.date.replace(/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/, '$2/$3')}
-                                        </span>
-                                        {editSpecialDayIndex === idx && (
-                                          <Chip label="選択中" size="small" color="primary" variant="outlined" sx={{ ml: 1 }} />
-                                        )}
-                                        ：
-                                      </>
-                                    ) : null}
-                                    {pIdx !== 0 && isMobile ? '　' : ''}
-                                    {period.isOpen ? `${period.openTime}〜${period.closeTime}` : '休業'}
-                                    {pIdx < day.periods.length - 1 && (isMobile ? <><span> ／</span><br /></> : ' ／ ')}
-                                  </span>
-                                ))
-                              ) : (
-                                <span style={{ fontWeight: 500, minWidth: 88, display: 'inline-block' }}>{day.date.replace(/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/, '$2/$3')}：休業</span>
-                              )}
-                            </Box>
-                            <Box sx={{ alignSelf: 'flex-start', display: 'flex', gap: 1 }}>
-                              <EditIconButton onClick={() => handleEditButton(() => {
-                                setEditSpecialDayIndex(idx);
-                                setTempSpecialDayPeriods(day.periods.map(p => ({ ...p })));
-                                setTempSpecialDayDate(day.date);
-                              })} />
-                              <IconButton color="error" onClick={async () => {
-                                if (!window.confirm('この特別営業日を削除しますか？')) return;
-                                let newDays = specialBusinessDays.filter((_, i) => i !== idx);
-                                newDays = newDays.sort((a, b) => a.date.localeCompare(b.date));
-                                setSpecialBusinessDays(newDays);
-                                // API保存
-                                if (store) {
-                                  setError(null);
-                                  setSuccessMessage(null);
-                                  try {
-                                    const data: StoreFormData = {
-                                      ...store,
-                                      name: editValues.name,
-                                      description: editValues.description,
-                                      address: editValues.address,
-                                      phone: editValues.phone,
-                                      businessHours: businessHours,
-                                      specialBusinessDays: newDays,
-                                      logoUrl: store.logoUrl || null,
-                                      isHolidayClosed: isHolidayClosed,
-                                    };
-                                    const updatedStore = await updateStore(data);
-                                    setStore(updatedStore);
-                                    setSuccessMessage('特別営業日を削除しました');
-                                  } catch (err) {
-                                    setError('特別営業日の削除に失敗しました');
-                                    console.error('Error deleting special business day:', err);
-                                  }
+                              <Box
+                                sx={
+                                  isMobile
+                                    ? { display: 'block', flex: 1 }
+                                    : { display: 'flex', flexWrap: 'nowrap', alignItems: 'center', flex: 1, whiteSpace: 'nowrap' }
                                 }
-                              }}>
-                                <DeleteIcon />
-                              </IconButton>
+                              >
+                                {Array.isArray(day.periods) && day.periods.length > 0 ? (
+                                  day.periods.map((period, pIdx) => (
+                                    <span
+                                      key={pIdx}
+                                      style={{
+                                        display: isMobile && pIdx > 0 ? 'block' : 'inline',
+                                        marginLeft: isMobile && pIdx > 0 ? 88 : 0,
+                                        whiteSpace: 'nowrap',
+                                      }}
+                                    >
+                                      {pIdx === 0 ? (
+                                        <>
+                                          <span style={{ fontWeight: 500, minWidth: 88, display: 'inline-block' }}>
+                                            {day.date.replace(/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/, '$2/$3')}
+                                          </span>
+                                          ：
+                                        </>
+                                      ) : null}
+                                      {pIdx !== 0 && isMobile ? '　' : ''}
+                                      {period.isOpen ? `${period.openTime}〜${period.closeTime}` : '休業'}
+                                      {pIdx < day.periods.length - 1 && (isMobile ? <><span> ／</span><br /></> : ' ／ ')}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span style={{ fontWeight: 500, minWidth: 88, display: 'inline-block' }}>{day.date.replace(/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/, '$2/$3')}：休業</span>
+                                )}
+                              </Box>
+                              <Box sx={{ alignSelf: 'flex-start', display: 'flex', gap: 1 }}>
+                                <EditIconButton onClick={() => handleEditButton(() => {
+                                  setEditSpecialDayIndex(idx);
+                                  setTempSpecialDayPeriods(day.periods.map(p => ({ ...p })));
+                                  setTempSpecialDayDate(day.date);
+                                })} />
+                                <IconButton color="error" onClick={async () => {
+                                  if (!window.confirm('この特別営業日を削除しますか？')) return;
+                                  let newDays = specialBusinessDays.filter((_, i) => i !== idx);
+                                  newDays = newDays.sort((a, b) => a.date.localeCompare(b.date));
+                                  setSpecialBusinessDays(newDays);
+                                  // API保存
+                                  if (store) {
+                                    setError(null);
+                                    setSuccessMessage(null);
+                                    try {
+                                      const data: StoreFormData = {
+                                        ...store,
+                                        name: editValues.name,
+                                        description: editValues.description,
+                                        address: editValues.address,
+                                        phone: editValues.phone,
+                                        businessHours: businessHours,
+                                        specialBusinessDays: newDays,
+                                        logoUrl: store.logoUrl || null,
+                                        isHolidayClosed: isHolidayClosed,
+                                      };
+                                      const updatedStore = await updateStore(data);
+                                      setStore(updatedStore);
+                                      setLastUpdatedField(`specialBusinessDay-${day.date}`);
+                                    } catch (err) {
+                                      setError('特別営業日の削除に失敗しました');
+                                      console.error('Error deleting special business day:', err);
+                                    }
+                                  }
+                                }}>
+                                  <DeleteIcon />
+                                </IconButton>
+                              </Box>
                             </Box>
+                            {lastUpdatedField === `specialBusinessDay-${day.date}` && (
+                              <Alert severity="success" sx={{ mt: 1 }}>{day.date.replace(/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/, '$2/$3')}の特別営業日を更新しました</Alert>
+                            )}
                           </>
                         )}
                       </li>
