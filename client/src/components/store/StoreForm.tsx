@@ -1079,9 +1079,13 @@ export const StoreForm = () => {
                                 variant="outlined"
                                 size="small"
                                 onClick={() => {
-                                  // 追加直後で日付が空の場合はリストから削除
-                                  if (!tempSpecialDayDate) {
-                                    const newDays = specialBusinessDays.slice(0, -1);
+                                  // 新規分かどうか判定
+                                  const isNew =
+                                    !specialBusinessDays[editSpecialDayIndex]?.date ||
+                                    specialBusinessDays.filter((d, i) => d.date === specialBusinessDays[editSpecialDayIndex]?.date && i !== editSpecialDayIndex).length === 0;
+                                  if (isNew) {
+                                    // 新規分はリストから削除
+                                    const newDays = specialBusinessDays.filter((_, i) => i !== editSpecialDayIndex);
                                     setSpecialBusinessDays(newDays);
                                   }
                                   setEditSpecialDayIndex(null);
