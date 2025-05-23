@@ -182,7 +182,15 @@ export const StoreForm = () => {
     try {
       const updatedStore = await updateStore(data);
       setStore(updatedStore);
-      setSuccessMessage('店舗情報を更新しました');
+      let msg = '';
+      switch (field) {
+        case 'name': msg = '店舗名を更新しました'; break;
+        case 'description': msg = '店舗説明を更新しました'; break;
+        case 'address': msg = '住所を更新しました'; break;
+        case 'phone': msg = '電話番号を更新しました'; break;
+        default: msg = '店舗情報を更新しました'; break;
+      }
+      setSuccessMessage(msg);
       setEditField(null);
     } catch (err) {
       setError('店舗情報の更新に失敗しました');
