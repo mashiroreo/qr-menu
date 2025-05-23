@@ -164,6 +164,23 @@ export const StoreForm = () => {
     setError(null);
     setSuccessMessage(null);
     setPhoneError(null);
+    // 必須バリデーション
+    if (field === 'name' && !editValues.name.trim()) {
+      setError('店舗名は必須です');
+      return;
+    }
+    if (field === 'description' && !editValues.description.trim()) {
+      setError('店舗説明は必須です');
+      return;
+    }
+    if (field === 'address' && !editValues.address.trim()) {
+      setError('住所は必須です');
+      return;
+    }
+    if (field === 'phone' && !editValues.phone.trim()) {
+      setError('電話番号は必須です');
+      return;
+    }
     if (field === 'phone' && !/^\d+$/.test(editValues.phone)) {
       setPhoneError('電話番号は数字のみで入力してください');
       return;
