@@ -8,29 +8,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createUser = void 0;
-const prisma_1 = __importDefault(require("../lib/prisma"));
-const createUser = (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const express_1 = require("express");
+const auth_1 = require("../middleware/auth");
+const router = (0, express_1.Router)();
+// GET /api/users/me
+router.get("/me", auth_1.authenticate, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const email = `test+${Date.now()}@example.com`;
-        const newUser = yield prisma_1.default.user.create({
-            data: {
-                email,
- fix/ts-build-config
-                displayName: 'テストユーザー',
-                publicId: `test_${Date.now()}`
-
-            }
-        });
-        res.json(newUser);
+        if (!req.user) {
+            res.status(401).json({ error: "認証されていません" });
+            return;
+        }
+        res.json(req.user); // ← return いらない！
     }
     catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'ユーザー作成に失敗しました' });
+        console.error("ユーザー情報の取得に失敗しました:", error);
+        res.status(500).json({ error: "サーバーエラー" });
     }
-});
-exports.createUser = createUser;
+}));
+exports.default = router;

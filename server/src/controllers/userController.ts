@@ -9,7 +9,8 @@ export const createUser = async (_req: Request, res: Response) => {
     const newUser = await prisma.user.create({
       data: {
         email,
-        name: 'テストユーザー'
+        displayName: 'テストユーザー',
+        publicId: `test_${Date.now()}`
       }
     });
 

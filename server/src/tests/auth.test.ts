@@ -2,21 +2,10 @@ import { describe, it, expect, beforeAll, afterAll } from "@jest/globals";
 import request from "supertest";
 import { app } from "../index";
 import { PrismaClient } from "@prisma/client";
-import { adminAuth } from "../config/firebase";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { initializeApp } from "firebase/app";
+import admin from "firebase-admin";
 
 const prisma = new PrismaClient();
-
-// Firebaseクライアントの初期化
-const firebaseConfig = {
-  apiKey: process.env.VITE_FIREBASE_API_KEY,
-  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-};
-
-const firebaseApp = initializeApp(firebaseConfig);
-const auth = getAuth(firebaseApp);
+const adminAuth = admin.auth();
 
 describe("認証APIのテスト", () => {
   let testUserToken: string;
@@ -32,9 +21,8 @@ describe("認証APIのテスト", () => {
 
     testUserId = testUser.uid;
 
-    // テスト用のユーザーでログインしてIDトークンを取得
-    const userCredential = await signInWithEmailAndPassword(auth, "test@example.com", "password123");
-    testUserToken = await userCredential.user.getIdToken();
+    // テスト用のカスタムトークンを作成
+    testUserToken = await adminAuth.createCustomToken(testUserId);
   });
 
   afterAll(async () => {
