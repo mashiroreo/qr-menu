@@ -24,7 +24,7 @@ export const uploadMenuItemImage = async (req: AuthRequest, res: Response) => {
     // メニューアイテムの存在確認と権限チェック
     const menuItem = await prisma.menuItem.findFirst({
       where: {
-        id: menuItemId,
+        id: Number(menuItemId),
         menu: {
           store: {
             owner: {
@@ -49,7 +49,7 @@ export const uploadMenuItemImage = async (req: AuthRequest, res: Response) => {
     // メニューアイテムの画像URLを更新
     const updatedMenuItem = await prisma.menuItem.update({
       where: {
-        id: menuItemId
+        id: Number(menuItemId)
       },
       data: {
         imageUrl
