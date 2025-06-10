@@ -17,17 +17,7 @@ const supertest_1 = __importDefault(require("supertest"));
 const index_1 = require("../index");
 const client_1 = require("@prisma/client");
 const firebase_1 = require("../config/firebase");
-const auth_1 = require("firebase/auth");
-const app_1 = require("firebase/app");
 const prisma = new client_1.PrismaClient();
-// Firebaseクライアントの初期化
-const firebaseConfig = {
-    apiKey: process.env.VITE_FIREBASE_API_KEY,
-    authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-};
-const firebaseApp = (0, app_1.initializeApp)(firebaseConfig);
-const auth = (0, auth_1.getAuth)(firebaseApp);
 (0, globals_1.describe)("認証APIのテスト", () => {
     let testUserToken;
     let testUserId;
@@ -39,9 +29,8 @@ const auth = (0, auth_1.getAuth)(firebaseApp);
             displayName: "Test User",
         });
         testUserId = testUser.uid;
-        // テスト用のユーザーでログインしてIDトークンを取得
-        const userCredential = yield (0, auth_1.signInWithEmailAndPassword)(auth, "test@example.com", "password123");
-        testUserToken = yield userCredential.user.getIdToken();
+        // テスト用のカスタムトークンを作成
+        testUserToken = yield firebase_1.adminAuth.createCustomToken(testUserId);
     }));
     (0, globals_1.afterAll)(() => __awaiter(void 0, void 0, void 0, function* () {
         // テスト用のユーザーを削除

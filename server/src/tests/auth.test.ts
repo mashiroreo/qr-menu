@@ -2,9 +2,10 @@ import { describe, it, expect, beforeAll, afterAll } from "@jest/globals";
 import request from "supertest";
 import { app } from "../index";
 import { PrismaClient } from "@prisma/client";
-import { adminAuth } from "../config/firebase";
+import admin from "firebase-admin";
 
 const prisma = new PrismaClient();
+const adminAuth = admin.auth();
 
 describe("認証APIのテスト", () => {
   let testUserToken: string;

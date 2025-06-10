@@ -20,7 +20,7 @@ const createUser = (_req, res) => __awaiter(void 0, void 0, void 0, function* ()
         const newUser = yield prisma_1.default.user.create({
             data: {
                 email,
-                name: 'テストユーザー'
+                displayName: 'テストユーザー'
             }
         });
         res.json(newUser);

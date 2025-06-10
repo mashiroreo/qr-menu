@@ -29,7 +29,7 @@ const uploadMenuItemImage = (req, res) => __awaiter(void 0, void 0, void 0, func
         // メニューアイテムの存在確認と権限チェック
         const menuItem = yield prisma.menuItem.findFirst({
             where: {
-                id: menuItemId,
+                id: Number(menuItemId),
                 menu: {
                     store: {
                         owner: {
@@ -47,7 +47,7 @@ const uploadMenuItemImage = (req, res) => __awaiter(void 0, void 0, void 0, func
         // メニューアイテムの画像URLを更新
         const updatedMenuItem = yield prisma.menuItem.update({
             where: {
-                id: menuItemId
+                id: Number(menuItemId)
             },
             data: {
                 imageUrl

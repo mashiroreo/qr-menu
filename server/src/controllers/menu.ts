@@ -25,11 +25,9 @@ export const uploadMenuItemImage = async (req: AuthRequest, res: Response) => {
     const menuItem = await prisma.menuItem.findFirst({
       where: {
         id: Number(menuItemId),
-        menu: {
-          store: {
-            owner: {
-              publicId: userId
-            }
+        store: {
+          owner: {
+            publicId: userId
           }
         }
       }
