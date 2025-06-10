@@ -30,11 +30,11 @@ const uploadMenuItemImage = (req, res) => __awaiter(void 0, void 0, void 0, func
         const menuItem = yield prisma.menuItem.findFirst({
             where: {
                 id: Number(menuItemId),
-                menu: {
-                    store: {
-                        owner: {
-                            publicId: userId
-                        }
+ fix/ts-build-config
+                store: {
+                    owner: {
+                        publicId: userId
+
                     }
                 }
             }

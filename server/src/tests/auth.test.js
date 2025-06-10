@@ -16,25 +16,32 @@ const globals_1 = require("@jest/globals");
 const supertest_1 = __importDefault(require("supertest"));
 const index_1 = require("../index");
 const client_1 = require("@prisma/client");
-const firebase_1 = require("../config/firebase");
+ fix/ts-build-config
+const firebase_admin_1 = __importDefault(require("firebase-admin"));
 const prisma = new client_1.PrismaClient();
+const adminAuth = firebase_admin_1.default.auth();
+
 (0, globals_1.describe)("認証APIのテスト", () => {
     let testUserToken;
     let testUserId;
     (0, globals_1.beforeAll)(() => __awaiter(void 0, void 0, void 0, function* () {
         // テスト用のユーザーを作成
-        const testUser = yield firebase_1.adminAuth.createUser({
+ fix/ts-build-config
+        const testUser = yield adminAuth.createUser({
+
             email: "test@example.com",
             password: "password123",
             displayName: "Test User",
         });
         testUserId = testUser.uid;
         // テスト用のカスタムトークンを作成
-        testUserToken = yield firebase_1.adminAuth.createCustomToken(testUserId);
+ fix/ts-build-config
+        testUserToken = yield adminAuth.createCustomToken(testUserId);
     }));
     (0, globals_1.afterAll)(() => __awaiter(void 0, void 0, void 0, function* () {
         // テスト用のユーザーを削除
-        yield firebase_1.adminAuth.deleteUser(testUserId);
+        yield adminAuth.deleteUser(testUserId);
+
         yield prisma.$disconnect();
     }));
     (0, globals_1.describe)("GET /api/auth/me", () => {
