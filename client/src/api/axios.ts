@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios from 'axios';
 import { getAuth } from 'firebase/auth';
 
 // 環境変数からbaseURLを取得
@@ -10,14 +10,14 @@ const api = axios.create({
 });
 
 // リクエストインターセプターでトークンを設定
-api.interceptors.request.use(async (config: AxiosRequestConfig) => {
+api.interceptors.request.use(async (config: any) => {
   const auth = getAuth();
   const user = auth.currentUser;
   
   if (user) {
     try {
       const token = await user.getIdToken(true);
-      if (config.headers) {  // headersの存在チェックを追加
+      if (config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
       }
     } catch (error) {
@@ -25,14 +25,14 @@ api.interceptors.request.use(async (config: AxiosRequestConfig) => {
     }
   }
   return config;
-}, (error) => {
+}, (error: any) => {
   return Promise.reject(error);
 });
 
 // レスポンスインターセプターでエラーハンドリング
 api.interceptors.response.use(
-  (response: AxiosResponse) => response,
-  async (error) => {
+  (response: any) => response,
+  async (error: any) => {
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -44,7 +44,7 @@ api.interceptors.response.use(
         
         if (user) {
           const token = await user.getIdToken(true);
-          if (originalRequest.headers) {  // headersの存在チェックを追加
+          if (originalRequest.headers) {
             originalRequest.headers.Authorization = `Bearer ${token}`;
           }
           return api(originalRequest);
