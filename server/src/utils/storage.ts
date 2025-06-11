@@ -49,18 +49,22 @@ export const uploadImage = async (
     // ファイルのアップロード
     await fileUpload.save(file.buffer, {
       metadata: metadata,
+      public: true, // パブリックアクセスを許可
     });
 
-    // 署名付きURLの取得（1時間有効）
+    // パブリックURLを取得
     const [url] = await fileUpload.getSignedUrl({
       action: 'read',
-      expires: Date.now() + 60 * 60 * 1000,
+      expires: '03-01-2500', // 長期間有効なURL
     });
 
     return url;
   } catch (error) {
     console.error('Error uploading image to storage:', error);
-    throw new Error('Failed to upload image');
+    if (error instanceof Error) {
+      throw new Error(`Failed to upload image: ${error.message}`);
+    }
+    throw new Error('Failed to upload image: Unknown error');
   }
 };
 

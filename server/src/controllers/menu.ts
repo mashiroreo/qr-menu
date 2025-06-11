@@ -37,26 +37,37 @@ export const uploadMenuItemImage = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: "Menu item not found or unauthorized" });
     }
 
-    // Cloud Storageに画像をアップロード
-    const imageUrl = await uploadImage(
-      req.file,
-      StorageFolders.MENU_IMAGES,
-      `menu_${menuItemId}`
-    );
+    try {
+      // Cloud Storageに画像をアップロード
+      const imageUrl = await uploadImage(
+        req.file,
+        StorageFolders.MENU_IMAGES,
+        `menu_${menuItemId}`
+      );
 
-    // メニューアイテムの画像URLを更新
-    const updatedMenuItem = await prisma.menuItem.update({
-      where: {
-        id: Number(menuItemId)
-      },
-      data: {
-        imageUrl
-      }
-    });
+      // メニューアイテムの画像URLを更新
+      const updatedMenuItem = await prisma.menuItem.update({
+        where: {
+          id: Number(menuItemId)
+        },
+        data: {
+          imageUrl
+        }
+      });
 
-    res.json(updatedMenuItem);
+      res.json(updatedMenuItem);
+    } catch (uploadError) {
+      console.error("Error uploading image:", uploadError);
+      res.status(500).json({ 
+        error: "画像のアップロードに失敗しました",
+        details: uploadError instanceof Error ? uploadError.message : "Unknown error"
+      });
+    }
   } catch (error) {
-    console.error("Error uploading menu item image:", error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("Error in uploadMenuItemImage:", error);
+    res.status(500).json({ 
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : "Unknown error"
+    });
   }
 }; 

@@ -6,6 +6,25 @@ import menuRoutes from './routes/menu';
 import qrRoutes from './routes/qr';
 import authRoutes from './routes/auth';
 import fs from 'fs';
+import dotenv from "dotenv";
+
+// デバッグ用：.envファイルのパスを表示
+console.log('Current directory:', process.cwd());
+console.log('.env file path:', path.resolve(process.cwd(), '.env'));
+
+// dotenvの設定を明示的に行う
+const result = dotenv.config();
+if (result.error) {
+    console.error('Error loading .env file:', result.error);
+} else {
+    console.log('.env file loaded successfully');
+}
+
+// 環境変数の確認
+console.log('Environment variables:');
+console.log('FIREBASE_PROJECT_ID:', process.env.FIREBASE_PROJECT_ID ? 'exists' : 'missing');
+console.log('FIREBASE_CLIENT_EMAIL:', process.env.FIREBASE_CLIENT_EMAIL ? 'exists' : 'missing');
+console.log('FIREBASE_PRIVATE_KEY:', process.env.FIREBASE_PRIVATE_KEY ? 'exists' : 'missing');
 
 const app = express();
 const port = Number(process.env.PORT) || 3000;
