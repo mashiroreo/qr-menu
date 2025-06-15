@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState, useEffect } from 'react';
 import { Store, StoreFormData, BusinessHours, SpecialBusinessDay, BusinessHourPeriod } from '../../types/store';
@@ -235,13 +234,22 @@ export const StoreForm = () => {
     setSpecialBusinessDays(specialBusinessDays.filter((_, i) => i !== idx));
   };
 
-  const handleSpecialDayChange = (idx: number, field: keyof SpecialBusinessDay, value: any) => {
+  const handleSpecialDayChange = (
+    idx: number,
+    field: keyof SpecialBusinessDay,
+    value: string | BusinessHourPeriod[]
+  ) => {
     const newDays = [...specialBusinessDays];
     newDays[idx] = { ...newDays[idx], [field]: value };
     setSpecialBusinessDays(newDays);
   };
 
-  const handleSpecialPeriodChange = (dayIdx: number, periodIdx: number, field: keyof BusinessHourPeriod, value: any) => {
+  const handleSpecialPeriodChange = (
+    dayIdx: number,
+    periodIdx: number,
+    field: keyof BusinessHourPeriod,
+    value: string | boolean
+  ) => {
     const newDays = [...specialBusinessDays];
     newDays[dayIdx].periods = newDays[dayIdx].periods.map((p, i) =>
       i === periodIdx ? { ...p, [field]: value } : p
