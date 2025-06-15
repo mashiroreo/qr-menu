@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { auth } from "../../libs/firebase";
 import api from "../../api/axios";
 
 interface UserProfile {
@@ -17,7 +16,7 @@ export const UserProfile = () => {
     const fetchUserProfile = async () => {
       try {
         const response = await api.get("/api/auth/me");
-        const data = response.data;
+        const data = response.data as UserProfile;
         setUserProfile(data);
         setDisplayName(data.displayName);
       } catch (error) {
@@ -31,7 +30,7 @@ export const UserProfile = () => {
   const handleUpdate = async () => {
     try {
       const response = await api.put("/api/auth/me", { displayName });
-      const data = response.data;
+      const data = response.data as UserProfile;
       setUserProfile(data);
       setIsEditing(false);
     } catch (error) {

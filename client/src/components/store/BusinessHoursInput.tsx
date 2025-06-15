@@ -1,5 +1,4 @@
 import React from 'react';
-import { useForm, Controller } from 'react-hook-form';
 import {
   Box,
   FormControl,
@@ -55,7 +54,7 @@ export const BusinessHoursInput: React.FC<BusinessHoursInputProps> = ({ value, o
 
   // valueを新型に補正
   const normalizeBusinessHours = (input: any[]): BusinessHours[] => {
-    return DAYS_OF_WEEK.map((day, idx) => {
+    return DAYS_OF_WEEK.map((day, _idx) => {
       const item = input.find((h) => h.dayOfWeek === day.value) || {};
       // 旧型（openTime/closeTime/isOpen）→新型（periods配列）に変換
       if (Array.isArray(item.periods)) {
