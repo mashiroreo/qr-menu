@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { getAuth } from 'firebase/auth';
 
-// スマホからもアクセスできるよう、PCのIPアドレスをbaseURLに設定
-const baseURL = 'http://192.168.1.50:3000';
+// 環境変数からbaseURLを取得
+const baseURL = import.meta.env.VITE_API_URL || 'http://192.168.1.59:3000';
 
 const api = axios.create({
   baseURL,
@@ -10,27 +10,29 @@ const api = axios.create({
 });
 
 // リクエストインターセプターでトークンを設定
-api.interceptors.request.use(async (config) => {
+api.interceptors.request.use(async (config: any) => {
   const auth = getAuth();
   const user = auth.currentUser;
   
   if (user) {
     try {
       const token = await user.getIdToken(true);
-      config.headers.Authorization = `Bearer ${token}`;
+      if (config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     } catch (error) {
       console.error('トークンの更新に失敗しました:', error);
     }
   }
   return config;
-}, (error) => {
+}, (error: any) => {
   return Promise.reject(error);
 });
 
 // レスポンスインターセプターでエラーハンドリング
 api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
+  (response: any) => response,
+  async (error: any) => {
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -42,7 +44,9 @@ api.interceptors.response.use(
         
         if (user) {
           const token = await user.getIdToken(true);
-          originalRequest.headers.Authorization = `Bearer ${token}`;
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+          }
           return api(originalRequest);
         }
       } catch (refreshError) {
