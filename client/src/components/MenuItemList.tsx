@@ -14,7 +14,6 @@ import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
   rectSortingStrategy,
   useSortable,
 } from '@dnd-kit/sortable';
@@ -99,7 +98,7 @@ const SortableMenuItem: React.FC<SortableMenuItemProps> = ({ item, onEdit, onDel
 };
 
 const MenuItemList: React.FC<MenuItemListProps> = ({
-  storeId,
+  storeId: _storeId,
   categoryId,
   onEdit,
   refreshTrigger = 0,
@@ -136,6 +135,8 @@ const MenuItemList: React.FC<MenuItemListProps> = ({
   useEffect(() => {
     fetchItems();
   }, [categoryId, refreshTrigger]);
+
+  useEffect(() => {}, [_storeId]);
 
   const handleDelete = async (id: number) => {
     if (!window.confirm('このメニューアイテムを削除してもよろしいですか？')) {

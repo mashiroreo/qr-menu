@@ -78,7 +78,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({
         return;
       }
 
-      if (formData.price < 0) {
+      if (Number(formData.price) < 0) {
         setError('価格は0以上を入力してください');
         setLoading(false);
         return;
@@ -87,9 +87,10 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({
       // 送信データの準備
       const submitData = {
         name: formData.name.trim(),
-        description: formData.description?.trim() || null,
+        description: formData.description?.trim() || undefined,
         price: Number(formData.price),
         categoryId: Number(categoryId),
+        storeId: Number(storeId),
       };
 
       if (item) {
@@ -114,7 +115,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({
         }
       }
       onSubmit();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error details:', err.response?.data);
       if (err.response?.data?.error) {
         setError(err.response.data.error);
