@@ -294,16 +294,28 @@
 - 作業内容: 画像未登録時でもカードレイアウトが崩れないよう、ダミー画像領域（No Image）を表示するように修正。CSSも調整。
 - 次のタスクへの引き継ぎ事項: PR作成・レビュー・マージ 
 
-## 2025-06-15: TypeScript型エラー修正
-
-- ステータス: 🔄進行中
-- ブランチ: fix/typescript-errors
+## 2025-06-15
+### ✅ TypeScript / ESLint エラー解消（Phase2 step2）
+- ステータス: ✅完了
+- ブランチ: `fix/phase2/ts-errors-step2`
 - 開始日: 2025-06-15
+- 完了日: 2025-06-15
 - 作業内容:
-  1. `client/src/api/menu.ts` 型定義修正
-  2. `client/src/types/menu.ts` に不足型を追加
-  3. `client/vite.config.ts` 内の環境変数型を修正
-  4. バックアップファイル(.bak)除外
+  - ESLint残りの警告・エラーを解消（no-explicit-any, no-unused-vars, react-hooks/exhaustive-deps）
+  - MenuItemListをuseCallbackでリファクタリング
+  - 不要なimport・変数を削除
+  - 型安全性を向上させるためany→適切な型へ置換
+  - 実動作テスト（npm run dev）で問題ないことを確認
 - 引き継ぎ事項:
-  - PRを作成し、CIビルド通過を確認
-  - 残りの型エラーの段階的解消を継続 
+  - 今後の機能追加時も ESLint / TypeScript のルールを遵守 
+
+### 🔄 StoreForm リファクタリング開始（Phase3）
+- ブランチ: `feature/phase3/store-form-refactor`
+- 開始日: 2025-06-15
+- ステータス: 🔄進行中
+- 作業内容:
+  - StoreForm.tsx の型付け・コード整理
+  - any の除去、コンポーネント分割を検討
+  - ESLint 無効化コメントの撤廃を目指す
+- 次のタスク:
+  - 段階的にモジュール分割し動作を確認しながら修正 
