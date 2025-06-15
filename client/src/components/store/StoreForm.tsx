@@ -1,28 +1,21 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 import { useState, useEffect } from 'react';
 import { Store, StoreFormData, BusinessHours, SpecialBusinessDay, BusinessHourPeriod } from '../../types/store';
 import { getStoreInfo, updateStore } from '../../api/store';
-import { BusinessHoursInput } from './BusinessHoursInput';
 import {
   Box,
   Button,
   TextField,
   Typography,
   Alert,
-  Paper,
   Radio,
   RadioGroup,
   FormControlLabel,
   FormControl,
-  FormLabel,
   IconButton,
   Chip,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { EditIconButton } from '../common/EditIconButton';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 
@@ -30,7 +23,6 @@ export const StoreForm = () => {
   const [store, setStore] = useState<Store | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [businessHours, setBusinessHours] = useState<BusinessHours[]>([]);
   const [businessHoursError, setBusinessHoursError] = useState<string | null>(null);
@@ -45,12 +37,14 @@ export const StoreForm = () => {
     phone: '',
   });
 
-  // 営業時間編集モード
-  const [isEditingBusinessHours, setIsEditingBusinessHours] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [, setIsEditingBusinessHours] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [tempBusinessHours, setTempBusinessHours] = useState<BusinessHours[]>([]);
 
-  // 特別営業日編集モード
-  const [isEditingSpecialDays, setIsEditingSpecialDays] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [, setIsEditingSpecialDays] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [tempSpecialBusinessDays, setTempSpecialBusinessDays] = useState<SpecialBusinessDay[]>([]);
 
   // 祝日営業編集モード
@@ -171,7 +165,6 @@ export const StoreForm = () => {
   const handleFieldSave = async (field: string) => {
     if (!store) return;
     setError(null);
-    setSuccessMessage(null);
     setNameError(null);
     setDescriptionError(null);
     setAddressError(null);
@@ -219,73 +212,7 @@ export const StoreForm = () => {
     }
   };
 
-  const handleAddSpecialDay = () => {
-    setSpecialBusinessDays([
-      ...specialBusinessDays,
-      {
-        date: '',
-        periods: [{ isOpen: true, openTime: '09:00', closeTime: '18:00' }],
-      },
-    ]);
-  };
-
-  const handleRemoveSpecialDay = (idx: number) => {
-    if (!window.confirm('本当にこの特別営業日を削除しますか？')) return;
-    setSpecialBusinessDays(specialBusinessDays.filter((_, i) => i !== idx));
-  };
-
-  const handleSpecialDayChange = (
-    idx: number,
-    field: keyof SpecialBusinessDay,
-    value: string | BusinessHourPeriod[]
-  ) => {
-    const newDays = [...specialBusinessDays];
-    newDays[idx] = { ...newDays[idx], [field]: value };
-    setSpecialBusinessDays(newDays);
-  };
-
-  const handleSpecialPeriodChange = (
-    dayIdx: number,
-    periodIdx: number,
-    field: keyof BusinessHourPeriod,
-    value: string | boolean
-  ) => {
-    const newDays = [...specialBusinessDays];
-    newDays[dayIdx].periods = newDays[dayIdx].periods.map((p, i) =>
-      i === periodIdx ? { ...p, [field]: value } : p
-    );
-    setSpecialBusinessDays(newDays);
-  };
-
-  const handleAddSpecialPeriod = (dayIdx: number) => {
-    const newDays = [...specialBusinessDays];
-    const periods = newDays[dayIdx].periods;
-    let newOpen = '09:00';
-    let newClose = '18:00';
-    if (periods.length > 0) {
-      const last = periods[periods.length - 1];
-      newOpen = last.closeTime;
-      // デフォルト終了時刻は+1時間（24:00超えは00:00に）
-      const [h, m] = last.closeTime.split(':').map(Number);
-      let endH = h + 1;
-      if (endH >= 24) endH = 0;
-      newClose = `${endH.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-    }
-    newDays[dayIdx].periods = [
-      ...periods,
-      { isOpen: true, openTime: newOpen, closeTime: newClose },
-    ];
-    setSpecialBusinessDays(newDays);
-  };
-
-  const handleRemoveSpecialPeriod = (dayIdx: number, periodIdx: number) => {
-    if (!window.confirm('本当にこの時間帯を削除しますか？')) return;
-    const newDays = [...specialBusinessDays];
-    newDays[dayIdx].periods = newDays[dayIdx].periods.filter((_, i) => i !== periodIdx);
-    setSpecialBusinessDays(newDays);
-  };
-
-  // --- 追加: 時間帯重複チェック関数 ---
+  // --- ユーティリティ: 時間帯重複チェック ---
   const checkPeriodOverlap = (periods: BusinessHourPeriod[], currentIdx: number): boolean => {
     const current = periods[currentIdx];
     if (!current.isOpen) return false;
@@ -299,122 +226,51 @@ export const StoreForm = () => {
       const [pCloseH, pCloseM] = p.closeTime.split(':').map(Number);
       const pOpen = pOpenH * 60 + pOpenM;
       const pClose = pCloseH * 60 + pCloseM;
-      // 深夜営業対応
       const isCurrentOvernight = cOpen > cClose;
       const isPOtherOvernight = pOpen > pClose;
-      if (isCurrentOvernight && isPOtherOvernight) {
-        return true;
-      } else if (isCurrentOvernight) {
-        return (pOpen <= cClose || pOpen >= cOpen) || (pClose <= cClose || pClose >= cOpen);
-      } else if (isPOtherOvernight) {
-        return (cOpen <= pClose || cOpen >= pOpen) || (cClose <= pClose || cClose >= pOpen);
-      } else {
-        return (cOpen < pClose && cClose > pOpen);
-      }
+      if (isCurrentOvernight && isPOtherOvernight) return true;
+      if (isCurrentOvernight) return (pOpen <= cClose || pOpen >= cOpen) || (pClose <= cClose || pClose >= cOpen);
+      if (isPOtherOvernight) return (cOpen <= pClose || cOpen >= pOpen) || (cClose <= pClose || cClose >= pOpen);
+      return cOpen < pClose && cClose > pOpen;
     });
   };
 
-  // --- 追加: 日付重複チェック関数 ---
-  const isDuplicateDate = (date: string, idx: number) =>
-    specialBusinessDays.filter((d, i) => d.date === date && i !== idx).length > 0;
-
-  // 営業時間編集モード
-  const handleBusinessHoursEdit = () => {
-    setTempBusinessHours(businessHours);
-    setIsEditingBusinessHours(true);
-  };
-  const handleBusinessHoursCancel = () => {
-    setTempBusinessHours(businessHours);
-    setIsEditingBusinessHours(false);
-  };
-  const handleBusinessHoursSave = async () => {
-    if (!store) return;
-    setError(null);
-    setSuccessMessage(null);
-    const data: StoreFormData = {
-      ...store,
-      name: editValues.name,
-      description: editValues.description,
-      address: editValues.address,
-      phone: editValues.phone,
-      businessHours: tempBusinessHours,
-      specialBusinessDays: specialBusinessDays,
-      logoUrl: store.logoUrl || null,
-      isHolidayClosed: isHolidayClosed,
-    };
-    try {
-      const updatedStore = await updateStore(data);
-      setStore(updatedStore);
-      setBusinessHours(tempBusinessHours);
-      setLastUpdatedField(`businessHours-${editDayOfWeek}`);
-      setIsEditingBusinessHours(false);
-    } catch (err) {
-      setError('営業時間の更新に失敗しました');
-      console.error('Error updating business hours:', err);
+  // 編集ボタン共通ラッパー
+  const handleEditButton = (editAction: () => void) => {
+    const isAnyEditing = editField !== null || editDayOfWeek !== null || editSpecialDayIndex !== null || isEditingHoliday;
+    if (isAnyEditing) {
+      window.alert('編集中の項目があります。入力を完了してください。');
+      return;
     }
+    editAction();
   };
 
-  // 特別営業日編集モード
-  const handleSpecialDaysEdit = () => {
-    setTempSpecialBusinessDays(specialBusinessDays);
-    setIsEditingSpecialDays(true);
-  };
-  const handleSpecialDaysCancel = () => {
-    setTempSpecialBusinessDays(specialBusinessDays);
-    setIsEditingSpecialDays(false);
-  };
-  const handleSpecialDaysSave = async () => {
-    if (!store) return;
-    setError(null);
-    setSuccessMessage(null);
-    const data: StoreFormData = {
-      ...store,
-      name: editValues.name,
-      description: editValues.description,
-      address: editValues.address,
-      phone: editValues.phone,
-      businessHours: businessHours,
-      specialBusinessDays: tempSpecialBusinessDays,
-      logoUrl: store.logoUrl || null,
-      isHolidayClosed: isHolidayClosed,
-    };
-    try {
-      const updatedStore = await updateStore(data);
-      setStore(updatedStore);
-      setSpecialBusinessDays(tempSpecialBusinessDays);
-      setLastUpdatedField(`specialBusinessDay-${tempSpecialDayDate}`);
-      setIsEditingSpecialDays(false);
-    } catch (err) {
-      setError('特別営業日の更新に失敗しました');
-      console.error('Error updating special business days:', err);
-    }
-  };
-
-  // 祝日営業編集モード
+  // 祝日営業フラグ編集ハンドラ
   const handleHolidayEdit = () => {
     setTempIsHolidayClosed(isHolidayClosed);
     setIsEditingHoliday(true);
   };
+
   const handleHolidayCancel = () => {
     setTempIsHolidayClosed(isHolidayClosed);
     setIsEditingHoliday(false);
   };
+
   const handleHolidaySave = async () => {
     if (!store) return;
     setError(null);
-    setSuccessMessage(null);
-    const data: StoreFormData = {
-      ...store,
-      name: editValues.name,
-      description: editValues.description,
-      address: editValues.address,
-      phone: editValues.phone,
-      businessHours: businessHours,
-      specialBusinessDays: specialBusinessDays,
-      logoUrl: store.logoUrl || null,
-      isHolidayClosed: tempIsHolidayClosed,
-    };
     try {
+      const data: StoreFormData = {
+        ...store,
+        name: editValues.name,
+        description: editValues.description,
+        address: editValues.address,
+        phone: editValues.phone,
+        businessHours,
+        specialBusinessDays,
+        logoUrl: store.logoUrl || null,
+        isHolidayClosed: tempIsHolidayClosed,
+      };
       const updatedStore = await updateStore(data);
       setStore(updatedStore);
       setIsHolidayClosed(tempIsHolidayClosed);
@@ -424,18 +280,6 @@ export const StoreForm = () => {
       setError('祝日の営業情報の更新に失敗しました');
       console.error('Error updating holiday info:', err);
     }
-  };
-
-  // 編集フラグ
-  const isAnyEditing = editField !== null || editDayOfWeek !== null || editSpecialDayIndex !== null || isEditingHoliday;
-
-  // 編集ボタン・追加ボタンのonClickをラップ
-  const handleEditButton = (editAction: () => void) => {
-    if (isAnyEditing) {
-      window.alert('編集中の項目があります。入力を完了してください。');
-      return;
-    }
-    editAction();
   };
 
   if (loading) {
@@ -661,8 +505,6 @@ export const StoreForm = () => {
                         default: return hours.dayOfWeek;
                       }
                     })();
-                    // 編集中かどうか
-                    const isEditing = editDayOfWeek === hours.dayOfWeek;
                     return (
                       <li
                         key={hours.dayOfWeek + '-' + idx}
@@ -799,7 +641,6 @@ export const StoreForm = () => {
                                     setBusinessHours(newHours);
                                     if (store) {
                                       setError(null);
-                                      setSuccessMessage(null);
                                       try {
                                         const data: StoreFormData = {
                                           ...store,
@@ -915,8 +756,6 @@ export const StoreForm = () => {
               {Array.isArray(specialBusinessDays) && specialBusinessDays.length > 0 ? (
                 <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
                   {specialBusinessDays.map((day, idx) => {
-                    const isEditing = editSpecialDayIndex === idx;
-                    const isOpenDay = day.periods.some(p => p.isOpen);
                     return (
                       <li
                         key={day.date + '-' + idx}
@@ -1073,7 +912,6 @@ export const StoreForm = () => {
                                   // API保存
                                   if (store) {
                                     setError(null);
-                                    setSuccessMessage(null);
                                     try {
                                       const data: StoreFormData = {
                                         ...store,
@@ -1181,7 +1019,6 @@ export const StoreForm = () => {
                                   // API保存
                                   if (store) {
                                     setError(null);
-                                    setSuccessMessage(null);
                                     try {
                                       const data: StoreFormData = {
                                         ...store,
