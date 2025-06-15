@@ -17,7 +17,7 @@ const QRCodeGenerator: React.FC = () => {
       try {
         const store = await getStoreInfo();
         setStoreId(store.id);
-      } catch (err) {
+      } catch {
         setError('店舗情報の取得に失敗しました');
       }
     };
@@ -32,7 +32,7 @@ const QRCodeGenerator: React.FC = () => {
     try {
       const url = await generateQRCode(storeId);
       setQrUrl(url);
-    } catch (err) {
+    } catch {
       setError('QRコードの生成に失敗しました');
     } finally {
       setLoading(false);

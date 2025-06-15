@@ -164,7 +164,7 @@ const MenuCategoryList: React.FC<MenuCategoryListProps> = ({ onEdit, refreshTrig
       await reorderCategories(reorderData);
       // 成功時は既にUIが更新済みなので、再取得は不要
       toast.success('並び順を更新しました');
-    } catch (error: any) {
+    } catch (error: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) {
       // エラー時のみ元の順序に戻す
       setCategories(categories);
       console.error('並び替えエラー:', error);

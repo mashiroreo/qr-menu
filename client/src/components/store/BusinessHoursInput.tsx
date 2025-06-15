@@ -53,8 +53,8 @@ export const BusinessHoursInput: React.FC<BusinessHoursInputProps> = ({ value, o
   }));
 
   // valueを新型に補正
-  const normalizeBusinessHours = (input: any[]): BusinessHours[] => {
-    return DAYS_OF_WEEK.map((day, _idx) => {
+  const normalizeBusinessHours = (input: BusinessHours[]): BusinessHours[] => {
+    return DAYS_OF_WEEK.map((day) => {
       const item = input.find((h) => h.dayOfWeek === day.value) || {};
       // 旧型（openTime/closeTime/isOpen）→新型（periods配列）に変換
       if (Array.isArray(item.periods)) {
@@ -124,7 +124,12 @@ export const BusinessHoursInput: React.FC<BusinessHoursInputProps> = ({ value, o
   };
 
   // 値変更
-  const handlePeriodChange = (dayIdx: number, periodIdx: number, field: keyof BusinessHourPeriod, value: any) => {
+  const handlePeriodChange = (
+    dayIdx: number,
+    periodIdx: number,
+    field: keyof BusinessHourPeriod,
+    value: string | boolean
+  ) => {
     const newHours = [...businessHours];
     newHours[dayIdx] = {
       ...newHours[dayIdx],
