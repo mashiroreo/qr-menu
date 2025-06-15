@@ -4,7 +4,6 @@ import MenuCategoryList from '../components/MenuCategoryList';
 import MenuCategoryForm from '../components/MenuCategoryForm';
 import MenuItemList from '../components/MenuItemList';
 import MenuItemForm from '../components/MenuItemForm';
-import { auth } from '../libs/firebase';
 import { getStoreInfo } from '../api/store';
 
 const MenuManagement: React.FC = () => {

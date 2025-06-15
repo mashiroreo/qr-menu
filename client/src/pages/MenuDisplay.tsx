@@ -46,7 +46,7 @@ const MenuDisplay: React.FC = () => {
           })
         );
         setMenu(menuObj);
-      } catch (err) {
+      } catch {
         setError('店舗またはカテゴリ情報の取得に失敗しました');
       } finally {
         setLoading(false);

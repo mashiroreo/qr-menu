@@ -3,7 +3,6 @@ import { Store } from '../types/store';
 import { StoreForm } from '../components/store/StoreForm';
 import { StoreLogo } from '../components/store/StoreLogo';
 import { getStoreInfo } from '../api/store';
-import MenuItemList from '../components/MenuItemList';
 
 export const StoreManagement = () => {
   const [store, setStore] = useState<Store | null>(null);

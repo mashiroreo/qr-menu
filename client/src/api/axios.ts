@@ -1,4 +1,5 @@
 import axios from 'axios';
+import type { AxiosRequestConfig, AxiosError } from 'axios';
 import { getAuth } from 'firebase/auth';
 
 // 開発時のフォールバック先を localhost に変更
@@ -10,7 +11,7 @@ const api = axios.create({
 });
 
 // リクエストインターセプターでトークンを設定
-api.interceptors.request.use(async (config: any) => {
+api.interceptors.request.use(async (config: AxiosRequestConfig) => {
   const auth = getAuth();
   const user = auth.currentUser;
   
@@ -25,14 +26,14 @@ api.interceptors.request.use(async (config: any) => {
     }
   }
   return config;
-}, (error: any) => {
+}, (error: AxiosError) => {
   return Promise.reject(error);
 });
 
 // レスポンスインターセプターでエラーハンドリング
 api.interceptors.response.use(
-  (response: any) => response,
-  async (error: any) => {
+  (response) => response,
+  async (error: AxiosError) => {
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {

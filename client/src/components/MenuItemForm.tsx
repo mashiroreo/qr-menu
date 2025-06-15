@@ -115,7 +115,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({
         }
       }
       onSubmit();
-    } catch (err: any) {
+    } catch (err: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) {
       console.error('Error details:', err.response?.data);
       if (err.response?.data?.error) {
         setError(err.response.data.error);

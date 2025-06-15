@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { MenuItem } from '../types/menu';
 import { getMenuItems, deleteMenuItem, reorderMenuItems } from '../api/menu';
 import {
@@ -118,7 +118,7 @@ const MenuItemList: React.FC<MenuItemListProps> = ({
     })
   );
 
-  const fetchItems = async () => {
+  const fetchItems = useCallback(async () => {
     try {
       setLoading(true);
       const data = await getMenuItems(categoryId);
@@ -130,11 +130,12 @@ const MenuItemList: React.FC<MenuItemListProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [categoryId]);
 
+  // 初回および依存配列が変化した際にメニューアイテムを取得
   useEffect(() => {
     fetchItems();
-  }, [categoryId, refreshTrigger]);
+  }, [fetchItems, refreshTrigger]);
 
   useEffect(() => {}, [_storeId]);
 
@@ -177,7 +178,7 @@ const MenuItemList: React.FC<MenuItemListProps> = ({
 
     try {
       await reorderMenuItems(reorderData);
-    } catch (error: any) {
+    } catch (error: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) {
       // エラー時は元の順序に戻す
       setItems(items);
       console.error('並び替えエラー:', {
