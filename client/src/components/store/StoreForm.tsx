@@ -740,7 +740,26 @@ export const StoreForm = () => {
                   })}
                 </ul>
               ) : (
-                <Typography sx={{ color: 'text.secondary' }}>未設定</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Typography sx={{ color: 'text.secondary' }}>未設定</Typography>
+                  <EditIconButton
+                    onClick={() => handleEditButton(() => {
+                      // デフォルトの営業時間データを生成（月曜営業、他休業）
+                      const defaultHours: BusinessHours[] = [
+                        { dayOfWeek: 'monday', periods: [{ isOpen: true, openTime: '09:00', closeTime: '17:00' }] },
+                        { dayOfWeek: 'tuesday', periods: [{ isOpen: false, openTime: '09:00', closeTime: '17:00' }] },
+                        { dayOfWeek: 'wednesday', periods: [{ isOpen: false, openTime: '09:00', closeTime: '17:00' }] },
+                        { dayOfWeek: 'thursday', periods: [{ isOpen: false, openTime: '09:00', closeTime: '17:00' }] },
+                        { dayOfWeek: 'friday', periods: [{ isOpen: false, openTime: '09:00', closeTime: '17:00' }] },
+                        { dayOfWeek: 'saturday', periods: [{ isOpen: false, openTime: '09:00', closeTime: '17:00' }] },
+                        { dayOfWeek: 'sunday', periods: [{ isOpen: false, openTime: '09:00', closeTime: '17:00' }] },
+                      ];
+                      setBusinessHours(defaultHours);
+                      setEditDayOfWeek('monday');
+                      setTempDayBusinessHours([...defaultHours[0].periods]);
+                    })}
+                  />
+                </Box>
               )}
             </Box>
           </Box>
