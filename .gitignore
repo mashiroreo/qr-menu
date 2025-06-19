@@ -21,4 +21,7 @@ build/
 
 # QRコード画像
 server/public/qr/*.png
-server/uploads/ 
+server/uploads/
+
+# Firebase service account key
+*-firebase-adminsdk-*.json 
