@@ -331,3 +331,5 @@
 - 次のタスクへの引き継ぎ事項:
   - フロントエンドから実際の API 呼び出しをテストし、ブラウザで CORS エラーが解消されたことを確認する
   - 本番ドメインを追加する場合はホワイトリストを更新すること 
+
+| 🔄 | chore/phase3/firebase-storage-prod | 2025-06-19 | Firebase Storage 本番ルール設定 & サービスアカウント鍵の環境変数化 | Sentry + DB dump cron |
