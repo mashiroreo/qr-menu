@@ -18,6 +18,8 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^7.0.2",
     "@mui/material": "^7.0.2",
+    "@sentry/react": "^9.30.0",
+    "@sentry/tracing": "^7.120.3",
     "@types/axios": "^0.9.36",
     "axios": "^1.8.4",
     "firebase": "^11.6.0",
