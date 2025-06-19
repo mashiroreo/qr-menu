@@ -10,4 +10,9 @@ services:
           name: qrmenu-db
           property: connectionString
       - key: FIREBASE_PROJECT_ID
-        sync: false 
+        sync: false
+
+cronjobs:
+  - name: db-dump
+    schedule: "0 3 * * *"
+    command: "./scripts/db_dump.sh" 

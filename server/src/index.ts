@@ -7,6 +7,8 @@ import qrRoutes from './routes/qr';
 import authRoutes from './routes/auth';
 import fs from 'fs';
 import dotenv from "dotenv";
+import * as Sentry from "@sentry/node";
+import { ProfilingIntegration } from "@sentry/profiling-node";
 
 // デバッグ用：.envファイルのパスを表示
 console.log('Current directory:', process.cwd());
@@ -50,6 +52,19 @@ app.use(express.urlencoded({ extended: true }));
 // 静的ファイルの提供
 app.use('/qr', express.static(path.join(__dirname, '../uploads/qr')));
 
+// Sentry 初期化
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.NODE_ENV || "development",
+  tracesSampleRate: 1.0,
+  profilesSampleRate: 1.0,
+  integrations: [new ProfilingIntegration()],
+});
+
+// リクエスト／トレースハンドラ（ルーティングより前）
+app.use(Sentry.Handlers.requestHandler());
+app.use(Sentry.Handlers.tracingHandler());
+
 // ルーティング
 app.use('/api/stores', storeRoutes);
 app.use('/api/menu', menuRoutes);
@@ -66,6 +81,9 @@ const qrDir = path.join(__dirname, '../uploads/qr');
 if (!fs.existsSync(qrDir)) {
   fs.mkdirSync(qrDir, { recursive: true });
 }
+
+// Sentry エラーハンドラ（ルーティング後）
+app.use(Sentry.Handlers.errorHandler());
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`Server is running at http://0.0.0.0:${port}`);
