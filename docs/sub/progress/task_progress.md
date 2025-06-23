@@ -334,3 +334,13 @@
 
 | ✅ | chore/phase3/firebase-storage-prod | 2025-06-19 | Firebase Storage 本番ルール設定 & 鍵の環境変数化 | Sentry 導入 |
 | 🔄 | feature/phase3/observability-setup | 2025-06-19 | Sentry 導入＋DB dump cron | Onboarding 資料ドラフト |
+
+## 2025-06-23: モバイルレイアウト改善＆モーダル調整
+- ステータス: 🔄進行中
+- ブランチ: `fix/phase3/mobile-layout-modal`
+- 開始日: 2025-06-23
+- 作業内容:
+  - モバイル向けメニューカード幅の調整（900px:160px, 600px:140px）
+  - grid minmax値の変更に伴うレイアウト最適化
+  - モーダルに区切り線 `<hr>` を追加し、価格上下の余白を縮小
+- 次のタスクへの引き継ぎ事項: デザイン確認後、追加フィードバックに応じて微調整予定
