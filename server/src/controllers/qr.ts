@@ -17,7 +17,13 @@ export const generateQRCode = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "storeId is required" });
     }
 
-    const APP_URL = process.env.APP_URL || 'http://localhost:5173';
+    // QR に埋め込むフロントエンド URL
+    const APP_URL = process.env.APP_URL;
+    if (!APP_URL) {
+      console.error('[QR] APP_URL is not defined in environment variables');
+      return res.status(500).json({ error: 'Server configuration error: APP_URL is not set' });
+    }
+
     const qrUrl = `${APP_URL}/menu/${storeId}`;
     const fileName = `store_${storeId}_${Date.now()}.png`;
     const filePath = path.join(qrDir, fileName);
