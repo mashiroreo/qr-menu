@@ -106,7 +106,7 @@
   display: flex;
   flex-direction: column;
   transition: transform 0.2s, box-shadow 0.2s;
-  width: 180px;
+  width: 180px; /* default (desktop) */
   margin: 0;
 }
 .menu-item-card:hover {
@@ -220,6 +220,7 @@
     gap: 12px;
   }
   .menu-item-card {
+    width: 160px;
     min-width: 160px;
   }
 }
@@ -247,6 +248,7 @@
     gap: 8px;
   }
   .menu-item-card {
+    width: 140px;
     min-width: 140px;
   }
   .menu-item-img {
