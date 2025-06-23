@@ -3,7 +3,8 @@ import { generateQRCode } from '../api/qr';
 import { getStoreInfo } from '../api/store';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-const APP_URL = import.meta.env.VITE_APP_URL || 'http://localhost:5173';
+// フロントエンド公開 URL（QR プレビュー用）
+const APP_URL = import.meta.env.VITE_APP_URL || window.location.origin;
 
 const QRCodeGenerator: React.FC = () => {
   const [storeId, setStoreId] = useState<string | null>(null);
