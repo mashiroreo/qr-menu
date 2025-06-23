@@ -216,11 +216,11 @@
     padding: 24px 16px 24px 24px;
   }
   .menu-grid-responsive {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 12px;
   }
   .menu-item-card {
-    min-width: 140px;
+    min-width: 160px;
   }
 }
 
@@ -243,11 +243,11 @@
     padding: 16px 8px 16px 16px;
   }
   .menu-grid-responsive {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 8px;
   }
   .menu-item-card {
-    min-width: 120px;
+    min-width: 140px;
   }
   .menu-item-img {
     height: 100px;
