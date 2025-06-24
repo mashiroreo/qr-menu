@@ -268,7 +268,7 @@
   }
 }
 
-/* --- 430px 以下：サイドバーを更に縮小、カード120px --- */
+/* --- 430px 以下：サイドバー縮小のみ --- */
 @media (max-width: 430px) {
   .menu-sidebar-responsive {
     width: 80px;
@@ -286,6 +286,10 @@
   .menu-main-responsive {
     padding: 12px 4px 12px 8px;
   }
+}
+
+/* --- 400px 以下：カード120px --- */
+@media (max-width: 400px) {
   .menu-grid-responsive {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 6px;
@@ -311,8 +315,8 @@
   }
 }
 
-/* --- 330px 以下：さらにカードを100px に --- */
-@media (max-width: 330px) {
+/* --- 360px 以下：さらにカードを100px に --- */
+@media (max-width: 360px) {
   .menu-grid-responsive {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: 4px;
