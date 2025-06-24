@@ -368,3 +368,10 @@
   - Babel & Jest 設定を Babel 1 本化し、全テストグリーンを確認
 - 引き継ぎ事項:
   - 他コンポーネント（StoreForm など）への env 参照方式統一を検討
+
+### 🔄 Frontend: GitHub Actions CI 追加
+- ブランチ: `ci/phase3/frontend`
+- 開始日: 2025-06-24
+- ステータス: 🔄進行中
+- 作業内容:
+  - `.github/workflows/frontend-ci.yml` に lint & test 実行フローを追加
