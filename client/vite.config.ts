@@ -17,5 +17,9 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['firebase/app', 'firebase/auth']
-  }
+  },
+  define: {
+    'process.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL),
+    'process.env.VITE_APP_URL': JSON.stringify(process.env.VITE_APP_URL),
+  },
 })

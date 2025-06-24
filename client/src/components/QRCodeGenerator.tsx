@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { generateQRCode } from '../api/qr';
 import { getStoreInfo } from '../api/store';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+// 環境変数は Vite の define で `process.env.VITE_*` に展開させる
+const API_URL = process.env.VITE_API_URL ?? 'http://localhost:3000';
 // フロントエンド公開 URL（QR プレビュー用）
-const APP_URL = import.meta.env.VITE_APP_URL || window.location.origin;
+const APP_URL = process.env.VITE_APP_URL ?? window.location.origin;
 
 const QRCodeGenerator: React.FC = () => {
   const [storeId, setStoreId] = useState<string | null>(null);
