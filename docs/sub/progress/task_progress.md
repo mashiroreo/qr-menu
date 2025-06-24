@@ -344,3 +344,15 @@
   - モーダル見出しの余白調整（padding-bottom 9px, margin-bottom 7px）
   - `<hr>` のマージンを `0 0 7px` に変更
 - 次のタスクへの引き継ぎ事項: デザイン確認後、追加フィードバックに応じて微調整予定
+
+## 2025-06-24
+### ✅ Frontend: MenuItemList テスト拡充
+- ブランチ: `test/phase3/frontend-menu-item-list`
+- 開始日: 2025-06-24
+- 完了日: 2025-06-24
+- 作業内容:
+  - `MenuItemList.test.tsx` に編集ボタン( onEdit )・削除ボタン( API 呼び出し )のテストケースを追加
+  - `identity-obj-proxy` 対応済みの Jest 設定で実行確認
+  - 全テストグリーン・ESLint エラーなしを確認
+- 引き継ぎ事項:
+  - 他コンポーネント (QRCodeGenerator 等) のテスト拡張を順次実施予定
