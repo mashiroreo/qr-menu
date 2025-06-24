@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { app } from '../src/index';
+import { app } from '../src/app';
 import request from 'supertest';
 
 const prisma = new PrismaClient();
@@ -13,7 +13,12 @@ describe('Menu API Tests', () => {
   beforeAll(async () => {
     // Create user & store
     testUser = await prisma.user.create({
-      data: { email: 'menu@test.com', publicId: 'menu-user', displayName: 'Menu Tester', role: 'OWNER' }
+      data: {
+        email: 'menu@test.com',
+        publicId: 'test-user-id',
+        displayName: 'Menu Tester',
+        role: 'OWNER'
+      }
     });
     testStore = await prisma.store.create({
       data: { name: 'Menu Store', ownerId: testUser.id }
@@ -72,7 +77,7 @@ describe('Menu API Tests', () => {
       const res = await request(app)
         .delete(`/api/menu/items/${testItem.id}`)
         .set('Authorization', 'Bearer test-token');
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(204);
     });
   });
 
