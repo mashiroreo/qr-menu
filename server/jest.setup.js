@@ -25,4 +25,9 @@ jest.mock('./src/utils/storage', () => ({
     STORE_LOGOS: 'store_logos',
     MENU_IMAGES: 'menu_images'
   }
+}));
+
+// QRCode ライブラリをモック化（ファイル出力を回避）
+jest.mock('qrcode', () => ({
+  toFile: jest.fn().mockResolvedValue(undefined)
 })); 
