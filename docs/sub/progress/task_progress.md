@@ -356,3 +356,15 @@
   - 全テストグリーン・ESLint エラーなしを確認
 - 引き継ぎ事項:
   - 他コンポーネント (QRCodeGenerator 等) のテスト拡張を順次実施予定
+
+### ✅ Frontend: QRCodeGenerator テスト追加
+- ブランチ: `test/phase3/frontend-qrcode-generator`
+- 開始日: 2025-06-24
+- 完了日: 2025-06-24
+- 作業内容:
+  - `QRCodeGenerator.test.tsx` を実装し、店舗ID取得・QR生成フローとエラーハンドリングを検証
+  - import.meta.env 依存を排除し `process.env` ベースにリファクタリング
+  - Vite 設定で `define` を追加して本番ビルド時に環境変数を埋め込み
+  - Babel & Jest 設定を Babel 1 本化し、全テストグリーンを確認
+- 引き継ぎ事項:
+  - 他コンポーネント（StoreForm など）への env 参照方式統一を検討
