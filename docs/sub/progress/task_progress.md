@@ -376,6 +376,7 @@
 - 作業内容:
   - `.github/workflows/frontend-ci.yml` に lint & test 実行フローを追加
 
+ test/phase3/backend-storage
 ### 🔄 Frontend: StoreForm バリデーションテスト追加
 - ブランチ: `test/phase3/frontend-store-form`
 - 開始日: 2025-06-25
@@ -395,3 +396,25 @@
   - Supertest でエンドポイント `/api/stores/owner/logo` をモック付きで検証
 - 次タスクへの引き継ぎ事項:
   - その他アップロードエンドポイント共通化テスト
+
+## 2025-06-25
+### 🔄 Frontend: Login → Navigation ガードテスト
+- ブランチ: `test/phase3/frontend-auth-nav`
+- 開始日: 2025-06-25
+- 作業内容:
+  - 未ログイン時 `/login` へリダイレクト
+  - ログイン後 `/menu-management` へ遷移をテスト
+  - `MemoryRouter` と `AuthContext` をモックして状態分岐を検証
+- 次のタスクへの引き継ぎ事項:
+  - Navigation コンポーネントのルートガード実装箇所のリファクタ余地確認
+
+### 🔄 Frontend: MenuManagement テスト追加
+- ブランチ: `test/phase3/frontend-menu-management`
+- 開始日: 2025-06-25
+- 作業内容:
+  - CSV インポート成功時にカテゴリ・アイテムが描画される
+  - ドラッグ＆ドロップ並び替えで reorder API が呼び出される
+  - `msw` を用いた API モック
+- 次のタスクへの引き継ぎ事項:
+  - Drag-and-Drop の失敗系テスト（P1）
+
