@@ -1,12 +1,20 @@
 import React from 'react';
 
+// ===== API mock helpers =====
+const mockGetCategories = jest.fn().mockResolvedValue([
+  { id: 1, name: 'Cat A', order: 0, description: '', storeId: 1 },
+  { id: 2, name: 'Cat B', order: 1, description: '', storeId: 1 },
+]);
+
+const mockReorderCategories = jest.fn().mockResolvedValue({ success: true });
+
 // --- dnd-kit モック ---
 jest.mock('@dnd-kit/core', () => {
+  const ReactLocal = jest.requireActual('react');
   return {
     __esModule: true,
     DndContext: ({ children, onDragEnd }: { children: React.ReactNode; onDragEnd: (e: { active: { id: number }; over: { id: number } }) => void }) => {
-      // 初回レンダリングで即座に onDragEnd を呼び出して並び替えをトリガ
-      React.useEffect(() => {
+      ReactLocal.useEffect(() => {
         onDragEnd({ active: { id: 1 }, over: { id: 2 } });
       }, [onDragEnd]);
       return <div>{children}</div>;
@@ -46,13 +54,6 @@ jest.mock('../api/store', () => ({
   getStoreInfo: jest.fn().mockResolvedValue({ id: 1 }),
 }));
 
-const mockGetCategories = jest.fn().mockResolvedValue([
-  { id: 1, name: 'Cat A', order: 0, description: '', storeId: 1 },
-  { id: 2, name: 'Cat B', order: 1, description: '', storeId: 1 },
-]);
-
-const mockReorderCategories = jest.fn().mockResolvedValue({ success: true });
-
 jest.mock('../api/menu', () => ({
   getCategories: () => mockGetCategories(),
   reorderCategories: (payload: { items: { id: number; order: number }[] }) => mockReorderCategories(payload),
@@ -62,13 +63,9 @@ jest.mock('../api/menu', () => ({
 // --------- Tests ---------
 
 describe('MenuManagement ページ', () => {
-  it('カテゴリ一覧をレンダリングし、ドラッグ＆ドロップで reorder API が呼ばれる', async () => {
+  it('ドラッグ＆ドロップで reorder API が呼ばれる', async () => {
     render(<MenuManagement />);
-
-    // カテゴリが表示されるまで待機
     expect(await screen.findByText('Cat A')).toBeInTheDocument();
-
-    // DndContext モックが自動で onDragEnd を呼ぶため、API が呼ばれたことを確認
     await waitFor(() => {
       expect(mockReorderCategories).toHaveBeenCalled();
     });
