@@ -375,3 +375,14 @@
 - ステータス: 🔄進行中
 - 作業内容:
   - `.github/workflows/frontend-ci.yml` に lint & test 実行フローを追加
+
+## 2025-06-25
+### 🔄 Frontend: Login → Navigation ガードテスト
+- ブランチ: `test/phase3/frontend-auth-nav`
+- 開始日: 2025-06-25
+- 作業内容:
+  - 未ログイン時 `/login` へリダイレクト
+  - ログイン後 `/menu-management` へ遷移をテスト
+  - `MemoryRouter` と `AuthContext` をモックして状態分岐を検証
+- 次のタスクへの引き継ぎ事項:
+  - Navigation コンポーネントのルートガード実装箇所のリファクタ余地確認
