@@ -375,3 +375,23 @@
 - ステータス: 🔄進行中
 - 作業内容:
   - `.github/workflows/frontend-ci.yml` に lint & test 実行フローを追加
+
+### 🔄 Frontend: StoreForm バリデーションテスト追加
+- ブランチ: `test/phase3/frontend-store-form`
+- 開始日: 2025-06-25
+- 作業内容:
+  - 電話番号必須＆形式エラーを検証（skip 解除）
+  - 更新 API が正しい payload で呼ばれることを確認
+  - msw で store API をモック
+- 次タスクへの引き継ぎ事項:
+  - BusinessHoursInput などサブフォームのテスト（P1）
+
+### 🔄 Backend: utils/storage テスト追加
+- ブランチ: `test/phase3/backend-storage`
+- 開始日: 2025-06-25
+- 作業内容:
+  - `getSignedUrl` 正常系
+  - MIME/type バリデーションで 400 を返すエラー系
+  - Supertest でエンドポイント `/api/stores/owner/logo` をモック付きで検証
+- 次タスクへの引き継ぎ事項:
+  - その他アップロードエンドポイント共通化テスト
