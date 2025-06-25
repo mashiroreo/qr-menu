@@ -1,29 +1,28 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { TextEncoder, TextDecoder } from 'util';
-// Node.js 環境で TextEncoder/Decoder がない場合のポリフィル
-// @ts-ignore
-if (typeof global.TextEncoder === 'undefined') {
-  // @ts-ignore
-  global.TextEncoder = TextEncoder;
-}
-// @ts-ignore
-if (typeof global.TextDecoder === 'undefined') {
-  // @ts-ignore
-  global.TextDecoder = TextDecoder;
-}
 import { MemoryRouter, Route, Routes, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
-// firebase ライブラリをモック
-let mockUser: any = null;
+// Node.js 環境で TextEncoder/Decoder が未定義の場合 polyfill
+if (typeof global.TextEncoder === 'undefined') {
+  // @ts-expect-error: jsdom global に型が無いため代入
+  global.TextEncoder = TextEncoder;
+}
+if (typeof global.TextDecoder === 'undefined') {
+  // @ts-expect-error: jsdom global に型が無いため代入
+  global.TextDecoder = TextDecoder;
+}
+
+// ------------------ Firebase モック ------------------
+let mockUser: { uid?: string } | null = null;
+
+type OnAuthStateChangedCallback = (user: { uid?: string } | null) => void;
 
 jest.mock('../../libs/firebase', () => {
   return {
     auth: {
-      onAuthStateChanged: (callback: any) => {
-        // 呼び出し時に現在の mockUser を渡す
+      onAuthStateChanged: (callback: OnAuthStateChangedCallback) => {
         callback(mockUser);
-        // unsubscribe ダミー
         return () => {};
       },
       signOut: jest.fn(),
@@ -31,17 +30,17 @@ jest.mock('../../libs/firebase', () => {
   };
 });
 
+import { auth as firebaseAuth } from '../../libs/firebase';
+
+// ------------------ テスト用コンポーネント ------------------
 const LoginPage = () => <div>Login Page</div>;
 const StorePage = () => <div>Store Page</div>;
 
-// テスト専用の簡易 Guard コンポーネント（App.tsx の PrivateRoute / AuthRedirect 簡易版）
 const TestPrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [authed, setAuthed] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const unsub = (require('../../libs/firebase').auth as any).onAuthStateChanged((user: any) => {
-      setAuthed(!!user);
-    });
+    const unsub = firebaseAuth.onAuthStateChanged((user) => setAuthed(!!user));
     return unsub;
   }, []);
 
@@ -53,9 +52,7 @@ const TestAuthRedirect: React.FC = () => {
   const [authed, setAuthed] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const unsub = (require('../../libs/firebase').auth as any).onAuthStateChanged((user: any) => {
-      setAuthed(!!user);
-    });
+    const unsub = firebaseAuth.onAuthStateChanged((user) => setAuthed(!!user));
     return unsub;
   }, []);
 
@@ -63,51 +60,38 @@ const TestAuthRedirect: React.FC = () => {
   return authed ? <Navigate to="/store" replace /> : <Navigate to="/login" replace />;
 };
 
+// ------------------ Tests ------------------
+
 describe('Login / Navigation ガード', () => {
   afterEach(() => {
     mockUser = null;
   });
 
   it('未ログイン時は /login へリダイレクトされる', async () => {
-    mockUser = null; // 認証なし
+    mockUser = null;
 
     render(
       <MemoryRouter initialEntries={["/store"]}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route
-            path="/store"
-            element={
-              <TestPrivateRoute>
-                <StorePage />
-              </TestPrivateRoute>
-            }
-          />
+          <Route path="/store" element={<TestPrivateRoute><StorePage /></TestPrivateRoute>} />
         </Routes>
       </MemoryRouter>
     );
 
-    // Login Page が表示されるまで待機
     await waitFor(() => {
       expect(screen.getByText('Login Page')).toBeInTheDocument();
     });
   });
 
   it('ログイン済みなら保護ルートにアクセスできる', async () => {
-    mockUser = { uid: 'test-user' }; // 認証済みユーザー
+    mockUser = { uid: 'test-user' };
 
     render(
       <MemoryRouter initialEntries={["/store"]}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route
-            path="/store"
-            element={
-              <TestPrivateRoute>
-                <StorePage />
-              </TestPrivateRoute>
-            }
-          />
+          <Route path="/store" element={<TestPrivateRoute><StorePage /></TestPrivateRoute>} />
         </Routes>
       </MemoryRouter>
     );
@@ -117,9 +101,9 @@ describe('Login / Navigation ガード', () => {
     });
   });
 
-  it('AuthRedirect は未ログインで /login、ログイン済みで /store へ遷移する', async () => {
-    // 未ログインケース
+  it('AuthRedirect は状態に応じて遷移する', async () => {
     mockUser = null;
+
     const { unmount } = render(
       <MemoryRouter initialEntries={["/"]}>
         <Routes>
@@ -134,7 +118,7 @@ describe('Login / Navigation ガード', () => {
       expect(screen.getByText('Login Page')).toBeInTheDocument();
     });
 
-    // ログイン済みに切り替えて再検証
+    // ログイン状態に変更して再検証
     mockUser = { uid: 'logged-in' };
     unmount();
 
