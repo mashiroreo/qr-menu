@@ -386,3 +386,13 @@
   - `MemoryRouter` と `AuthContext` をモックして状態分岐を検証
 - 次のタスクへの引き継ぎ事項:
   - Navigation コンポーネントのルートガード実装箇所のリファクタ余地確認
+
+### 🔄 Frontend: MenuManagement テスト追加
+- ブランチ: `test/phase3/frontend-menu-management`
+- 開始日: 2025-06-25
+- 作業内容:
+  - CSV インポート成功時にカテゴリ・アイテムが描画される
+  - ドラッグ＆ドロップ並び替えで reorder API が呼び出される
+  - `msw` を用いた API モック
+- 次のタスクへの引き継ぎ事項:
+  - Drag-and-Drop の失敗系テスト（P1）
