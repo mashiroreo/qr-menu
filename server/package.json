@@ -5,6 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
+    "db:test:up": "docker compose -f docker-compose.test.yml up -d",
+    "db:test:down": "docker compose -f docker-compose.test.yml down -v",
+    "db:test:push": "npx prisma db push --skip-generate --schema prisma/schema.prisma",
+    "test:ci": "npm run db:test:up && npm run db:test:push && jest && npm run db:test:down",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "build": "tsc",
