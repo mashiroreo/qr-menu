@@ -125,9 +125,7 @@ describe('Store API Tests', () => {
 
     it('should return 401 for unauthenticated requests', async () => {
       const response = await request(app)
-        .put('/api/stores/owner/logo')
-        .attach('logo', __dirname + '/dummy-logo.png');
-
+        .put('/api/stores/owner/logo');
       expect(response.status).toBe(401);
     });
 

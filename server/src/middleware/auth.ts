@@ -13,6 +13,7 @@ export interface AuthRequest extends Request {
     email?: string;
     displayName?: string;
     storeId?: number;
+    role?: string;
   };
 }
 
@@ -88,9 +89,10 @@ export const authenticate = async (
         email: decodedToken.email || undefined,
         displayName: decodedToken.name || undefined,
         storeId: newUser.store.id,
+        role: newUser.role,
       };
     } else {
-      if (!user.store?.id) {
+      if (!user.store?.id && user.role !== "ADMIN") {
         console.error('No store found for existing user');
         res.status(404).json({ error: "Store not found" });
         return;
@@ -101,7 +103,8 @@ export const authenticate = async (
         publicId: user.publicId,
         email: user.email,
         displayName: user.displayName || undefined,
-        storeId: user.store.id,
+        storeId: user.store?.id,
+        role: user.role,
       };
     }
 

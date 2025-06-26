@@ -38,12 +38,27 @@ const isTestEnvironment = process.env.NODE_ENV === "test";
 export const adminAuth = isTestEnvironment
   ? {
       verifyIdToken: async (token: string) => {
-        // テスト用のモックデータ
-        return {
-          uid: "test-user-id",
-          email: "test@example.com",
-          name: "Test User",
-        };
+        // トークン値に応じてユーザーを切り替え
+        switch (token) {
+          case "admin-token":
+            return {
+              uid: "admin-user-id",
+              email: "admin@example.com",
+              name: "Admin User",
+            } as any;
+          case "owner-token":
+            return {
+              uid: "owner-user-id",
+              email: "owner@example.com",
+              name: "Owner User",
+            } as any;
+          default:
+            return {
+              uid: "test-user-id",
+              email: "test@example.com",
+              name: "Test User",
+            } as any;
+        }
       },
     }
   : admin.auth();
