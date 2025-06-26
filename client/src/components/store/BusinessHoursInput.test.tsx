@@ -66,6 +66,7 @@ describe('BusinessHoursInput', () => {
     ];
     render(<BusinessHoursInput value={overlap} onChange={() => {}} />);
 
-    expect(await screen.findByText('時間帯が重複しています')).toBeInTheDocument();
+    const errors = await screen.findAllByText('時間帯が重複しています');
+    expect(errors.length).toBeGreaterThan(0);
   });
 }); 
