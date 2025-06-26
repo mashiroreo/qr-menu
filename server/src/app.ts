@@ -5,6 +5,7 @@ import storeRoutes from './routes/store';
 import menuRoutes from './routes/menu';
 import qrRoutes from './routes/qr';
 import authRoutes from './routes/auth';
+import usersRoutes from './routes/users';
 import fs from 'fs';
 import * as Sentry from '@sentry/node';
 import { ProfilingIntegration } from '@sentry/profiling-node';
@@ -62,6 +63,7 @@ app.use('/api/stores', storeRoutes);
 app.use('/api/menu', menuRoutes);
 app.use('/api/qr', qrRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/users', usersRoutes);
 
 // Health check
 app.get('/api/health', (_, res) => res.status(200).json({ status: 'ok' }));

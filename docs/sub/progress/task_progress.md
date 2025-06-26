@@ -418,3 +418,15 @@
 - 次のタスクへの引き継ぎ事項:
   - Drag-and-Drop の失敗系テスト（P1）
 
+## 2025-06-26
+### 🔄 Backend: User CRUD テスト追加
+- ブランチ: `test/phase3/backend-user-tests`
+- 開始日: 2025-06-26
+- ステータス: 🔄進行中
+- 作業内容:
+  - `/api/users` CRUD エンドポイントの正常系 / 異常系テスト (ADMIN ガード)
+  - Supertest & Jest を用いた統合テスト
+  - テスト用 Prisma seed で管理者 & 一般ユーザーを作成
+- 次のタスクへの引き継ぎ事項:
+  - User ロール別ガードのユニットテスト拡充
+
