@@ -9,6 +9,6 @@ TIMESTAMP=$(date +"%Y%m%d_%H%M")
 FILE="dumps/${TIMESTAMP}_schema.sql"
 
 npx prisma db pull > /dev/null
-npx prisma migrate diff --script > "$FILE"
+npx prisma migrate diff --from-url "$DATABASE_URL" --to-empty --script > "$FILE"
 
 echo "Prisma schema dump saved to $FILE" 
