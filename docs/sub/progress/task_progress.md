@@ -334,3 +334,4 @@
 
 | ✅ | chore/phase3/firebase-storage-prod | 2025-06-19 | Firebase Storage 本番ルール設定 & 鍵の環境変数化 | Sentry 導入 |
 | 🔄 | feature/phase3/observability-setup | 2025-06-19 | Sentry 導入＋DB dump cron | Onboarding 資料ドラフト |
+| ✅ | feature/phase3/observability-setup | 2025-06-19 | Sentry 導入＋DB dump cron | Onboarding 資料ドラフト |
