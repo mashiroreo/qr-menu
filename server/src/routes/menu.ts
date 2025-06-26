@@ -17,6 +17,16 @@ router.get('/public', async (req, res) => {
     return res.status(400).json({ error: 'storeIdが必要です' });
   }
   try {
+    // ストアの存在確認
+    const storeExists = await prisma.store.findUnique({
+      where: { id: Number(storeId) },
+      select: { id: true }
+    });
+
+    if (!storeExists) {
+      return res.status(404).json({ error: 'Store not found' });
+    }
+
     const items = await prisma.menuItem.findMany({
       where: { storeId: Number(storeId) },
       select: {
@@ -31,6 +41,8 @@ router.get('/public', async (req, res) => {
         order: 'asc',
       },
     });
+
+    // アイテムが 0 件でも 200 で空配列を返す
     res.json(items);
   } catch (error) {
     res.status(500).json({ error: 'メニュー情報の取得に失敗しました' });

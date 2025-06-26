@@ -94,7 +94,7 @@
 }
 .menu-grid-responsive {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 16px;
   padding: 8px;
 }
@@ -106,9 +106,8 @@
   display: flex;
   flex-direction: column;
   transition: transform 0.2s, box-shadow 0.2s;
-  min-width: 160px;
-  max-width: 200px;
-  margin: 0 auto;
+  width: 180px; /* default (desktop) */
+  margin: 0;
 }
 .menu-item-card:hover {
   transform: translateY(-2px);
@@ -121,7 +120,8 @@
 }
 .menu-item-img {
   width: 100%;
-  height: 120px;
+  aspect-ratio: 4 / 3;
+  height: auto;
   object-fit: cover;
   background: #f5e6d3;
 }
@@ -136,6 +136,9 @@
   font-size: 16px;
   color: #8b4513;
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .menu-item-price {
   color: #d35400;
@@ -213,11 +216,12 @@
     padding: 24px 16px 24px 24px;
   }
   .menu-grid-responsive {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 12px;
   }
   .menu-item-card {
-    min-width: 140px;
+    width: 160px;
+    min-width: 160px;
   }
 }
 
@@ -240,11 +244,12 @@
     padding: 16px 8px 16px 16px;
   }
   .menu-grid-responsive {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 8px;
   }
   .menu-item-card {
-    min-width: 120px;
+    width: 140px;
+    min-width: 140px;
   }
   .menu-item-img {
     height: 100px;
@@ -263,10 +268,12 @@
   }
 }
 
-@media (max-width: 400px) {
+/* --- 430px 以下：サイドバー縮小のみ --- */
+@media (max-width: 430px) {
   .menu-sidebar-responsive {
     width: 80px;
     min-width: 60px;
+    padding: 16px 0;
   }
   .menu-store-title {
     font-size: 14px;
@@ -278,5 +285,59 @@
   }
   .menu-main-responsive {
     padding: 12px 4px 12px 8px;
+  }
+}
+
+/* --- 400px 以下：カード120px --- */
+@media (max-width: 400px) {
+  .menu-grid-responsive {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 6px;
+  }
+  .menu-item-card {
+    width: 120px;
+    min-width: 120px;
+  }
+  .menu-item-img {
+    height: 90px;
+  }
+  .menu-item-content {
+    padding: 6px;
+  }
+  .menu-item-name {
+    font-size: 13px;
+  }
+  .menu-item-price {
+    font-size: 12px;
+  }
+  .menu-item-desc {
+    font-size: 11px;
+  }
+}
+
+/* --- 360px 以下：さらにカードを100px に --- */
+@media (max-width: 360px) {
+  .menu-grid-responsive {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 4px;
+  }
+  .menu-item-card {
+    width: 100px;
+    min-width: 100px;
+  }
+  .menu-item-img {
+    height: 80px;
+  }
+  .menu-item-content {
+    padding: 4px;
+  }
+  .menu-item-name {
+    font-size: 12px;
+  }
+  .menu-item-price {
+    font-size: 11px;
+  }
+  .menu-item-desc {
+    font-size: 10px;
   }
 } 

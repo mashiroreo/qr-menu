@@ -19,6 +19,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { toast } from 'react-hot-toast';
+import DescriptionModal from './DescriptionModal';
 
 interface MenuItemListProps {
   storeId: number;
@@ -31,9 +32,10 @@ interface SortableMenuItemProps {
   item: MenuItem;
   onEdit: (item: MenuItem) => void;
   onDelete: (id: number) => void;
+  onView: (item: MenuItem) => void;
 }
 
-const SortableMenuItem: React.FC<SortableMenuItemProps> = ({ item, onEdit, onDelete }) => {
+const SortableMenuItem: React.FC<SortableMenuItemProps> = ({ item, onEdit, onDelete, onView }) => {
   const {
     attributes,
     listeners,
@@ -76,7 +78,13 @@ const SortableMenuItem: React.FC<SortableMenuItemProps> = ({ item, onEdit, onDel
       )}
       <h3 className="text-lg font-semibold mb-2">{item.name}</h3>
       {item.description && (
-        <p className="text-gray-600 mb-2">{item.description}</p>
+        <p
+          className="text-gray-600 mb-2 cursor-pointer"
+          style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+          onClick={() => onView(item)}
+        >
+          {item.description}
+        </p>
       )}
       <p className="text-lg font-bold mb-4">¥{item.price.toLocaleString()}</p>
       <div className="flex justify-end space-x-2">
@@ -106,6 +114,7 @@ const MenuItemList: React.FC<MenuItemListProps> = ({
   const [items, setItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -240,10 +249,19 @@ const MenuItemList: React.FC<MenuItemListProps> = ({
               item={item}
               onEdit={onEdit}
               onDelete={handleDelete}
+              onView={setSelectedItem}
             />
           ))}
         </SortableContext>
       </div>
+      {selectedItem && (
+        <DescriptionModal
+          title={selectedItem.name}
+          description={selectedItem.description}
+          price={selectedItem.price}
+          onClose={() => setSelectedItem(null)}
+        />
+      )}
     </DndContext>
   );
 };

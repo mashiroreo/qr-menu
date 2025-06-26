@@ -334,4 +334,102 @@
 
 | ✅ | chore/phase3/firebase-storage-prod | 2025-06-19 | Firebase Storage 本番ルール設定 & 鍵の環境変数化 | Sentry 導入 |
 | 🔄 | feature/phase3/observability-setup | 2025-06-19 | Sentry 導入＋DB dump cron | Onboarding 資料ドラフト |
+
 | ✅ | feature/phase3/observability-setup | 2025-06-19 | Sentry 導入＋DB dump cron | Onboarding 資料ドラフト |
+
+
+## 2025-06-23: モバイルレイアウト改善＆モーダル調整
+- ステータス: 🔄進行中
+- ブランチ: `fix/phase3/mobile-layout-modal`
+- 開始日: 2025-06-23
+- 作業内容:
+  - カード幅 `width` プロパティをメディアクエリで上書き（900px:160px, 600px:140px）
+  - モーダル見出しの余白調整（padding-bottom 9px, margin-bottom 7px）
+  - `<hr>` のマージンを `0 0 7px` に変更
+- 次のタスクへの引き継ぎ事項: デザイン確認後、追加フィードバックに応じて微調整予定
+
+## 2025-06-24
+### ✅ Frontend: MenuItemList テスト拡充
+- ブランチ: `test/phase3/frontend-menu-item-list`
+- 開始日: 2025-06-24
+- 完了日: 2025-06-24
+- 作業内容:
+  - `MenuItemList.test.tsx` に編集ボタン( onEdit )・削除ボタン( API 呼び出し )のテストケースを追加
+  - `identity-obj-proxy` 対応済みの Jest 設定で実行確認
+  - 全テストグリーン・ESLint エラーなしを確認
+- 引き継ぎ事項:
+  - 他コンポーネント (QRCodeGenerator 等) のテスト拡張を順次実施予定
+
+### ✅ Frontend: QRCodeGenerator テスト追加
+- ブランチ: `test/phase3/frontend-qrcode-generator`
+- 開始日: 2025-06-24
+- 完了日: 2025-06-24
+- 作業内容:
+  - `QRCodeGenerator.test.tsx` を実装し、店舗ID取得・QR生成フローとエラーハンドリングを検証
+  - import.meta.env 依存を排除し `process.env` ベースにリファクタリング
+  - Vite 設定で `define` を追加して本番ビルド時に環境変数を埋め込み
+  - Babel & Jest 設定を Babel 1 本化し、全テストグリーンを確認
+- 引き継ぎ事項:
+  - 他コンポーネント（StoreForm など）への env 参照方式統一を検討
+
+### 🔄 Frontend: GitHub Actions CI 追加
+- ブランチ: `ci/phase3/frontend`
+- 開始日: 2025-06-24
+- ステータス: 🔄進行中
+- 作業内容:
+  - `.github/workflows/frontend-ci.yml` に lint & test 実行フローを追加
+
+ test/phase3/backend-storage
+### 🔄 Frontend: StoreForm バリデーションテスト追加
+- ブランチ: `test/phase3/frontend-store-form`
+- 開始日: 2025-06-25
+- 作業内容:
+  - 電話番号必須＆形式エラーを検証（skip 解除）
+  - 更新 API が正しい payload で呼ばれることを確認
+  - msw で store API をモック
+- 次タスクへの引き継ぎ事項:
+  - BusinessHoursInput などサブフォームのテスト（P1）
+
+### 🔄 Backend: utils/storage テスト追加
+- ブランチ: `test/phase3/backend-storage`
+- 開始日: 2025-06-25
+- 作業内容:
+  - `getSignedUrl` 正常系
+  - MIME/type バリデーションで 400 を返すエラー系
+  - Supertest でエンドポイント `/api/stores/owner/logo` をモック付きで検証
+- 次タスクへの引き継ぎ事項:
+  - その他アップロードエンドポイント共通化テスト
+
+## 2025-06-25
+### 🔄 Frontend: Login → Navigation ガードテスト
+- ブランチ: `test/phase3/frontend-auth-nav`
+- 開始日: 2025-06-25
+- 作業内容:
+  - 未ログイン時 `/login` へリダイレクト
+  - ログイン後 `/menu-management` へ遷移をテスト
+  - `MemoryRouter` と `AuthContext` をモックして状態分岐を検証
+- 次のタスクへの引き継ぎ事項:
+  - Navigation コンポーネントのルートガード実装箇所のリファクタ余地確認
+
+### 🔄 Frontend: MenuManagement テスト追加
+- ブランチ: `test/phase3/frontend-menu-management`
+- 開始日: 2025-06-25
+- 作業内容:
+  - CSV インポート成功時にカテゴリ・アイテムが描画される
+  - ドラッグ＆ドロップ並び替えで reorder API が呼び出される
+  - `msw` を用いた API モック
+- 次のタスクへの引き継ぎ事項:
+  - Drag-and-Drop の失敗系テスト（P1）
+
+## 2025-06-26
+### 🔄 Backend: User CRUD テスト追加
+- ブランチ: `test/phase3/backend-user-tests`
+- 開始日: 2025-06-26
+- ステータス: 🔄進行中
+- 作業内容:
+  - `/api/users` CRUD エンドポイントの正常系 / 異常系テスト (ADMIN ガード)
+  - Supertest & Jest を用いた統合テスト
+  - テスト用 Prisma seed で管理者 & 一般ユーザーを作成
+- 次のタスクへの引き継ぎ事項:
+  - User ロール別ガードのユニットテスト拡充
+

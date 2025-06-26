@@ -17,7 +17,7 @@ const MenuDisplay: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedImage, setSelectedImage] = useState<{ url: string; alt: string } | null>(null);
-  const [selectedDescription, setSelectedDescription] = useState<{ text: string; title: string } | null>(null);
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   // カテゴリごとのrefを管理
   const categoryRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
   // 店舗情報セクションのref
@@ -91,11 +91,12 @@ const MenuDisplay: React.FC = () => {
           onClose={() => setSelectedImage(null)}
         />
       )}
-      {selectedDescription && (
+      {selectedItem && (
         <DescriptionModal
-          description={selectedDescription.text}
-          title={selectedDescription.title}
-          onClose={() => setSelectedDescription(null)}
+          title={selectedItem.name}
+          description={selectedItem.description || ''}
+          price={selectedItem.price}
+          onClose={() => setSelectedItem(null)}
         />
       )}
       {/* サイドバー（PC） or タブ（モバイル） */}
@@ -258,23 +259,26 @@ const MenuDisplay: React.FC = () => {
                         )}
                       </div>
                       <div className="menu-item-content">
-                        <div className="menu-item-name">{item.name}</div>
-                        <div className="menu-item-price">{item.price}円</div>
-                        {item.description && (
-                          <div 
-                            className="menu-item-desc"
-                            onClick={() => setSelectedDescription({ text: item.description!, title: item.name })}
-                            role="button"
-                            tabIndex={0}
-                            onKeyPress={(e) => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                setSelectedDescription({ text: item.description!, title: item.name });
-                              }
-                            }}
-                          >
-                            {item.description}
-                          </div>
-                        )}
+                        <div 
+                          className="menu-item-content-clickable"
+                          onClick={() => setSelectedItem(item)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              setSelectedItem(item);
+                            }
+                          }}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <div className="menu-item-name">{item.name}</div>
+                          <div className="menu-item-price">{item.price}円</div>
+                          {item.description && (
+                            <div className="menu-item-desc">
+                              {item.description}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}

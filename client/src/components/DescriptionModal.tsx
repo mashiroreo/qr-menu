@@ -2,12 +2,13 @@ import React from 'react';
 import './DescriptionModal.css';
 
 interface DescriptionModalProps {
-  description: string;
+  description?: string;
   title: string;
+  price: number;
   onClose: () => void;
 }
 
-const DescriptionModal: React.FC<DescriptionModalProps> = ({ description, title, onClose }) => {
+const DescriptionModal: React.FC<DescriptionModalProps> = ({ description, title, price, onClose }) => {
   return (
     <div className="description-modal-overlay" onClick={onClose}>
       <div className="description-modal-content" onClick={e => e.stopPropagation()}>
@@ -18,7 +19,9 @@ const DescriptionModal: React.FC<DescriptionModalProps> = ({ description, title,
           </button>
         </div>
         <div className="description-modal-body" style={{ whiteSpace: 'pre-line' }}>
-          {description}
+          <p style={{ fontWeight: 700, margin: '0 0 6px' }}>{price.toLocaleString()}円</p>
+          <hr style={{ border: 'none', borderTop: '1px solid #333', margin: '4px 0 7px' }} />
+          {description && <p style={{ margin: 0 }}>{description}</p>}
         </div>
       </div>
     </div>

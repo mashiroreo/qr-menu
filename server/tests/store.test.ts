@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { app } from '../src/index';
+import { app } from '../src/app';
 import request from 'supertest';
 
 const prisma = new PrismaClient();
@@ -9,19 +9,31 @@ describe('Store API Tests', () => {
   let testStore: any;
 
   beforeAll(async () => {
-    // テスト用ユーザーの作成
-    testUser = await prisma.user.create({
-      data: {
+    // テスト用ユーザーを upsert で用意（既に存在していれば取得）
+    testUser = await prisma.user.upsert({
+      where: { publicId: 'test-user-id' },
+      update: {
         email: 'test@example.com',
-        publicId: 'test-user-id', // Firebase認証のモックと一致させる
+        displayName: 'Test User',
+      },
+      create: {
+        email: 'test@example.com',
+        publicId: 'test-user-id',
         displayName: 'Test User',
         role: 'OWNER'
       }
     });
 
-    // テスト用店舗の作成
-    testStore = await prisma.store.create({
-      data: {
+    // テスト用店舗を upsert で用意（ユーザーに店舗が無い場合のみ作成）
+    testStore = await prisma.store.upsert({
+      where: { ownerId: testUser.id },
+      update: {
+        name: 'Test Store',
+        description: 'Test Description',
+        address: 'Test Address',
+        phone: '123-456-7890'
+      },
+      create: {
         name: 'Test Store',
         description: 'Test Description',
         address: 'Test Address',
@@ -32,7 +44,9 @@ describe('Store API Tests', () => {
   });
 
   afterAll(async () => {
-    // テストデータの削除
+    // 関連するメニューアイテム・カテゴリーを削除してから店舗を削除（外部キー制約対策）
+    await prisma.menuItem.deleteMany();
+    await prisma.menuCategory.deleteMany();
     await prisma.store.deleteMany();
     await prisma.user.deleteMany();
     await prisma.$disconnect();
@@ -111,9 +125,7 @@ describe('Store API Tests', () => {
 
     it('should return 401 for unauthenticated requests', async () => {
       const response = await request(app)
-        .put('/api/stores/owner/logo')
-        .attach('logo', __dirname + '/dummy-logo.png');
-
+        .put('/api/stores/owner/logo');
       expect(response.status).toBe(401);
     });
 
@@ -128,7 +140,9 @@ describe('Store API Tests', () => {
 
   describe('Error Handling', () => {
     it('should handle store not found error', async () => {
-      // テスト用店舗を削除
+      // 関連エンティティ含めて削除
+      await prisma.menuItem.deleteMany();
+      await prisma.menuCategory.deleteMany();
       await prisma.store.deleteMany();
 
       const response = await request(app)
