@@ -19,6 +19,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { toast } from 'react-hot-toast';
+import DescriptionModal from './DescriptionModal';
 
 interface MenuCategoryListProps {
   onEdit: (category: MenuCategory) => void;
@@ -44,6 +45,8 @@ const SortableCategory: React.FC<SortableCategoryProps> = ({ category, onEdit, o
     animateLayoutChanges: () => false
   });
 
+  const [showDescription, setShowDescription] = useState(false);
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition: isDragging ? undefined : transition,
@@ -54,37 +57,57 @@ const SortableCategory: React.FC<SortableCategoryProps> = ({ category, onEdit, o
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      className={`bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-100 ease-out
-        ${isDragging ? 'shadow-md scale-[1.02] translate-x-0 translate-y-0' : ''}`}
-    >
-      <div className="p-6">
-        <h3 className="text-xl font-semibold text-gray-800 mb-2">
-          {category.name}
-        </h3>
-        {category.description && (
-          <p className="text-gray-600 mb-4">{category.description}</p>
-        )}
-        <div className="flex justify-end space-x-3">
-          <button
-            onClick={() => onEdit(category)}
-            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            編集
-          </button>
-          <button
-            onClick={() => onDelete(category.id)}
-            className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-          >
-            削除
-          </button>
+    <>
+      <div
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+        className={`bg-white rounded-lg shadow transition-all duration-100 ease-out ${isDragging ? 'shadow-md scale-[1.02]' : 'hover:shadow-sm'}`}
+      >
+        <div className="p-4 sm:p-5 md:p-6">
+          <div className="flex justify-between items-start gap-3">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-gray-800 text-base sm:text-lg mb-1 truncate">
+                {category.name}
+              </h3>
+              {category.description && (
+                <p
+                  className="text-gray-600 text-xs sm:text-sm truncate cursor-pointer"
+                  onClick={() => setShowDescription(true)}
+                  title={category.description}
+                >
+                  {category.description}
+                </p>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-2 pl-2 shrink-0">
+              <button
+                onClick={() => onEdit(category)}
+                className="px-3 py-1 text-xs sm:text-sm text-white bg-indigo-600 hover:bg-indigo-700 rounded"
+              >
+                編集
+              </button>
+              <button
+                onClick={() => onDelete(category.id)}
+                className="px-3 py-1 text-xs sm:text-sm text-white bg-red-600 hover:bg-red-700 rounded"
+              >
+                削除
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+
+      {showDescription && category.description && (
+        <DescriptionModal
+          description={category.description}
+          title={category.name}
+          onClose={() => setShowDescription(false)}
+        />
+      )}
+    </>
   );
 };
 
@@ -200,7 +223,7 @@ const MenuCategoryList: React.FC<MenuCategoryListProps> = ({ onEdit, refreshTrig
       onDragEnd={handleDragEnd}
       modifiers={[]}
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
         <SortableContext
           items={categories.map(cat => cat.id)}
           strategy={rectSortingStrategy}
