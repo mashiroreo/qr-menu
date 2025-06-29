@@ -59,7 +59,7 @@ const MenuManagement: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-2 sm:px-3 md:px-4 py-8">
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold">メニュー管理</h2>
@@ -93,12 +93,19 @@ const MenuManagement: React.FC = () => {
       {selectedCategory && (
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-bold">{selectedCategory.name}のメニュー</h3>
+            <h3
+              className="text-xl font-bold truncate max-w-[70%]"
+              title={selectedCategory.name}
+            >
+              {selectedCategory.name}
+              <span className="hidden sm:inline">のメニュー</span>
+            </h3>
             <button
               onClick={() => setShowItemForm(true)}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+              className="flex-shrink-0 px-3 py-1 text-xs sm:text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
             >
-              メニュー追加
+              <span className="sm:hidden">追加</span>
+              <span className="hidden sm:inline">メニュー追加</span>
             </button>
           </div>
 
