@@ -5,6 +5,7 @@ import MenuCategoryForm from '../components/MenuCategoryForm';
 import MenuItemList from '../components/MenuItemList';
 import MenuItemForm from '../components/MenuItemForm';
 import { getStoreInfo } from '../api/store';
+import DescriptionModal from '../components/DescriptionModal';
 
 const MenuManagement: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<MenuCategory | null>(null);
@@ -14,6 +15,7 @@ const MenuManagement: React.FC = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [itemRefreshTrigger, setItemRefreshTrigger] = useState(0);
   const [storeId, setStoreId] = useState<number | null>(null);
+  const [showTitleModal, setShowTitleModal] = useState(false);
 
   useEffect(() => {
     const fetchStoreId = async () => {
@@ -94,7 +96,8 @@ const MenuManagement: React.FC = () => {
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
             <h3
-              className="text-xl font-bold truncate max-w-[70%]"
+              className="text-xl font-bold truncate max-w-[70%] cursor-pointer"
+              onClick={() => setShowTitleModal(true)}
               title={selectedCategory.name}
             >
               {selectedCategory.name}
@@ -130,6 +133,14 @@ const MenuManagement: React.FC = () => {
               categoryId={selectedCategory.id}
               onEdit={handleItemSelect}
               refreshTrigger={itemRefreshTrigger}
+            />
+          )}
+
+          {showTitleModal && (
+            <DescriptionModal
+              title="カテゴリー名"
+              description={selectedCategory.name}
+              onClose={() => setShowTitleModal(false)}
             />
           )}
         </div>
