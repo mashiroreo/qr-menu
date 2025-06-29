@@ -69,7 +69,7 @@ const SortableMenuItem: React.FC<SortableMenuItemProps> = ({ item, onEdit, onDel
       className={`border rounded-lg p-3 sm:p-4 transition-all duration-100 ease-out bg-white cursor-pointer
         ${isDragging ? 'shadow-md scale-[1.02] translate-x-0 translate-y-0' : 'hover:shadow-sm'}`}
       onClick={() => {
-        if (!isDragging) onView(item);
+        if (!isDragging && !showImgModal) onView(item);
       }}
     >
       {item.imageUrl && (
@@ -88,7 +88,12 @@ const SortableMenuItem: React.FC<SortableMenuItemProps> = ({ item, onEdit, onDel
           />
         </div>
       )}
-      <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2">{item.name}</h3>
+      <h3
+        className="text-base sm:text-lg font-semibold mb-1 sm:mb-2 truncate"
+        title={item.name}
+      >
+        {item.name}
+      </h3>
       {item.description && (
         <p
           className="text-gray-600 text-sm sm:text-base mb-1 sm:mb-2 cursor-pointer"
@@ -101,13 +106,19 @@ const SortableMenuItem: React.FC<SortableMenuItemProps> = ({ item, onEdit, onDel
       <p className="text-base sm:text-lg font-bold mb-3 sm:mb-4">¥{item.price.toLocaleString()}</p>
       <div className="flex justify-end space-x-1 sm:space-x-2">
         <button
-          onClick={() => onEdit(item)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(item);
+          }}
           className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-blue-600 hover:text-blue-800 transition-colors"
         >
           編集
         </button>
         <button
-          onClick={() => onDelete(item.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(item.id);
+          }}
           className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-red-600 hover:text-red-800 transition-colors"
         >
           削除
