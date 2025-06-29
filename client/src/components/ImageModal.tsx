@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import './ImageModal.css';
 
 interface ImageModalProps {
@@ -28,7 +29,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ imageUrl, alt, onClose }) => {
     };
   }, [onClose]);
 
-  return (
+  const modal = (
     <div className="image-modal-backdrop" onClick={handleBackdropClick}>
       <div className="image-modal-content">
         <button className="image-modal-close" onClick={onClose} aria-label="閉じる">
@@ -38,6 +39,8 @@ const ImageModal: React.FC<ImageModalProps> = ({ imageUrl, alt, onClose }) => {
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 };
 
 export default ImageModal; 
