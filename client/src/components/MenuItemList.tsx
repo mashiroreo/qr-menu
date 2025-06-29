@@ -20,6 +20,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { toast } from 'react-hot-toast';
 import DescriptionModal from './DescriptionModal';
+import ImageModal from './ImageModal';
 
 interface MenuItemListProps {
   storeId: number;
@@ -57,50 +58,64 @@ const SortableMenuItem: React.FC<SortableMenuItemProps> = ({ item, onEdit, onDel
     touchAction: 'none' as const,
   };
 
+  const [showImgModal, setShowImgModal] = useState(false);
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       {...attributes}
       {...listeners}
-      className={`border rounded-lg p-4 transition-all duration-100 ease-out bg-white
+      className={`border rounded-lg p-3 sm:p-4 transition-all duration-100 ease-out bg-white cursor-pointer
         ${isDragging ? 'shadow-md scale-[1.02] translate-x-0 translate-y-0' : 'hover:shadow-sm'}`}
+      onClick={() => {
+        if (!isDragging) onView(item);
+      }}
     >
       {item.imageUrl && (
-        <div className="aspect-w-16 aspect-h-9 mb-4">
+        <div
+          className="aspect-w-16 aspect-h-9 mb-3 sm:mb-4 cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowImgModal(true);
+          }}
+        >
           <img
             src={item.imageUrl}
             alt={item.name}
-            className="w-full h-48 object-cover rounded-md"
+            className="w-full h-32 sm:h-48 object-cover rounded-md"
             draggable={false}
           />
         </div>
       )}
-      <h3 className="text-lg font-semibold mb-2">{item.name}</h3>
+      <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2">{item.name}</h3>
       {item.description && (
         <p
-          className="text-gray-600 mb-2 cursor-pointer"
+          className="text-gray-600 text-sm sm:text-base mb-1 sm:mb-2 cursor-pointer"
           style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
           onClick={() => onView(item)}
         >
           {item.description}
         </p>
       )}
-      <p className="text-lg font-bold mb-4">¥{item.price.toLocaleString()}</p>
-      <div className="flex justify-end space-x-2">
+      <p className="text-base sm:text-lg font-bold mb-3 sm:mb-4">¥{item.price.toLocaleString()}</p>
+      <div className="flex justify-end space-x-1 sm:space-x-2">
         <button
           onClick={() => onEdit(item)}
-          className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 transition-colors"
+          className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-blue-600 hover:text-blue-800 transition-colors"
         >
           編集
         </button>
         <button
           onClick={() => onDelete(item.id)}
-          className="px-3 py-1 text-sm text-red-600 hover:text-red-800 transition-colors"
+          className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-red-600 hover:text-red-800 transition-colors"
         >
           削除
         </button>
       </div>
+      {showImgModal && item.imageUrl && (
+        <ImageModal imageUrl={item.imageUrl} alt={item.name} onClose={() => setShowImgModal(false)} />
+      )}
     </div>
   );
 };
@@ -238,7 +253,7 @@ const MenuItemList: React.FC<MenuItemListProps> = ({
       onDragEnd={handleDragEnd}
       modifiers={[]}
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
         <SortableContext
           items={items.map(item => item.id)}
           strategy={rectSortingStrategy}
