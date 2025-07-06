@@ -438,3 +438,8 @@
 開始日: 2025-07-06
 作業内容: Terraform backend/provider 作成
 
+🔄進行中
+ブランチ: feature/phase1/cloud-sql
+開始日: 2025-07-06
+作業内容: Cloud SQL インスタンス + Secret Manager 定義
+
