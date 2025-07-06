@@ -448,3 +448,8 @@
 開始日: 2025-07-06
 作業内容: Cloud SQL インスタンス + Secret Manager 定義
 
+🔄進行中
+ブランチ: feature/phase2/run-deploy
+開始日: 2025-07-06
+作業内容: Artifact Registry, Cloud Run, Cloud Build トリガー定義
+

@@ -1,4 +1,9 @@
 provider "google" {
-  project = "qrmenu-34cc1"
+  project = var.project_id
+  region  = "asia-northeast1"
+}
+
+provider "google-beta" {
+  project = var.project_id
   region  = "asia-northeast1"
 } 
