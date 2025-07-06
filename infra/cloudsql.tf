@@ -38,7 +38,11 @@ resource "google_sql_user" "appuser" {
 resource "google_secret_manager_secret" "database_url" {
   secret_id = "DATABASE_URL"
   replication {
-    automatic = true
+    user_managed {
+      replicas {
+        location = "asia-northeast1"
+      }
+    }
   }
 }
 
