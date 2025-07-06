@@ -1,0 +1,27 @@
+steps:
+  - id: "Build"
+    name: "gcr.io/cloud-builders/docker"
+    args: ["build","-t","$_IMAGE","-f","server/Dockerfile","."]
+
+  - id: "Push"
+    name: "gcr.io/cloud-builders/docker"
+    args: ["push","$_IMAGE"]
+
+  - id: "Deploy"
+    name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - qrmenu-api
+      - --image=$_IMAGE
+      - --region=asia-northeast1
+      - --platform=managed
+      - --service-account=qrmenu-run-sa@${PROJECT_ID}.iam.gserviceaccount.com
+      - --quiet
+
+images:
+  - "$_IMAGE"
+
+substitutions:
+  _IMAGE: "asia-northeast1-docker.pkg.dev/$PROJECT_ID/qrmenu/qrmenu-api:$SHORT_SHA" 
