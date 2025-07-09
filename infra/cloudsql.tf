@@ -6,6 +6,7 @@ resource "random_password" "dbpass" {
 resource "google_sql_database_instance" "qrmenu" {
   name             = "qrmenu-db"
   database_version = "POSTGRES_16"
+  edition          = "ENTERPRISE"
   region           = "asia-northeast1"
 
   settings {
