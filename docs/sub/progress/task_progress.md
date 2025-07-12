@@ -508,3 +508,12 @@
 - 次のタスク:
   - terraform apply 後再度デプロイ確認
 
+### 🔄 Cloud Build Trigger location 修正
+- ブランチ: `fix/phase3/cloudbuild-trigger-location`
+- 開始日: 2025-07-12
+- ステータス: 🔄進行中
+- 作業内容:
+  - Trigger resource に `location = "asia-northeast1"` を追加
+- 次のタスク:
+  - terraform apply で作成確認
+

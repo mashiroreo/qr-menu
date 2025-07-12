@@ -2,6 +2,7 @@ resource "google_cloudbuild_trigger" "qrmenu_main" {
   provider    = google-beta
   name        = "qrmenu-main-trigger"
   description = "Trigger Cloud Build on push to main branch"
+  location    = "asia-northeast1"
 
   github {
     owner = "mashiroreo"
