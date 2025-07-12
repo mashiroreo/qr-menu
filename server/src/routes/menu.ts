@@ -148,7 +148,7 @@ router.put('/categories/reorder', authenticate, async (req: AuthRequest, res) =>
     }
 
     // 各アイテムのバリデーション
-    const validatedItems = items.map(item => {
+    const validatedItems = (items as any[]).map((item: any) => {
       const id = Number(item.id);
       const order = Number(item.order);
       console.log('Validating item:', { id, order, original: item });
@@ -171,7 +171,7 @@ router.put('/categories/reorder', authenticate, async (req: AuthRequest, res) =>
     console.log('Found existing categories:', existingCategories);
 
     if (existingCategories.length !== validatedItems.length) {
-      const foundIds = existingCategories.map(cat => cat.id);
+      const foundIds = existingCategories.map((cat: any) => cat.id);
       const requestedIds = validatedItems.map(item => item.id);
       const invalidIds = requestedIds.filter(id => !foundIds.includes(id));
       console.log('Invalid IDs found:', { invalidIds, foundIds, requestedIds });
@@ -338,7 +338,7 @@ router.put('/items/reorder', async (req: AuthRequest, res) => {
     }
 
     // 各アイテムのバリデーション
-    const validatedItems = items.map(item => {
+    const validatedItems = (items as any[]).map((item: any) => {
       const id = Number(item.id);
       const order = Number(item.order);
       console.log('Validating item:', { id, order, original: item });
@@ -361,7 +361,7 @@ router.put('/items/reorder', async (req: AuthRequest, res) => {
     console.log('Found existing items:', existingItems);
 
     if (existingItems.length !== validatedItems.length) {
-      const foundIds = existingItems.map(item => item.id);
+      const foundIds = existingItems.map((item: any) => item.id);
       const requestedIds = validatedItems.map(item => item.id);
       const invalidIds = requestedIds.filter(id => !foundIds.includes(id));
       console.log('Invalid IDs found:', { invalidIds, foundIds, requestedIds });
