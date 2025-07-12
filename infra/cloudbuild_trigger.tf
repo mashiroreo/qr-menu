@@ -7,7 +7,7 @@ resource "google_cloudbuild_trigger" "qrmenu_main" {
     owner = "mashiroreo"
     name  = "qr-menu"
     push {
-      branch = "^main$"
+      branch = "main"
     }
   }
 
