@@ -4,13 +4,12 @@ resource "random_password" "dbpass" {
 }
 
 resource "google_sql_database_instance" "qrmenu" {
-  provider = google-beta
   name             = "qrmenu-db"
   database_version = "POSTGRES_16"
   region           = "asia-northeast1"
 
   settings {
-    tier = "db-custom-1-3840" # PG16 対応最小構成 (1vCPU, 3.75GB)
+    tier = "db-perf-optimized-N-2" # Enterprise Plus 対応の最小プリセット (2vCPU)
 
     ip_configuration {
       ipv4_enabled = true # 初期は Public IP、後で Private に変更予定
