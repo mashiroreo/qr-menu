@@ -487,3 +487,14 @@
 - 次のタスク:
   - テストデプロイ後に動作確認し PR 作成
 
+### 🔄 Cloud Build トリガー作成
+- ブランチ: `feature/phase3/cloudbuild-trigger`
+- 開始日: 2025-07-12
+- ステータス: 🔄進行中
+- 作業内容:
+  - github push trigger (main) 定義 (google_cloudbuild_trigger)
+  - cloudbuild.yaml を参照し _REGION 変数を置換
+  - Terraform で適用予定
+- 次のタスク:
+  - terraform apply 後 push テスト
+
