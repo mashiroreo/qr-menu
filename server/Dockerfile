@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Install deps
 COPY server/package*.json ./
-RUN npm ci --ignore-scripts
+RUN npm ci
 
 # Copy source
 COPY server .
@@ -18,7 +18,7 @@ WORKDIR /app
 
 # Install only production deps
 COPY server/package*.json ./
-RUN npm ci --omit=dev --ignore-scripts
+RUN npm ci --omit=dev
 
 # Copy built files & necessary assets
 COPY --from=build /app/dist ./dist
