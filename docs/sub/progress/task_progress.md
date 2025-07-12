@@ -498,3 +498,13 @@
 - 次のタスク:
   - terraform apply 後 push テスト
 
+### 🔄 Cloud SQL Tier (Enterprise Plus) 修正
+- ブランチ: `fix/phase3/cloudsql-tier-plus`
+- 開始日: 2025-07-12
+- ステータス: 🔄進行中
+- 作業内容:
+  - PG16 Enterprise Plus でサポートされるプリセット tier へ変更
+  - terraform validate/plan 実行予定
+- 次のタスク:
+  - terraform apply 後再度デプロイ確認
+
