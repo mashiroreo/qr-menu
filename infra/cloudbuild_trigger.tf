@@ -38,8 +38,8 @@ resource "google_cloudbuild_trigger" "qrmenu_main" {
         "--image=$_IMAGE",
         "--region=$_REGION",
         "--platform=managed",
-        "--service-account=qrmenu-run-sa@${PROJECT_ID}.iam.gserviceaccount.com",
-        "--update-secrets=DATABASE_URL=projects/$PROJECT_NUMBER/secrets/DATABASE_URL:latest",
+        "--service-account=qrmenu-run-sa@$${PROJECT_ID}.iam.gserviceaccount.com",
+        "--update-secrets=DATABASE_URL=projects/$${PROJECT_NUMBER}/secrets/DATABASE_URL:latest",
         "--add-cloudsql-instances=qrmenu-db",
         "--quiet",
       ]
@@ -48,7 +48,7 @@ resource "google_cloudbuild_trigger" "qrmenu_main" {
     images = ["$_IMAGE"]
 
     substitutions = {
-      _IMAGE  = "asia-northeast1-docker.pkg.dev/${var.project_id}/qrmenu/qrmenu-api:$SHORT_SHA"
+      _IMAGE  = "asia-northeast1-docker.pkg.dev/${var.project_id}/qrmenu/qrmenu-api:$${SHORT_SHA}"
       _REGION = "asia-northeast1"
     }
 
