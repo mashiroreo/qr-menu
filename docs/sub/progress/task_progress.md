@@ -453,3 +453,15 @@
 開始日: 2025-07-06
 作業内容: Artifact Registry, Cloud Run, Cloud Build トリガー定義
 
+## 2025-07-12
+### 🔄 Cloud SQL PG16 Edition/Tier fix
+- ブランチ: `feature/phase3/cloudsql-fix`
+- 開始日: 2025-07-12
+- ステータス: 🔄進行中
+- 作業内容:
+  - Cloud SQL インスタンスの edition/tier 設定を PG16 に対応させる
+  - google-beta provider 追加 または tier をカスタムへ変更
+  - Secret Manager の DATABASE_URL を自動生成
+- 次のタスク:
+  - terraform apply 完了後にパイプライン接続を確認
+
