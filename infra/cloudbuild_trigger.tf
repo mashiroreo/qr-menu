@@ -18,6 +18,14 @@ resource "google_cloudbuild_trigger" "qrmenu_main" {
     _REGION = "asia-northeast1"
   }
 
+  service_account = "projects/${var.project_id}/serviceAccounts/cloudbuild-trigger-sa@${var.project_id}.iam.gserviceaccount.com"
+
+  build {
+    options {
+      logging = "CLOUD_LOGGING_ONLY"
+    }
+  }
+
   # Service account executing builds (Cloud Build default SA)
   included_files = [ "**" ]
 } 
